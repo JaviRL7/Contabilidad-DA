@@ -1,0 +1,47 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from decouple import config
+
+from app.core.database import engine, Base
+from app.routers import movimientos, etiquetas
+
+# Crear tablas
+Base.metadata.create_all(bind=engine)
+
+# Configuración de la aplicación
+app = FastAPI(
+    title="Contabilidad Personal API",
+    description="API REST para gestión de contabilidad personal",
+    version="1.0.0"
+)
+
+# Middleware de compresión
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Configuración CORS
+cors_origins = config("CORS_ORIGINS", default="http://localhost:5173").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
+
+# Incluir routers
+app.include_router(movimientos.router)
+app.include_router(etiquetas.router)
+
+@app.get("/")
+async def root():
+    return {
+        "message": "Contabilidad Personal API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "redoc": "/redoc"
+    }
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
