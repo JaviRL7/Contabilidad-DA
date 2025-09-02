@@ -35,12 +35,6 @@ npm install
 npm run dev
 ```
 
-## 🌐 Accesos
-
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8000/docs
-- **Health Check**: http://localhost:8000/health
-
 ## 📱 Funcionalidades
 
 - Visualización de movimientos diarios
