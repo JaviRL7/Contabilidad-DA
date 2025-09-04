@@ -82,7 +82,7 @@ echo cd "%INSTALL_DIR%" >> start_contabilidad.bat
 echo. >> start_contabilidad.bat
 echo REM Iniciar backend >> start_contabilidad.bat
 echo echo Iniciando servidor backend... >> start_contabilidad.bat
-echo start "Backend - Contabilidad" cmd /k "cd backend && venv\Scripts\activate && python main.py" >> start_contabilidad.bat
+echo start "Backend - Contabilidad" cmd /k "cd backend && venv\Scripts\activate && uvicorn main:app --host 0.0.0.0 --port 8000" >> start_contabilidad.bat
 echo. >> start_contabilidad.bat
 echo REM Esperar un poco para que el backend se inicie >> start_contabilidad.bat
 echo timeout /t 5 /nobreak ^> nul >> start_contabilidad.bat
