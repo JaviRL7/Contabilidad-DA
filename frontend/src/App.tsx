@@ -650,7 +650,11 @@ const EditRecurrentModal = ({ isOpen, onClose, onConfirm, recurrent, etiquetas, 
                   step="0.01"
                   value={editedRecurrent.monto}
                   onChange={(e) => setEditedRecurrent(prev => ({...prev, monto: e.target.value}))}
-                  className="pr-8 w-full px-3 py-2 rounded-lg border bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none appearance-none"
+                  className={`pr-8 w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none appearance-none ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                  }`}
                   placeholder="0.00"
                 />
                 {/* Custom increment/decrement buttons */}
@@ -727,7 +731,11 @@ const EditRecurrentModal = ({ isOpen, onClose, onConfirm, recurrent, etiquetas, 
                     max="31"
                     value={editedRecurrent.diaMes}
                     onChange={(e) => setEditedRecurrent(prev => ({...prev, diaMes: e.target.value}))}
-                    className="pr-8 w-full px-3 py-2 rounded-lg border bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none appearance-none"
+                    className={`pr-8 w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none appearance-none ${
+                      isDark 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
                     placeholder="Ej: 1"
                   />
                   {/* Custom increment/decrement buttons */}
@@ -4753,7 +4761,11 @@ function App() {
                         placeholder="0.00"
                         value={newRecurrent.monto}
                         onChange={(e) => setNewRecurrent(prev => ({...prev, monto: e.target.value}))}
-                        className="pr-8 w-full px-3 py-2 rounded-lg border bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none appearance-none"
+                        className={`pr-8 w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none appearance-none ${
+                          isDark 
+                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                        }`}
                       />
                       {/* Custom increment/decrement buttons */}
                       <div className="absolute right-1 top-1 bottom-1 flex flex-col">
@@ -4831,7 +4843,11 @@ function App() {
                           placeholder="Ej: 1"
                           value={newRecurrent.diaMes}
                           onChange={(e) => setNewRecurrent(prev => ({...prev, diaMes: e.target.value}))}
-                          className="pr-8 w-full px-3 py-2 rounded-lg border bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none appearance-none"
+                          className={`pr-8 w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none appearance-none ${
+                            isDark 
+                              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                          }`}
                         />
                         {/* Custom increment/decrement buttons */}
                         <div className="absolute right-1 top-1 bottom-1 flex flex-col">
@@ -4951,7 +4967,11 @@ function App() {
                             placeholder="Ej: 1"
                             value={newRecurrent.diaAnual}
                             onChange={(e) => setNewRecurrent(prev => ({...prev, diaAnual: e.target.value}))}
-                            className="pr-8 w-full px-3 py-2 rounded-lg border bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none appearance-none"
+                            className={`pr-8 w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none appearance-none ${
+                              isDark 
+                                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                            }`}
                           />
                           {/* Custom increment/decrement buttons */}
                           <div className="absolute right-1 top-1 bottom-1 flex flex-col">
