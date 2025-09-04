@@ -4,23 +4,17 @@ from typing import List, Optional
 from datetime import date, timedelta
 
 from app.models.models import MovimientoDiario, Ingreso, Gasto, Etiqueta
-from app.models.schemas import MovimientoDiarioCreate, IngresoCreate, GastoCreate
+from app.models.schemas import MovimientoDiarioCreate, IngresoCreate, GastoCreate, EtiquetaUpdate
 
 def get_movimiento_by_fecha(db: Session, fecha: date) -> Optional[MovimientoDiario]:
     """Obtener movimiento por fecha específica"""
     return db.query(MovimientoDiario).filter(MovimientoDiario.fecha == fecha).first()
 
 def get_movimientos_recientes(db: Session, fecha_base: date, limit: int = 7) -> List[MovimientoDiario]:
-    """Obtener movimientos recientes desde una fecha base"""
-    fecha_inicio = fecha_base - timedelta(days=limit-1)
+    """Obtener los últimos N movimientos desde una fecha base"""
     return (
         db.query(MovimientoDiario)
-        .filter(
-            and_(
-                MovimientoDiario.fecha >= fecha_inicio,
-                MovimientoDiario.fecha <= fecha_base
-            )
-        )
+        .filter(MovimientoDiario.fecha <= fecha_base)
         .order_by(MovimientoDiario.fecha.desc())
         .limit(limit)
         .all()
@@ -79,7 +73,9 @@ def create_or_update_movimiento(
         db_gasto = Gasto(
             fecha=movimiento_data.fecha,
             monto=gasto_data.monto,
-            etiqueta=gasto_data.etiqueta
+            etiqueta=gasto_data.etiqueta,
+            es_recurrente=getattr(gasto_data, 'es_recurrente', False),
+            recurrente_id=getattr(gasto_data, 'recurrente_id', None)
         )
         db.add(db_gasto)
         
@@ -207,6 +203,59 @@ def get_all_etiquetas(db: Session) -> List[Etiqueta]:
         .all()
     )
 
+def delete_ingreso(db: Session, ingreso_id: int) -> bool:
+    """Eliminar un ingreso específico"""
+    ingreso = db.query(Ingreso).filter(Ingreso.id == ingreso_id).first()
+    if not ingreso:
+        return False
+    
+    fecha = ingreso.fecha
+    db.delete(ingreso)
+    db.flush()  # Aplicar cambios sin hacer commit todavía
+    
+    # Recalcular totales del movimiento
+    _recalcular_y_limpiar_movimiento(db, fecha)
+    db.commit()
+    return True
+
+def delete_gasto(db: Session, gasto_id: int) -> bool:
+    """Eliminar un gasto específico"""
+    gasto = db.query(Gasto).filter(Gasto.id == gasto_id).first()
+    if not gasto:
+        return False
+    
+    fecha = gasto.fecha
+    db.delete(gasto)
+    db.flush()  # Aplicar cambios sin hacer commit todavía
+    
+    # Limpiar movimiento si queda vacío
+    _recalcular_y_limpiar_movimiento(db, fecha)
+    db.commit()
+    return True
+
+def _recalcular_y_limpiar_movimiento(db: Session, fecha: date):
+    """Función interna para recalcular totales y limpiar movimientos vacíos"""
+    movimiento = get_movimiento_by_fecha(db, fecha)
+    if not movimiento:
+        return
+    
+    # Contar ingresos y gastos restantes
+    count_ingresos = db.query(Ingreso).filter(Ingreso.fecha == fecha).count()
+    count_gastos = db.query(Gasto).filter(Gasto.fecha == fecha).count()
+    
+    if count_ingresos == 0 and count_gastos == 0:
+        # No quedan datos, eliminar el movimiento completo
+        db.delete(movimiento)
+    else:
+        # Recalcular ingreso_total
+        total_ingresos = db.query(func.sum(Ingreso.monto)).filter(Ingreso.fecha == fecha).scalar()
+        movimiento.ingreso_total = float(total_ingresos or 0)
+
+def recalcular_totales_movimiento(db: Session, fecha: date):
+    """Recalcular el ingreso_total de un movimiento (función pública)"""
+    _recalcular_y_limpiar_movimiento(db, fecha)
+    db.commit()
+
 def init_default_etiquetas(db: Session):
     """Inicializar etiquetas por defecto"""
     etiquetas_gastos = ['Luz', 'Agua', 'Comida', 'Transporte', 'Internet', 'Teléfono', 'Alquiler', 'Otros']
@@ -221,3 +270,26 @@ def init_default_etiquetas(db: Session):
             db.add(etiqueta)
     
     db.commit()
+
+def update_etiqueta(db: Session, etiqueta_id: int, etiqueta_update: EtiquetaUpdate) -> Optional[Etiqueta]:
+    """Actualizar una etiqueta"""
+    etiqueta = db.query(Etiqueta).filter(Etiqueta.id == etiqueta_id).first()
+    if not etiqueta:
+        return None
+    
+    if etiqueta_update.nombre is not None:
+        etiqueta.nombre = etiqueta_update.nombre
+    if etiqueta_update.es_esencial is not None:
+        etiqueta.es_esencial = etiqueta_update.es_esencial
+    
+    db.commit()
+    db.refresh(etiqueta)
+    return etiqueta
+
+def get_etiqueta_by_id(db: Session, etiqueta_id: int) -> Optional[Etiqueta]:
+    """Obtener etiqueta por ID"""
+    return db.query(Etiqueta).filter(Etiqueta.id == etiqueta_id).first()
+
+def get_etiqueta_by_nombre(db: Session, nombre: str) -> Optional[Etiqueta]:
+    """Obtener etiqueta por nombre"""
+    return db.query(Etiqueta).filter(Etiqueta.nombre == nombre).first()

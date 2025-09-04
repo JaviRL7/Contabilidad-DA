@@ -24,12 +24,15 @@ class GastoBase(BaseModel):
     etiqueta: str
 
 class GastoCreate(GastoBase):
-    pass
+    es_recurrente: Optional[bool] = False
+    recurrente_id: Optional[int] = None
 
 class Gasto(GastoBase):
     id: int
     fecha: date
     created_at: Optional[datetime] = None
+    es_recurrente: Optional[bool] = False
+    recurrente_id: Optional[int] = None
     
     class Config:
         from_attributes = True
@@ -71,10 +74,16 @@ class EtiquetaBase(BaseModel):
 
 class EtiquetaCreate(EtiquetaBase):
     es_predefinida: bool = False
+    es_esencial: bool = False
+
+class EtiquetaUpdate(BaseModel):
+    nombre: Optional[str] = None
+    es_esencial: Optional[bool] = None
 
 class Etiqueta(EtiquetaBase):
     id: int
     es_predefinida: bool
+    es_esencial: bool
     
     class Config:
         from_attributes = True

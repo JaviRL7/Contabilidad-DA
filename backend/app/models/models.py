@@ -37,6 +37,10 @@ class Gasto(Base):
     etiqueta = Column(String, nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
+    # Campos para gastos recurrentes
+    es_recurrente = Column(Boolean, default=False)
+    recurrente_id = Column(Integer, nullable=True)  # ID del gasto recurrente que lo generó
+    
     # Relación
     movimiento = relationship("MovimientoDiario", back_populates="gastos")
 
@@ -46,3 +50,4 @@ class Etiqueta(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True, nullable=False)
     es_predefinida = Column(Boolean, default=False)
+    es_esencial = Column(Boolean, default=False)

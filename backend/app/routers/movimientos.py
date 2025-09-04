@@ -10,18 +10,29 @@ from app.models.schemas import (
     MovimientoResumen,
     Etiqueta
 )
+from app.models.models import MovimientoDiario as MovimientoDiarioModel
 from app.crud import crud_movimientos
 
 router = APIRouter(prefix="/api/movimientos", tags=["movimientos"])
 
 @router.get("/", response_model=List[MovimientoDiario])
 async def get_movimientos_recientes(
+    todos: bool = Query(default=False, description="Si es True, devuelve todos los movimientos sin restricción de fecha"),
     fecha_base: date = Query(default_factory=date.today),
-    limit: int = Query(default=7, ge=1, le=30),
+    limit: int = Query(default=20, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
-    """Obtener movimientos recientes desde una fecha base"""
-    movimientos = crud_movimientos.get_movimientos_recientes(db, fecha_base, limit)
+    """Obtener movimientos recientes desde una fecha base o todos los movimientos"""
+    if todos:
+        # Obtener todos los movimientos ordenados por fecha descendente
+        movimientos = (
+            db.query(MovimientoDiarioModel)
+            .order_by(MovimientoDiarioModel.fecha.desc())
+            .limit(limit)
+            .all()
+        )
+    else:
+        movimientos = crud_movimientos.get_movimientos_recientes(db, fecha_base, limit)
     
     # Calcular campos calculados
     for mov in movimientos:
@@ -71,6 +82,36 @@ async def delete_movimiento(
     if not success:
         raise HTTPException(status_code=404, detail="Movimiento no encontrado")
     return {"message": "Movimiento eliminado correctamente"}
+
+@router.delete("/{fecha}/ingreso/{ingreso_id}")
+async def delete_ingreso(
+    fecha: date,
+    ingreso_id: int,
+    db: Session = Depends(get_db)
+):
+    """Eliminar un ingreso específico"""
+    try:
+        success = crud_movimientos.delete_ingreso(db, ingreso_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Ingreso no encontrado")
+        return {"message": "Ingreso eliminado correctamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al eliminar ingreso: {str(e)}")
+
+@router.delete("/{fecha}/gasto/{gasto_id}")
+async def delete_gasto(
+    fecha: date,
+    gasto_id: int,
+    db: Session = Depends(get_db)
+):
+    """Eliminar un gasto específico"""
+    try:
+        success = crud_movimientos.delete_gasto(db, gasto_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Gasto no encontrado")
+        return {"message": "Gasto eliminado correctamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al eliminar gasto: {str(e)}")
 
 @router.get("/mes/{año}/{mes}", response_model=List[MovimientoResumen])
 async def get_movimientos_mes(
