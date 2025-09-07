@@ -5551,337 +5551,6 @@ function App({
                   Análisis Financiero
                 </h2>
 
-                {/* Análisis de Gastos por Categoría */}
-                <div className={`mb-8 p-6 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      Análisis de Gastos por Categoría
-                    </h3>
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-700'
-                    }`}>
-                      Total del año
-                    </div>
-                  </div>
-
-                  {(() => {
-                    // Calcular gastos por etiqueta y estadísticas
-                    const gastosPorEtiquetaAnalisis = {};
-                    const currentYearAnalisis = new Date().getFullYear();
-                    
-                    movimientos.forEach(mov => {
-                      mov.gastos.forEach(gasto => {
-                        gastosPorEtiquetaAnalisis[gasto.etiqueta] = (gastosPorEtiquetaAnalisis[gasto.etiqueta] || 0) + gasto.monto;
-                      });
-                    });
-                    
-                    const gastosOrdenados = Object.entries(gastosPorEtiquetaAnalisis)
-                      .filter(([, monto]) => monto > 0)
-                      .sort(([,a], [,b]) => b - a);
-                    
-                    const totalGastos = gastosOrdenados.reduce((sum, [, monto]) => sum + monto, 0);
-                    const gastosEsenciales = gastosOrdenados
-                      .filter(([etiqueta]) => etiquetasEsenciales.some(esencial => 
-                        etiqueta.toLowerCase().includes(esencial)
-                      ))
-                      .reduce((sum, [, monto]) => sum + monto, 0);
-                    
-                    // Calcular meses con gastos esenciales reales
-                    const mesesConGastosEsenciales = new Set();
-                    movimientos.forEach(mov => {
-                      const tieneGastosEsenciales = mov.gastos.some(gasto => 
-                        etiquetasEsenciales.some(esencial => 
-                          gasto.etiqueta.toLowerCase().includes(esencial)
-                        )
-                      );
-                      if (tieneGastosEsenciales) {
-                        const fecha = new Date(mov.fecha);
-                        const mesKey = `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}`;
-                        mesesConGastosEsenciales.add(mesKey);
-                      }
-                    });
-                    
-                    const numeroMesesPagados = mesesConGastosEsenciales.size;
-                    const mediaMensualEsenciales = numeroMesesPagados > 0 ? gastosEsenciales / numeroMesesPagados : 0;
-
-                    if (gastosOrdenados.length === 0) {
-                      return (
-                        <div className={`p-8 text-center rounded-lg border ${
-                          isDark ? 'border-gray-600 bg-gray-800' : 'border-gray-200 bg-white'
-                        }`}>
-                          <svg className="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                          </svg>
-                          <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                            No hay gastos registrados para mostrar estadísticas
-                          </p>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <>
-                        {/* Resumen de estadísticas principales */}
-                        <div className="grid md:grid-cols-3 gap-4 mb-6">
-                          <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-white'} border ${
-                            isDark ? 'border-gray-600' : 'border-gray-200'
-                          }`}>
-                            <div className="text-2xl font-bold text-red-500 mb-1">
-                              {formatEuro(totalGastos)}
-                            </div>
-                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                              Total gastado {currentYearAnalisis}
-                            </div>
-                          </div>
-                          
-                          <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-white'} border ${
-                            isDark ? 'border-gray-600' : 'border-gray-200'
-                          }`}>
-                            <div className="text-2xl font-bold text-orange-500 mb-1">
-                              {formatEuro(gastosEsenciales)}
-                            </div>
-                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                              Gastos esenciales
-                            </div>
-                          </div>
-                          
-                          <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-white'} border ${
-                            isDark ? 'border-gray-600' : 'border-gray-200'
-                          }`}>
-                            <div className="text-2xl font-bold text-blue-500 mb-1">
-                              {formatEuro(mediaMensualEsenciales)}
-                            </div>
-                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                              Media mensual esenciales ({numeroMesesPagados} meses pagados)
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Lista de categorías con barras de progreso */}
-                        <div className="space-y-3">
-                          {gastosOrdenados.slice(0, 10).map(([etiqueta, monto], index) => {
-                            const porcentaje = (monto / totalGastos) * 100;
-                            const esEsencial = etiquetasEsenciales.some(esencial => 
-                              etiqueta.toLowerCase().includes(esencial)
-                            );
-                            
-                            return (
-                              <div key={etiqueta} className={`p-4 rounded-lg ${
-                                isDark ? 'bg-gray-800 border border-gray-600' : 'bg-white border border-gray-200'
-                              } hover:shadow-md transition-shadow`}>
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                                      index === 0 ? 'bg-red-500' : 
-                                      index === 1 ? 'bg-orange-500' : 
-                                      index === 2 ? 'bg-yellow-500' : 
-                                      'bg-gray-500'
-                                    }`}>
-                                      {index + 1}
-                                    </div>
-                                    <div>
-                                      <div className={`font-medium ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
-                                        {etiqueta}
-                                        {esEsencial && (
-                                          <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-100 text-blue-800">
-                                            Esencial
-                                          </span>
-                                        )}
-                                      </div>
-                                      <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                                        {porcentaje.toFixed(1)}% del total
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="font-bold text-red-500 text-lg">
-                                      {formatEuro(monto)}
-                                    </div>
-                                    <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                                      {formatEuro(monto / 12)}/mes
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                {/* Barra de progreso */}
-                                <div className={`w-full h-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                                  <div 
-                                    className={`h-full rounded-full transition-all duration-300 ${
-                                      index === 0 ? 'bg-red-500' : 
-                                      index === 1 ? 'bg-orange-500' : 
-                                      index === 2 ? 'bg-yellow-500' : 
-                                      'bg-blue-500'
-                                    }`}
-                                    style={{ width: `${Math.min(porcentaje, 100)}%` }}
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })}
-                          
-                          {gastosOrdenados.length > 10 && (
-                            <div className={`p-3 text-center rounded-lg ${
-                              isDark ? 'bg-gray-800 border border-gray-600' : 'bg-gray-50 border border-gray-200'
-                            }`}>
-                              <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                                ... y {gastosOrdenados.length - 10} categorías más
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-
-                {/* Gráficos de evolución mensual */}
-                <div className={`mb-8 p-6 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                  <h3 className={`text-xl font-semibold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    Evolución Mensual de Ingresos y Gastos
-                  </h3>
-                  
-                  {(() => {
-                    // Preparar datos para los gráficos
-                    const datosPorMes = {};
-                    const currentYear = new Date().getFullYear();
-                    
-                    movimientos.forEach(mov => {
-                      const fecha = new Date(mov.fecha);
-                      if (fecha.getFullYear() === currentYear) {
-                        const mesKey = `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}`;
-                        const mesNombre = fecha.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' });
-                        
-                        if (!datosPorMes[mesKey]) {
-                          datosPorMes[mesKey] = {
-                            mes: mesNombre,
-                            ingresos: 0,
-                            gastos: 0,
-                            balance: 0
-                          };
-                        }
-                        
-                        datosPorMes[mesKey].ingresos += mov.ingreso_total;
-                        datosPorMes[mesKey].gastos += mov.total_gastos;
-                        datosPorMes[mesKey].balance = datosPorMes[mesKey].ingresos - datosPorMes[mesKey].gastos;
-                      }
-                    });
-                    
-                    const datosOrdenados = Object.keys(datosPorMes)
-                      .sort()
-                      .map(key => datosPorMes[key]);
-                    
-                    if (datosOrdenados.length === 0) {
-                      return (
-                        <div className={`p-8 text-center rounded-lg border ${
-                          isDark ? 'border-gray-600 bg-gray-800' : 'border-gray-200 bg-white'
-                        }`}>
-                          <svg className="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                          </svg>
-                          <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                            No hay datos suficientes para mostrar gráficos mensuales
-                          </p>
-                        </div>
-                      );
-                    }
-                    
-                    return (
-                      <div className="space-y-8">
-                        {/* Gráfico de líneas - Evolución temporal */}
-                        <div>
-                          <h4 className={`text-lg font-medium mb-4 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
-                            Tendencia por Meses
-                          </h4>
-                          <div className="h-80">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <LineChart data={datosOrdenados} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#4B5563' : '#E5E7EB'} />
-                                <XAxis 
-                                  dataKey="mes" 
-                                  stroke={isDark ? '#9CA3AF' : '#6B7280'}
-                                  fontSize={12}
-                                />
-                                <YAxis 
-                                  stroke={isDark ? '#9CA3AF' : '#6B7280'}
-                                  fontSize={12}
-                                  tickFormatter={(value) => `${value.toFixed(0)}€`}
-                                />
-                                <Tooltip 
-                                  contentStyle={{
-                                    backgroundColor: isDark ? '#374151' : '#FFFFFF',
-                                    borderColor: isDark ? '#4B5563' : '#D1D5DB',
-                                    color: isDark ? '#F3F4F6' : '#111827'
-                                  }}
-                                  formatter={(value, name) => [`${value.toFixed(2)}€`, name === 'ingresos' ? 'Ingresos' : name === 'gastos' ? 'Gastos' : 'Balance']}
-                                />
-                                <Legend />
-                                <Line 
-                                  type="monotone" 
-                                  dataKey="ingresos" 
-                                  stroke="#10B981" 
-                                  strokeWidth={2}
-                                  name="Ingresos"
-                                  dot={{ fill: '#10B981', strokeWidth: 2 }}
-                                />
-                                <Line 
-                                  type="monotone" 
-                                  dataKey="gastos" 
-                                  stroke="#EF4444" 
-                                  strokeWidth={2}
-                                  name="Gastos"
-                                  dot={{ fill: '#EF4444', strokeWidth: 2 }}
-                                />
-                                <Line 
-                                  type="monotone" 
-                                  dataKey="balance" 
-                                  stroke="#3B82F6" 
-                                  strokeWidth={2}
-                                  name="Balance"
-                                  dot={{ fill: '#3B82F6', strokeWidth: 2 }}
-                                />
-                              </LineChart>
-                            </ResponsiveContainer>
-                          </div>
-                        </div>
-
-                        {/* Gráfico de barras - Comparación mensual */}
-                        <div>
-                          <h4 className={`text-lg font-medium mb-4 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
-                            Comparación Mensual
-                          </h4>
-                          <div className="h-80">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart data={datosOrdenados} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#4B5563' : '#E5E7EB'} />
-                                <XAxis 
-                                  dataKey="mes" 
-                                  stroke={isDark ? '#9CA3AF' : '#6B7280'}
-                                  fontSize={12}
-                                />
-                                <YAxis 
-                                  stroke={isDark ? '#9CA3AF' : '#6B7280'}
-                                  fontSize={12}
-                                  tickFormatter={(value) => `${value.toFixed(0)}€`}
-                                />
-                                <Tooltip 
-                                  contentStyle={{
-                                    backgroundColor: isDark ? '#374151' : '#FFFFFF',
-                                    borderColor: isDark ? '#4B5563' : '#D1D5DB',
-                                    color: isDark ? '#F3F4F6' : '#111827'
-                                  }}
-                                  formatter={(value, name) => [`${value.toFixed(2)}€`, name === 'ingresos' ? 'Ingresos' : 'Gastos']}
-                                />
-                                <Legend />
-                                <Bar dataKey="ingresos" fill="#10B981" name="Ingresos" />
-                                <Bar dataKey="gastos" fill="#EF4444" name="Gastos" />
-                              </BarChart>
-                            </ResponsiveContainer>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
                 
                 
                 {(() => {
@@ -5972,7 +5641,7 @@ function App({
                         <div className={`p-6 rounded-lg border ${
                           isDark ? 'bg-gray-700 border-gray-600' : 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
                         }`}>
-                          <div className={`text-2xl font-bold ${ingresosTotales - gastosTotales >= 0 ? 'text-green-500' : 'text-red-500'} mb-2`}>
+                          <div className="text-2xl font-bold text-blue-500 mb-2">
                             {formatEuro(ingresosTotales - gastosTotales)}
                           </div>
                           <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -6080,6 +5749,130 @@ function App({
                               )
                             })}
                         </div>
+                        
+                        {/* Análisis de Gastos por Categoría */}
+                        <div className="mt-6 space-y-4">
+                          <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            Análisis de Gastos por Categoría
+                          </h4>
+                          
+                          {(() => {
+                            // Calcular gastos por etiqueta y estadísticas
+                            const gastosPorEtiquetaAnalisis = {};
+                            const currentYearAnalisis = new Date().getFullYear();
+                            
+                            movimientos.forEach(mov => {
+                              mov.gastos.forEach(gasto => {
+                                gastosPorEtiquetaAnalisis[gasto.etiqueta] = (gastosPorEtiquetaAnalisis[gasto.etiqueta] || 0) + gasto.monto;
+                              });
+                            });
+                            
+                            const gastosOrdenados = Object.entries(gastosPorEtiquetaAnalisis)
+                              .filter(([, monto]) => monto > 0)
+                              .sort(([,a], [,b]) => b - a);
+                            
+                            const totalGastosAnalisis = gastosOrdenados.reduce((sum, [, monto]) => sum + monto, 0);
+
+                            if (gastosOrdenados.length === 0) {
+                              return (
+                                <div className={`p-6 text-center rounded-lg border ${
+                                  isDark ? 'border-gray-600 bg-gray-800' : 'border-gray-200 bg-white'
+                                }`}>
+                                  <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    No hay gastos registrados para mostrar estadísticas
+                                  </p>
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <>
+                                {/* Resumen total de gastos */}
+                                <div className={`p-4 rounded-lg border ${
+                                  isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-red-200'
+                                }`}>
+                                  <div className="text-2xl font-bold text-red-500 mb-1">
+                                    {formatEuro(totalGastosAnalisis)}
+                                  </div>
+                                  <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    Total gastado {currentYearAnalisis}
+                                  </div>
+                                </div>
+
+                                {/* Lista de categorías con barras de progreso */}
+                                <div className="space-y-3">
+                                  {gastosOrdenados.slice(0, 10).map(([etiqueta, monto], index) => {
+                                    const porcentaje = (monto / totalGastosAnalisis) * 100;
+                                    const esEsencial = etiquetasEsenciales.includes(etiqueta.toLowerCase());
+                                    
+                                    return (
+                                      <div key={etiqueta} className={`p-4 rounded-lg border ${
+                                        isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'
+                                      } hover:shadow-md transition-shadow`}>
+                                        <div className="flex items-center justify-between mb-2">
+                                          <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                                              index === 0 ? 'bg-red-500' : 
+                                              index === 1 ? 'bg-orange-500' : 
+                                              index === 2 ? 'bg-yellow-500' : 
+                                              'bg-gray-500'
+                                            }`}>
+                                              {index + 1}
+                                            </div>
+                                            <div>
+                                              <div className={`font-medium ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
+                                                {etiqueta}
+                                                {esEsencial && (
+                                                  <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-100 text-blue-800">
+                                                    Esencial
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                {porcentaje.toFixed(1)}% del total
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="text-right">
+                                            <div className="font-bold text-red-500 text-lg">
+                                              {formatEuro(monto)}
+                                            </div>
+                                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                              {formatEuro(monto / 12)}/mes
+                                            </div>
+                                          </div>
+                                        </div>
+                                        
+                                        {/* Barra de progreso */}
+                                        <div className={`w-full h-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                                          <div 
+                                            className={`h-full rounded-full transition-all duration-300 ${
+                                              index === 0 ? 'bg-red-500' : 
+                                              index === 1 ? 'bg-orange-500' : 
+                                              index === 2 ? 'bg-yellow-500' : 
+                                              'bg-blue-500'
+                                            }`}
+                                            style={{ width: `${Math.min(porcentaje, 100)}%` }}
+                                          />
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                  
+                                  {gastosOrdenados.length > 10 && (
+                                    <div className={`p-3 text-center rounded-lg ${
+                                      isDark ? 'bg-gray-800 border border-gray-600' : 'bg-gray-50 border border-gray-200'
+                                    }`}>
+                                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        ... y {gastosOrdenados.length - 10} categorías más
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </div>
                       </div>
                       
                       {/* Comparación mensual */}
@@ -6087,37 +5880,243 @@ function App({
                         <h3 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                           Evolución Mensual
                         </h3>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           {meses.map(mes => {
                             const datos = datosPorMes[mes]
                             const balance = datos.ingresos - datos.gastos
                             
                             return (
-                              <div key={mes} className={`p-4 rounded-lg border ${
+                              <div key={mes} className={`p-6 rounded-lg border ${
                                 isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'
-                              }`}>
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className={`font-medium ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
+                              } hover:shadow-md transition-shadow`}>
+                                <div className="flex justify-between items-center mb-4">
+                                  <span className={`font-semibold text-lg ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
                                     {new Date(mes + '-01').toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })}
                                   </span>
-                                  <div className={`font-bold ${balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                  <div className={`font-bold text-xl text-blue-500`}>
                                     {formatEuro(balance)}
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>Ingresos: </span>
-                                    <span className="text-green-500 font-medium">{formatEuro(datos.ingresos)}</span>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-green-500 font-medium">Ingresos:</span>
+                                    <span className="font-semibold text-green-500 text-lg">
+                                      {formatEuro(datos.ingresos)}
+                                    </span>
                                   </div>
-                                  <div>
-                                    <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>Gastos: </span>
-                                    <span className="text-red-500 font-medium">{formatEuro(datos.gastos)}</span>
+                                  <div className="flex items-center">
+                                    <div className={`w-px h-8 mr-6 ${
+                                      isDark 
+                                        ? 'bg-gradient-to-b from-transparent via-gray-500/30 to-transparent' 
+                                        : 'bg-gradient-to-b from-transparent via-gray-300/40 to-transparent'
+                                    }`}></div>
+                                    <div className="flex justify-between items-center flex-1">
+                                      <span className="text-red-500 font-medium">Gastos:</span>
+                                      <span className="font-semibold text-red-500 text-lg">
+                                        {formatEuro(datos.gastos)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="mt-4">
+                                  <div className={`h-px w-full mb-3 ${
+                                    isDark 
+                                      ? 'bg-gradient-to-r from-transparent via-blue-400/30 to-transparent' 
+                                      : 'bg-gradient-to-r from-transparent via-blue-500/40 to-transparent'
+                                  }`}></div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-medium text-blue-500">Balance:</span>
+                                    <span className="font-bold text-blue-500 text-xl">
+                                      {formatEuro(balance)}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
                             )
                           })}
                         </div>
+                      </div>
+                      
+                      {/* Análisis por día de la semana */}
+                      <div className={`p-6 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                        <h3 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          Análisis por Día de la Semana
+                        </h3>
+                        
+                        {(() => {
+                          // Datos por día de la semana
+                          const datosPorDiaSemana = {
+                            0: { nombre: 'Domingo', ingresos: 0, gastos: 0, count: 0 },
+                            1: { nombre: 'Lunes', ingresos: 0, gastos: 0, count: 0 },
+                            2: { nombre: 'Martes', ingresos: 0, gastos: 0, count: 0 },
+                            3: { nombre: 'Miércoles', ingresos: 0, gastos: 0, count: 0 },
+                            4: { nombre: 'Jueves', ingresos: 0, gastos: 0, count: 0 },
+                            5: { nombre: 'Viernes', ingresos: 0, gastos: 0, count: 0 },
+                            6: { nombre: 'Sábado', ingresos: 0, gastos: 0, count: 0 }
+                          }
+                          
+                          // Procesar movimientos por día de la semana
+                          movimientos.forEach(mov => {
+                            const fecha = new Date(mov.fecha)
+                            const diaSemana = fecha.getDay()
+                            
+                            const totalIngresos = mov.ingresos.reduce((sum, ingreso) => sum + ingreso.monto, 0)
+                            const totalGastos = mov.gastos.reduce((sum, gasto) => sum + gasto.monto, 0)
+                            
+                            if (totalIngresos > 0 || totalGastos > 0) {
+                              datosPorDiaSemana[diaSemana].ingresos += totalIngresos
+                              datosPorDiaSemana[diaSemana].gastos += totalGastos
+                              datosPorDiaSemana[diaSemana].count += 1
+                            }
+                          })
+                          
+                          // Convertir a array y calcular medias
+                          const datosArray = Object.entries(datosPorDiaSemana).map(([dia, datos]) => ({
+                            dia: datos.nombre,
+                            mediaIngresos: datos.count > 0 ? datos.ingresos / datos.count : 0,
+                            mediaGastos: datos.count > 0 ? datos.gastos / datos.count : 0,
+                            mediaBalance: datos.count > 0 ? (datos.ingresos - datos.gastos) / datos.count : 0,
+                            count: datos.count
+                          }))
+                          
+                          return (
+                            <>
+                              {/* KPIs por día de la semana */}
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                {(() => {
+                                  const mejorDiaIngresos = datosArray.reduce((max, dia) => 
+                                    dia.mediaIngresos > max.mediaIngresos ? dia : max
+                                  )
+                                  const mejorDiaBalance = datosArray.reduce((max, dia) => 
+                                    dia.mediaBalance > max.mediaBalance ? dia : max
+                                  )
+                                  const peorDiaGastos = datosArray.reduce((min, dia) => 
+                                    dia.count > 0 && dia.mediaGastos > min.mediaGastos ? dia : min
+                                  )
+                                  
+                                  return (
+                                    <>
+                                      <div className={`p-4 rounded-lg border ${
+                                        isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-green-200'
+                                      }`}>
+                                        <div className="text-xl font-bold text-green-500 mb-1">
+                                          {mejorDiaIngresos.dia}
+                                        </div>
+                                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                                          Mejor día para ingresos
+                                        </div>
+                                        <div className="text-sm text-green-500 font-medium">
+                                          {formatEuro(mejorDiaIngresos.mediaIngresos)} media
+                                        </div>
+                                      </div>
+                                      
+                                      <div className={`p-4 rounded-lg border ${
+                                        isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-blue-200'
+                                      }`}>
+                                        <div className="text-xl font-bold text-blue-500 mb-1">
+                                          {mejorDiaBalance.dia}
+                                        </div>
+                                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                                          Mejor día para balance
+                                        </div>
+                                        <div className="text-sm text-blue-500 font-medium">
+                                          {formatEuro(mejorDiaBalance.mediaBalance)} media
+                                        </div>
+                                      </div>
+                                      
+                                      <div className={`p-4 rounded-lg border ${
+                                        isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-red-200'
+                                      }`}>
+                                        <div className="text-xl font-bold text-red-500 mb-1">
+                                          {peorDiaGastos.dia}
+                                        </div>
+                                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                                          Día con más gastos
+                                        </div>
+                                        <div className="text-sm text-red-500 font-medium">
+                                          {formatEuro(peorDiaGastos.mediaGastos)} media
+                                        </div>
+                                      </div>
+                                    </>
+                                  )
+                                })()}
+                              </div>
+                              
+                              {/* Gráfico de barras */}
+                              <div className="h-80">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <BarChart data={datosArray} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#4B5563' : '#E5E7EB'} />
+                                    <XAxis 
+                                      dataKey="dia" 
+                                      stroke={isDark ? '#9CA3AF' : '#6B7280'}
+                                      fontSize={12}
+                                      angle={-45}
+                                      textAnchor="end"
+                                      height={60}
+                                    />
+                                    <YAxis 
+                                      stroke={isDark ? '#9CA3AF' : '#6B7280'}
+                                      fontSize={12}
+                                      tickFormatter={(value) => `${value.toFixed(0)}€`}
+                                    />
+                                    <Tooltip 
+                                      contentStyle={{
+                                        backgroundColor: isDark ? '#374151' : '#FFFFFF',
+                                        borderColor: isDark ? '#4B5563' : '#D1D5DB',
+                                        color: isDark ? '#F3F4F6' : '#111827'
+                                      }}
+                                      formatter={(value, name) => [
+                                        `${value.toFixed(2)}€`, 
+                                        name === 'mediaIngresos' ? 'Media Ingresos' : 
+                                        name === 'mediaGastos' ? 'Media Gastos' : 'Media Balance'
+                                      ]}
+                                      labelFormatter={(label) => `${label} (${datosArray.find(d => d.dia === label)?.count} días)`}
+                                    />
+                                    <Legend />
+                                    <Bar dataKey="mediaIngresos" fill="#10B981" name="Media Ingresos" />
+                                    <Bar dataKey="mediaGastos" fill="#EF4444" name="Media Gastos" />
+                                    <Bar dataKey="mediaBalance" fill="#3B82F6" name="Media Balance" />
+                                  </BarChart>
+                                </ResponsiveContainer>
+                              </div>
+                              
+                              {/* Tabla detallada */}
+                              <div className="mt-6 space-y-2">
+                                {datosArray.map((dia) => (
+                                  <div key={dia.dia} className={`p-4 rounded-lg border ${
+                                    isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'
+                                  }`}>
+                                    <div className="flex justify-between items-center">
+                                      <span className={`font-medium ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
+                                        {dia.dia}
+                                      </span>
+                                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        {dia.count} días con movimientos
+                                      </span>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-4 text-sm mt-2">
+                                      <div>
+                                        <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>Media Ingresos: </span>
+                                        <span className="text-green-500 font-medium">{formatEuro(dia.mediaIngresos)}</span>
+                                      </div>
+                                      <div>
+                                        <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>Media Gastos: </span>
+                                        <span className="text-red-500 font-medium">{formatEuro(dia.mediaGastos)}</span>
+                                      </div>
+                                      <div>
+                                        <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>Media Balance: </span>
+                                        <span className="text-blue-500 font-medium">{formatEuro(dia.mediaBalance)}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )
+                        })()}
                       </div>
                     </div>
                   )
