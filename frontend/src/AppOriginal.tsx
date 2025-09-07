@@ -1016,12 +1016,19 @@ const EditModal = ({ isOpen, onClose, movimiento: originalMovimiento, isDark, on
                 </div>
                 <button
                   onClick={() => setShowAddForm('ingreso')}
-                  className="p-2 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors"
+                  className={`group relative overflow-hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isDark
+                      ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-md hover:shadow-green-500/25 hover:from-green-500 hover:to-green-400'
+                      : 'bg-gradient-to-r from-green-500 to-green-400 text-white shadow-md hover:shadow-green-400/25 hover:from-green-400 hover:to-green-300'
+                  }`}
                   title="Agregar ingreso"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                  </svg>
+                  <span className="relative z-10 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                    </svg>
+                    Agregar Ingreso
+                  </span>
                 </button>
               </div>
 
@@ -1092,19 +1099,33 @@ const EditModal = ({ isOpen, onClose, movimiento: originalMovimiento, isDark, on
                     <div className="flex gap-2">
                       <button
                         onClick={handleAddItem}
-                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                        className={`group relative overflow-hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          isDark
+                            ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-md hover:shadow-green-500/25 hover:from-green-500 hover:to-green-400'
+                            : 'bg-gradient-to-r from-green-500 to-green-400 text-white shadow-md hover:shadow-green-400/25 hover:from-green-400 hover:to-green-300'
+                        }`}
                       >
-                        Agregar
+                        <span className="relative z-10 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                          </svg>
+                          Agregar
+                        </span>
                       </button>
                       <button
                         onClick={() => setShowAddForm(null)}
-                        className={`px-4 py-2 rounded transition-colors ${
-                          isDark 
-                            ? 'bg-gray-600 text-gray-300 hover:bg-gray-500' 
-                            : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                        className={`group relative overflow-hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          isDark
+                            ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-md hover:shadow-gray-500/25 hover:from-gray-500 hover:to-gray-400'
+                            : 'bg-gradient-to-r from-gray-500 to-gray-400 text-white shadow-md hover:shadow-gray-400/25 hover:from-gray-400 hover:to-gray-300'
                         }`}
                       >
-                        Cancelar
+                        <span className="relative z-10 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Cancelar
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -1180,9 +1201,8 @@ const EditModal = ({ isOpen, onClose, movimiento: originalMovimiento, isDark, on
                             className="group p-2 rounded-lg hover:bg-red-500/10 transition-colors"
                             title="Eliminar ingreso"
                           >
-                            <svg className="w-4 h-4 text-red-500 group-hover:text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            <svg className="w-5 h-5 text-red-500 group-hover:text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>
                           </button>
                         </div>
@@ -1212,12 +1232,19 @@ const EditModal = ({ isOpen, onClose, movimiento: originalMovimiento, isDark, on
                 </div>
                 <button
                   onClick={() => setShowAddForm('gasto')}
-                  className="p-2 rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors"
+                  className={`group relative overflow-hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isDark
+                      ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md hover:shadow-red-500/25 hover:from-red-500 hover:to-red-400'
+                      : 'bg-gradient-to-r from-red-500 to-red-400 text-white shadow-md hover:shadow-red-400/25 hover:from-red-400 hover:to-red-300'
+                  }`}
                   title="Agregar gasto"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                  </svg>
+                  <span className="relative z-10 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                    </svg>
+                    Agregar Gasto
+                  </span>
                 </button>
               </div>
 
@@ -1270,19 +1297,33 @@ const EditModal = ({ isOpen, onClose, movimiento: originalMovimiento, isDark, on
                     <div className="flex gap-2">
                       <button
                         onClick={handleAddItem}
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                        className={`group relative overflow-hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          isDark
+                            ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md hover:shadow-red-500/25 hover:from-red-500 hover:to-red-400'
+                            : 'bg-gradient-to-r from-red-500 to-red-400 text-white shadow-md hover:shadow-red-400/25 hover:from-red-400 hover:to-red-300'
+                        }`}
                       >
-                        Agregar
+                        <span className="relative z-10 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                          </svg>
+                          Agregar
+                        </span>
                       </button>
                       <button
                         onClick={() => setShowAddForm(null)}
-                        className={`px-4 py-2 rounded transition-colors ${
-                          isDark 
-                            ? 'bg-gray-600 text-gray-300 hover:bg-gray-500' 
-                            : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                        className={`group relative overflow-hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          isDark
+                            ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-md hover:shadow-gray-500/25 hover:from-gray-500 hover:to-gray-400'
+                            : 'bg-gradient-to-r from-gray-500 to-gray-400 text-white shadow-md hover:shadow-gray-400/25 hover:from-gray-400 hover:to-gray-300'
                         }`}
                       >
-                        Cancelar
+                        <span className="relative z-10 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Cancelar
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -1358,9 +1399,8 @@ const EditModal = ({ isOpen, onClose, movimiento: originalMovimiento, isDark, on
                             className="group p-2 rounded-lg hover:bg-red-500/10 transition-colors"
                             title="Eliminar gasto"
                           >
-                            <svg className="w-4 h-4 text-red-500 group-hover:text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            <svg className="w-5 h-5 text-red-500 group-hover:text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>
                           </button>
                         </div>
@@ -1382,9 +1422,7 @@ const EditModal = ({ isOpen, onClose, movimiento: originalMovimiento, isDark, on
               <span className={`text-lg font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                 Balance del día:
               </span>
-              <span className={`text-2xl font-bold ${
-                editedMovimiento.balance >= 0 ? 'text-green-500' : 'text-red-500'
-              }`}>
+              <span className="text-2xl font-bold text-blue-500">
                 {formatEuro(editedMovimiento.balance)}
               </span>
             </div>
@@ -1392,19 +1430,33 @@ const EditModal = ({ isOpen, onClose, movimiento: originalMovimiento, isDark, on
             <div className="flex gap-3 justify-end">
               <button
                 onClick={onClose}
-                className={`px-6 py-2 rounded-lg transition-colors ${
-                  isDark 
-                    ? 'bg-gray-600 text-gray-300 hover:bg-gray-500' 
-                    : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                className={`group relative overflow-hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isDark
+                    ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-md hover:shadow-gray-500/25 hover:from-gray-500 hover:to-gray-400'
+                    : 'bg-gradient-to-r from-gray-500 to-gray-400 text-white shadow-md hover:shadow-gray-400/25 hover:from-gray-400 hover:to-gray-300'
                 }`}
               >
-                Cancelar
+                <span className="relative z-10 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Cancelar
+                </span>
               </button>
               <button
                 onClick={handleSave}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className={`group relative overflow-hidden px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isDark
+                    ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-md hover:shadow-emerald-500/25 hover:from-emerald-500 hover:to-emerald-400'
+                    : 'bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-md hover:shadow-emerald-400/25 hover:from-emerald-400 hover:to-emerald-300'
+                }`}
               >
-                Guardar Cambios
+                <span className="relative z-10 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Guardar Cambios
+                </span>
               </button>
             </div>
           </div>
@@ -3178,9 +3230,9 @@ function App({
 
       let endpoint = ''
       if (tipo === 'ingreso') {
-        endpoint = `${API_BASE_URL}/movimientos/${movimiento.fecha}/ingreso/${itemId}`
+        endpoint = `${API_BASE_URL}/movimientos/${movimientoId}/ingreso/${itemId}`
       } else {
-        endpoint = `${API_BASE_URL}/movimientos/${movimiento.fecha}/gasto/${itemId}`
+        endpoint = `${API_BASE_URL}/movimientos/${movimientoId}/gasto/${itemId}`
       }
 
       const response = await axios.delete(endpoint)
@@ -4315,11 +4367,7 @@ function App({
                         <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                           Balance final:
                         </span>
-                        <span className={`font-bold text-lg ${
-                          (tempIncomes.reduce((sum, item) => sum + item.monto, 0) - tempExpenses.reduce((sum, item) => sum + item.monto, 0)) >= 0 
-                            ? 'text-green-500' 
-                            : 'text-red-500'
-                        }`}>
+                        <span className="font-bold text-lg text-blue-500">
                           {formatEuro(tempIncomes.reduce((sum, item) => sum + item.monto, 0) - tempExpenses.reduce((sum, item) => sum + item.monto, 0))}
                         </span>
                       </div>
@@ -4442,9 +4490,7 @@ function App({
                                   </div>
                                 )}
                               </div>
-                              <div className={`text-lg font-bold ml-auto ${
-                                movimiento.balance >= 0 ? 'text-green-500' : 'text-red-500'
-                              }`}>
+                              <div className="text-lg font-bold ml-auto text-blue-500">
                                 Balance: {formatEuro(movimiento.balance)}
                               </div>
                             </div>
@@ -4770,9 +4816,7 @@ function App({
                                 </div>
                               )}
                             </div>
-                            <div className={`text-lg font-bold ml-auto ${
-                              movimiento.balance >= 0 ? 'text-green-500' : 'text-red-500'
-                            }`}>
+                            <div className="text-lg font-bold ml-auto text-blue-500">
                               Balance: {formatEuro(movimiento.balance)}
                             </div>
                           </div>
@@ -4941,7 +4985,16 @@ function App({
                         <div key={etiqueta} className={`flex justify-between items-center p-3 rounded-lg border ${
                           isDark ? 'bg-gray-700 border-gray-600' : 'bg-green-50 border-green-200'
                         }`}>
-                          <span className={isDark ? 'text-gray-200' : 'text-gray-800'}>{etiqueta}</span>
+                          <div className="flex items-center gap-3">
+                            <span className={isDark ? 'text-gray-200' : 'text-gray-800'}>{etiqueta}</span>
+                            {etiquetasEsenciales.includes(etiqueta.toLowerCase()) && (
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                isDark ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' : 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+                              }`}>
+                                Esencial
+                              </span>
+                            )}
+                          </div>
                           <div className="flex gap-3">
                             <button
                               onClick={() => handleViewTag('ingreso', etiqueta)}
@@ -5002,7 +5055,16 @@ function App({
                         <div key={etiqueta} className={`flex justify-between items-center p-3 rounded-lg border ${
                           isDark ? 'bg-gray-700 border-gray-600' : 'bg-red-50 border-red-200'
                         }`}>
-                          <span className={isDark ? 'text-gray-200' : 'text-gray-800'}>{etiqueta}</span>
+                          <div className="flex items-center gap-3">
+                            <span className={isDark ? 'text-gray-200' : 'text-gray-800'}>{etiqueta}</span>
+                            {etiquetasEsenciales.includes(etiqueta.toLowerCase()) && (
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                isDark ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' : 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+                              }`}>
+                                Esencial
+                              </span>
+                            )}
+                          </div>
                           <div className="flex gap-3">
                             <button
                               onClick={() => handleViewTag('gasto', etiqueta)}
