@@ -49,5 +49,6 @@ class Etiqueta(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True, nullable=False)
+    tipo = Column(String, nullable=False, default='gasto', index=True)  # 'gasto' o 'ingreso'
     es_predefinida = Column(Boolean, default=False)
     es_esencial = Column(Boolean, default=False)

@@ -4,6 +4,9 @@ import { parseISO } from 'date-fns'
 import 'react-datepicker/dist/react-datepicker.css'
 import './datepicker.css'
 
+// Servicios API
+import { fetchEtiquetas, createEtiqueta, formatEtiquetasForLegacy, type Etiqueta } from './services/etiquetasApi'
+
 // Componentes reutilizables
 import Navigation from './components/layout/Navigation'
 import ConfirmModal from './components/modals/ConfirmModal'
@@ -99,6 +102,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   const [selectedMonthYear, setSelectedMonthYear] = useState({ month: new Date().getMonth(), year: new Date().getFullYear() })
   
   // Estados para etiquetas
+  const [etiquetasCompletas, setEtiquetasCompletas] = useState<Etiqueta[]>([])
   const [etiquetas, setEtiquetas] = useState<{ingresos: string[], gastos: string[]}>({
     ingresos: [],
     gastos: []
@@ -152,27 +156,35 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   }
 
   // Función para obtener etiquetas
-  const fetchEtiquetas = async () => {
+  const fetchEtiquetasFromAPI = async () => {
     try {
-      const response = await axios.get('/api/etiquetas/')
-      if (response.data && Array.isArray(response.data)) {
-        // Transformar array de etiquetas en formato esperado
-        const nombresEtiquetas = response.data.map(etiqueta => etiqueta.nombre)
-        setEtiquetas({
-          ingresos: nombresEtiquetas,
-          gastos: nombresEtiquetas
-        })
-        console.log('✅ Etiquetas loaded and transformed:', nombresEtiquetas.length, 'etiquetas')
-      }
+      console.log('🔄 Fetching etiquetas from API...')
+      const etiquetasData = await fetchEtiquetas()
+      
+      // Guardar etiquetas completas
+      setEtiquetasCompletas(etiquetasData)
+      
+      // Convertir a formato legacy para compatibilidad
+      const etiquetasLegacy = formatEtiquetasForLegacy(etiquetasData)
+      setEtiquetas(etiquetasLegacy)
+      
+      console.log('✅ Etiquetas loaded:', {
+        total: etiquetasData.length,
+        ingresos: etiquetasLegacy.ingresos.length,
+        gastos: etiquetasLegacy.gastos.length
+      })
     } catch (error) {
-      console.error('Error al obtener etiquetas:', error)
+      console.error('❌ Error al obtener etiquetas:', error)
+      // Mantener arrays vacíos en caso de error
+      setEtiquetas({ ingresos: [], gastos: [] })
+      setEtiquetasCompletas([])
     }
   }
 
   // Cargar datos al iniciar
   useEffect(() => {
     fetchMovimientos()
-    fetchEtiquetas()
+    fetchEtiquetasFromAPI()
   }, [])
 
 
@@ -396,30 +408,56 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     setShowCreateTagModal(true)
   }
 
-  const handleCreateTagConfirm = (tagName: string) => {
-    // Actualizar las etiquetas localmente
-    if (createTagType === 'ingreso') {
-      setEtiquetas(prev => ({ ...prev, ingresos: [...prev.ingresos, tagName] }))
-      // Para el EditModal (código legacy)
-      if (pendingTagField === 'newIncome.etiqueta') {
-        setNewIncome(prev => ({ ...prev, etiqueta: tagName }))
+  const handleCreateTagConfirm = async (tagName: string) => {
+    try {
+      console.log('🔄 Creando etiqueta:', tagName, 'tipo:', createTagType)
+      
+      // Crear etiqueta en backend
+      const nuevaEtiqueta = await createEtiqueta({
+        nombre: tagName.trim(),
+        tipo: createTagType,
+        es_predefinida: false,
+        es_esencial: false
+      })
+      
+      console.log('✅ Etiqueta creada exitosamente:', nuevaEtiqueta)
+      
+      // Actualizar estado completo de etiquetas
+      setEtiquetasCompletas(prev => [...prev, nuevaEtiqueta])
+      
+      // Actualizar formato legacy
+      if (createTagType === 'ingreso') {
+        setEtiquetas(prev => ({ ...prev, ingresos: [...prev.ingresos, tagName] }))
+        // Para el EditModal (código legacy)
+        if (pendingTagField === 'newIncome.etiqueta') {
+          setNewIncome(prev => ({ ...prev, etiqueta: tagName }))
+        }
+      } else {
+        setEtiquetas(prev => ({ ...prev, gastos: [...prev.gastos, tagName] }))
+        // Para el EditModal (código legacy)
+        if (pendingTagField === 'newExpense.etiqueta') {
+          setNewExpense(prev => ({ ...prev, etiqueta: tagName }))
+        }
       }
-    } else {
-      setEtiquetas(prev => ({ ...prev, gastos: [...prev.gastos, tagName] }))
-      // Para el EditModal (código legacy)
-      if (pendingTagField === 'newExpense.etiqueta') {
-        setNewExpense(prev => ({ ...prev, etiqueta: tagName }))
-      }
-    }
 
-    console.log('🏷️ Nueva etiqueta creada:', tagName, 'tipo:', createTagType, 'field:', pendingTagField)
-    
-    // Notificar al AddMovementForm sobre la nueva etiqueta (se implementará via prop)
-    handleNewTagCreatedCallback(pendingTagField, tagName)
-    
-    // Cerrar modal
-    setShowCreateTagModal(false)
-    setPendingTagField('')
+      // Notificar al AddMovementForm sobre la nueva etiqueta
+      handleNewTagCreatedCallback(pendingTagField, tagName)
+      
+      // Cerrar modal
+      setShowCreateTagModal(false)
+      setPendingTagField('')
+      
+    } catch (error) {
+      console.error('❌ Error al crear etiqueta:', error)
+      
+      // Mostrar error al usuario
+      let errorMessage = 'Error al crear la etiqueta'
+      if (error.response?.status === 400) {
+        errorMessage = error.response.data.detail || errorMessage
+      }
+      
+      alert(`Error: ${errorMessage}`)
+    }
   }
 
   // Estado para comunicarse con AddMovementForm sobre nuevas etiquetas
@@ -579,6 +617,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 onSaveNewMovement={handleSaveMovementFromForm}
                 etiquetas={etiquetas}
                 onCreateNewTag={handleCreateNewTag}
+                newTagCreated={newTagCreated}
               />
             </div>
             

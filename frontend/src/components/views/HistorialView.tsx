@@ -28,6 +28,7 @@ interface HistorialViewProps {
   }) => void
   etiquetas: { ingresos: string[], gastos: string[] }
   onCreateNewTag: (field: string, tipo: 'ingreso' | 'gasto') => void
+  newTagCreated?: {field: string, tagName: string} | null
 }
 
 const HistorialView: React.FC<HistorialViewProps> = ({
@@ -39,7 +40,8 @@ const HistorialView: React.FC<HistorialViewProps> = ({
   onToggleAddForm,
   onSaveNewMovement,
   etiquetas,
-  onCreateNewTag
+  onCreateNewTag,
+  newTagCreated
 }) => {
   console.log('📋 HistorialView render - showAddForm:', showAddForm)
   const today = new Date().toISOString().split('T')[0]
@@ -84,6 +86,7 @@ const HistorialView: React.FC<HistorialViewProps> = ({
           onSave={onSaveNewMovement}
           onCancel={onToggleAddForm}
           onCreateNewTag={onCreateNewTag}
+          newTagCreated={newTagCreated}
         />
       )}
       

@@ -71,6 +71,7 @@ class MovimientoResumen(BaseModel):
 # Schema para etiquetas
 class EtiquetaBase(BaseModel):
     nombre: str
+    tipo: str  # 'gasto' o 'ingreso'
 
 class EtiquetaCreate(EtiquetaBase):
     es_predefinida: bool = False
@@ -78,6 +79,7 @@ class EtiquetaCreate(EtiquetaBase):
 
 class EtiquetaUpdate(BaseModel):
     nombre: Optional[str] = None
+    tipo: Optional[str] = None
     es_esencial: Optional[bool] = None
 
 class Etiqueta(EtiquetaBase):

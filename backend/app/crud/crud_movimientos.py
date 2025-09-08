@@ -4,7 +4,7 @@ from typing import List, Optional
 from datetime import date, timedelta
 
 from app.models.models import MovimientoDiario, Ingreso, Gasto, Etiqueta
-from app.models.schemas import MovimientoDiarioCreate, IngresoCreate, GastoCreate, EtiquetaUpdate
+from app.models.schemas import MovimientoDiarioCreate, IngresoCreate, GastoCreate, EtiquetaUpdate, EtiquetaCreate
 
 def get_movimiento_by_fecha(db: Session, fecha: date) -> Optional[MovimientoDiario]:
     """Obtener movimiento por fecha específica"""
@@ -66,7 +66,7 @@ def create_or_update_movimiento(
         db.add(db_ingreso)
         
         # Agregar etiqueta si no existe
-        _ensure_etiqueta_exists(db, ingreso_data.etiqueta)
+        _ensure_etiqueta_exists(db, ingreso_data.etiqueta, 'ingreso')
     
     # Agregar gastos
     for gasto_data in movimiento_data.gastos:
@@ -80,7 +80,7 @@ def create_or_update_movimiento(
         db.add(db_gasto)
         
         # Agregar etiqueta si no existe
-        _ensure_etiqueta_exists(db, gasto_data.etiqueta)
+        _ensure_etiqueta_exists(db, gasto_data.etiqueta, 'gasto')
     
     db.commit()
     db.refresh(db_movimiento)
@@ -188,11 +188,11 @@ def get_etiquetas_frecuentes(
         for item in results
     ]
 
-def _ensure_etiqueta_exists(db: Session, nombre: str):
+def _ensure_etiqueta_exists(db: Session, nombre: str, tipo: str = 'gasto'):
     """Asegurar que una etiqueta existe en la base de datos"""
     etiqueta = db.query(Etiqueta).filter(Etiqueta.nombre == nombre).first()
     if not etiqueta:
-        etiqueta = Etiqueta(nombre=nombre, es_predefinida=False)
+        etiqueta = Etiqueta(nombre=nombre, tipo=tipo, es_predefinida=False)
         db.add(etiqueta)
 
 def get_all_etiquetas(db: Session) -> List[Etiqueta]:
@@ -261,12 +261,18 @@ def init_default_etiquetas(db: Session):
     etiquetas_gastos = ['Luz', 'Agua', 'Comida', 'Transporte', 'Internet', 'Teléfono', 'Alquiler', 'Otros']
     etiquetas_ingresos = ['Sueldo', 'Freelance', 'Ventas', 'Inversiones', 'Regalo', 'Otros']
     
-    todas_etiquetas = etiquetas_gastos + etiquetas_ingresos
-    
-    for nombre in todas_etiquetas:
+    # Crear etiquetas de gastos
+    for nombre in etiquetas_gastos:
         etiqueta_existente = db.query(Etiqueta).filter(Etiqueta.nombre == nombre).first()
         if not etiqueta_existente:
-            etiqueta = Etiqueta(nombre=nombre, es_predefinida=True)
+            etiqueta = Etiqueta(nombre=nombre, tipo='gasto', es_predefinida=True)
+            db.add(etiqueta)
+    
+    # Crear etiquetas de ingresos
+    for nombre in etiquetas_ingresos:
+        etiqueta_existente = db.query(Etiqueta).filter(Etiqueta.nombre == nombre).first()
+        if not etiqueta_existente:
+            etiqueta = Etiqueta(nombre=nombre, tipo='ingreso', es_predefinida=True)
             db.add(etiqueta)
     
     db.commit()
@@ -293,3 +299,16 @@ def get_etiqueta_by_id(db: Session, etiqueta_id: int) -> Optional[Etiqueta]:
 def get_etiqueta_by_nombre(db: Session, nombre: str) -> Optional[Etiqueta]:
     """Obtener etiqueta por nombre"""
     return db.query(Etiqueta).filter(Etiqueta.nombre == nombre).first()
+
+def create_etiqueta(db: Session, etiqueta: EtiquetaCreate) -> Etiqueta:
+    """Crear una nueva etiqueta"""
+    db_etiqueta = Etiqueta(
+        nombre=etiqueta.nombre,
+        tipo=etiqueta.tipo,
+        es_predefinida=etiqueta.es_predefinida,
+        es_esencial=etiqueta.es_esencial
+    )
+    db.add(db_etiqueta)
+    db.commit()
+    db.refresh(db_etiqueta)
+    return db_etiqueta

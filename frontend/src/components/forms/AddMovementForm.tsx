@@ -11,7 +11,7 @@ interface AddMovementFormProps {
   }) => void
   onCancel: () => void
   onCreateNewTag: (field: string, tipo: 'ingreso' | 'gasto') => void
-  onNewTagCreated?: (field: string, tagName: string) => void
+  newTagCreated?: {field: string, tagName: string} | null
 }
 
 const AddMovementForm: React.FC<AddMovementFormProps> = ({ 
@@ -20,7 +20,7 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
   onSave, 
   onCancel, 
   onCreateNewTag,
-  onNewTagCreated
+  newTagCreated
 }) => {
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0])
   const [ingresos, setIngresos] = useState<Array<{ id: number, etiqueta: string, monto: number }>>([])
@@ -29,6 +29,19 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
   const [newGasto, setNewGasto] = useState({ etiqueta: '', monto: '' })
 
   console.log('💰 AddMovementForm render - isDark:', isDark, 'etiquetas:', etiquetas)
+
+  // Effect para auto-seleccionar nueva etiqueta creada
+  useEffect(() => {
+    if (newTagCreated) {
+      console.log('🎯 Auto-seleccionando nueva etiqueta:', newTagCreated)
+      
+      if (newTagCreated.field === 'newIngreso.etiqueta') {
+        setNewIngreso(prev => ({ ...prev, etiqueta: newTagCreated.tagName }))
+      } else if (newTagCreated.field === 'newGasto.etiqueta') {
+        setNewGasto(prev => ({ ...prev, etiqueta: newTagCreated.tagName }))
+      }
+    }
+  }, [newTagCreated])
 
   // Guard clause - if etiquetas is not loaded yet, show loading
   if (!etiquetas || !etiquetas.ingresos || !etiquetas.gastos) {
