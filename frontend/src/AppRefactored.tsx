@@ -245,11 +245,15 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
 
     try {
       await axios.delete(`/api/movimientos/${movimientoToDelete.fecha}`)
-      await fetchMovimientos()
+      
+      // Actualizar estado local inmediatamente (optimización de velocidad)
+      setMovimientos(prev => prev.filter(m => m.fecha !== movimientoToDelete.fecha))
+      
       setShowDeleteConfirm(false)
       setMovimientoToDelete(null)
     } catch (error) {
-      console.error('Error al eliminar movimiento:', error)
+      console.error('❌ Error al eliminar movimiento:', error)
+      alert('Error al eliminar el movimiento. Por favor, inténtalo de nuevo.')
     }
   }
 
@@ -264,7 +268,30 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         : `/api/movimientos/${movimiento.fecha}/gasto/${itemId}`
 
       await axios.delete(endpoint)
-      await fetchMovimientos()
+      
+      // Actualizar estado local inmediatamente (optimización de velocidad)
+      setMovimientos(prev => prev.map(m => {
+        if (m.fecha === movimiento.fecha) {
+          if (tipo === 'ingreso') {
+            const updatedIngresos = m.ingresos.filter(ing => ing.id !== itemId)
+            return {
+              ...m,
+              ingresos: updatedIngresos,
+              ingreso_total: updatedIngresos.reduce((sum, ing) => sum + ing.monto, 0),
+              balance: updatedIngresos.reduce((sum, ing) => sum + ing.monto, 0) - m.total_gastos
+            }
+          } else {
+            const updatedGastos = m.gastos.filter(gas => gas.id !== itemId)
+            return {
+              ...m,
+              gastos: updatedGastos,
+              total_gastos: updatedGastos.reduce((sum, gas) => sum + gas.monto, 0),
+              balance: m.ingreso_total - updatedGastos.reduce((sum, gas) => sum + gas.monto, 0)
+            }
+          }
+        }
+        return m
+      }))
     } catch (error) {
       console.error('Error al eliminar item:', error)
     }
@@ -285,11 +312,27 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         }))
       }
 
-      await axios.post('/api/movimientos/', movimientoData)
-      await fetchMovimientos()
+      const response = await axios.post('/api/movimientos/', movimientoData)
+      const movimientoActualizado = response.data
+      
+      // Actualizar estado local inmediatamente (optimización de velocidad)
+      setMovimientos(prev => 
+        prev.map(m => m.fecha === movimientoActualizado.fecha ? movimientoActualizado : m)
+      )
+      
       setShowEditModal(false)
     } catch (error) {
-      console.error('Error al guardar cambios:', error)
+      console.error('❌ Error al guardar cambios:', error)
+      
+      // Mostrar error específico al usuario
+      let errorMessage = 'Error al guardar los cambios del movimiento'
+      if (error.response?.status === 400) {
+        errorMessage = error.response.data.detail || errorMessage
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Movimiento no encontrado'
+      }
+      
+      alert(`Error: ${errorMessage}`)
     }
   }
 
@@ -357,10 +400,16 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       }
 
       // Enviar al backend
-      await axios.post('/api/movimientos/', nuevoMovimiento)
+      const response = await axios.post('/api/movimientos/', nuevoMovimiento)
+      const movimientoCreado = response.data
       
-      // Recargar movimientos desde el backend
-      await fetchMovimientos()
+      // Actualizar estado local inmediatamente (optimización de velocidad)
+      setMovimientos(prev => {
+        const filtered = prev.filter(m => m.fecha !== newMovementDate)
+        return [movimientoCreado, ...filtered].sort((a, b) => 
+          new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        )
+      })
       
       // Mostrar confetti solo si el balance final es positivo y > 150€
       const balance = ingresoTotal - totalGastos
@@ -503,10 +552,16 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       console.log('📤 Sending to API:', nuevoMovimiento)
 
       // Enviar al backend
-      await axios.post('/api/movimientos/', nuevoMovimiento)
+      const response = await axios.post('/api/movimientos/', nuevoMovimiento)
+      const movimientoCreado = response.data
       
-      // Recargar movimientos desde el backend
-      await fetchMovimientos()
+      // Actualizar estado local inmediatamente (optimización de velocidad)
+      setMovimientos(prev => {
+        const filtered = prev.filter(m => m.fecha !== movement.fecha)
+        return [movimientoCreado, ...filtered].sort((a, b) => 
+          new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        )
+      })
       
       // Mostrar confetti solo si el balance final es positivo y > 150€
       const balance = ingresoTotal - totalGastos
