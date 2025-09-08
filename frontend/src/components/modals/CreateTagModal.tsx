@@ -1,5 +1,12 @@
 import React, { useState } from 'react'
-import { CreateTagModalProps } from '../../types'
+
+interface CreateTagModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: (tagName: string) => void
+  tipo: 'gasto' | 'ingreso'
+  isDark?: boolean
+}
 
 const CreateTagModal: React.FC<CreateTagModalProps> = ({ 
   isOpen, 

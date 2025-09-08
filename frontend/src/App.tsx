@@ -5,8 +5,8 @@ import GlobalThemeProvider from './components/GlobalThemeProvider'
 import LoginModalLarge from './components/modals/LoginModalLarge'
 import './App.css'
 
-// Importar el App.tsx original
-import OriginalApp from './AppOriginal'
+// Importar el App.tsx refactorizado
+import RefactoredApp from './AppRefactored'
 
 function App() {
   const { isAuthenticated, loading, logout, checkSession } = useAuth()
@@ -33,7 +33,7 @@ function App() {
           isDark={isDark}
         />
       ) : (
-        <OriginalApp 
+        <RefactoredApp 
           externalIsDark={isDark}
           onToggleDark={toggleDarkMode}
           onLogout={logout}

@@ -2,6 +2,10 @@ export const formatEuro = (amount: number): string => {
   return `${amount.toFixed(2).replace('.', ',')}€`
 }
 
+export const formatCurrency = (amount: number): string => {
+  return `${amount.toFixed(2)} €`
+}
+
 export const handleNumberChange = (
   value: string,
   setter: (val: string) => void,

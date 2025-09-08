@@ -1,5 +1,15 @@
 import React from 'react'
-import { NumberInputProps } from '../../types'
+
+interface NumberInputProps {
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  step?: number
+  min?: number
+  max?: number
+  className?: string
+  isDark?: boolean
+}
 
 const NumberInput: React.FC<NumberInputProps> = ({
   value,
