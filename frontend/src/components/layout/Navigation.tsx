@@ -1,5 +1,4 @@
 import React from 'react'
-import Button from '../ui/Button'
 
 interface NavigationProps {
   activeSection: string
@@ -26,18 +25,25 @@ const Navigation: React.FC<NavigationProps> = ({
 
   return (
     <div className="flex items-center gap-4">
-      <nav className="flex space-x-4">
+      <nav className="flex space-x-6">
         {navItems.map((item) => (
-          <Button
+          <button
             key={item.key}
             onClick={() => setActiveSection(item.key)}
-            variant="nav"
-            active={activeSection === item.key}
-            isDark={isDark}
-            className={item.key === 'recurrentes' ? 'whitespace-nowrap' : ''}
+            className={`text-lg font-medium transition-colors duration-200 hover:opacity-75 ${
+              item.key === 'recurrentes' ? 'whitespace-nowrap' : ''
+            } ${
+              activeSection === item.key
+                ? isDark 
+                  ? 'text-white border-b-2 border-white' 
+                  : 'text-gray-900 border-b-2 border-gray-900'
+                : isDark
+                  ? 'text-gray-300 hover:text-white'
+                  : 'text-gray-700 hover:text-gray-900'
+            }`}
           >
             {item.label}
-          </Button>
+          </button>
         ))}
       </nav>
       

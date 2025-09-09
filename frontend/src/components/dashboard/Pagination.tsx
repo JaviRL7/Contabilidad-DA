@@ -1,5 +1,5 @@
 import React from 'react'
-import Button from '../ui/Button'
+import GradientButton from '../ui/GradientButton'
 
 interface PaginationProps {
   currentPage: number
@@ -44,7 +44,7 @@ const Pagination: React.FC<PaginationProps> = ({
 
   return (
     <div className="flex justify-center items-center gap-2 mt-6">
-      <Button
+      <GradientButton
         variant="secondary"
         size="sm"
         onClick={onPrev}
@@ -52,18 +52,18 @@ const Pagination: React.FC<PaginationProps> = ({
         isDark={isDark}
       >
         ‹ Anterior
-      </Button>
+      </GradientButton>
       
       {currentPage > 2 && (
         <>
-          <Button
+          <GradientButton
             variant="secondary"
             size="sm"
             onClick={() => onGoToPage(0)}
             isDark={isDark}
           >
             1
-          </Button>
+          </GradientButton>
           {currentPage > 3 && (
             <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>...</span>
           )}
@@ -71,7 +71,7 @@ const Pagination: React.FC<PaginationProps> = ({
       )}
       
       {getVisiblePages().map((page) => (
-        <Button
+        <GradientButton
           key={page}
           variant={page === currentPage ? 'primary' : 'secondary'}
           size="sm"
@@ -80,7 +80,7 @@ const Pagination: React.FC<PaginationProps> = ({
           className="min-w-[2rem]"
         >
           {page + 1}
-        </Button>
+        </GradientButton>
       ))}
       
       {currentPage < totalPages - 3 && (
@@ -88,18 +88,18 @@ const Pagination: React.FC<PaginationProps> = ({
           {currentPage < totalPages - 4 && (
             <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>...</span>
           )}
-          <Button
+          <GradientButton
             variant="secondary"
             size="sm"
             onClick={() => onGoToPage(totalPages - 1)}
             isDark={isDark}
           >
             {totalPages}
-          </Button>
+          </GradientButton>
         </>
       )}
       
-      <Button
+      <GradientButton
         variant="secondary"
         size="sm"
         onClick={onNext}
@@ -107,7 +107,7 @@ const Pagination: React.FC<PaginationProps> = ({
         isDark={isDark}
       >
         Siguiente ›
-      </Button>
+      </GradientButton>
     </div>
   )
 }

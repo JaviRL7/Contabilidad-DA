@@ -1,34 +1,63 @@
-import React, { useState, useEffect } from 'react'
+// ========================================
+// IMPORTS ORDENADOS
+// ========================================
+
+// Librerías externas
+import React, { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
 import { parseISO } from 'date-fns'
 import 'react-datepicker/dist/react-datepicker.css'
 import './datepicker.css'
 
 // Servicios API
-import { fetchEtiquetas, createEtiqueta, formatEtiquetasForLegacy, type Etiqueta } from './services/etiquetasApi'
-
-// Componentes reutilizables
-import Navigation from './components/layout/Navigation'
-import ConfirmModal from './components/modals/ConfirmModal'
-import EditModal from './components/modals/EditModal'
-import CreateTagModal from './components/modals/CreateTagModal'
-
-// Vistas
-import HistorialView from './components/views/HistorialView'
-import BusquedaView from './components/views/BusquedaView'
-import EtiquetasView from './components/views/EtiquetasView'
-import YearlyBreakdownView from './components/views/YearlyBreakdownView'
-
-// Dashboard components
-import SummaryPanel from './components/dashboard/SummaryPanel'
+import { 
+  fetchEtiquetas, 
+  createEtiqueta, 
+  updateEtiqueta, 
+  deleteEtiqueta, 
+  findEtiquetaByName,
+  formatEtiquetasForLegacy, 
+  type Etiqueta 
+} from './services/etiquetasApi'
 
 // Hooks personalizados
 import { useRecurrentes } from './hooks/useRecurrentes'
+import { useRecurrentesPendientes } from './hooks/useRecurrentesPendientes'
+import { useRechazosGastos } from './hooks/useRechazosGastos'
+import { useNotificacionesGastos } from './hooks/useNotificacionesGastos'
 import { useAnalysis } from './hooks/useAnalysis'
 
-// Utilities
+// Componentes de layout y navegación
+import Navigation from './components/layout/Navigation'
+
+// Componentes reutilizables (modales)
+import ConfirmModal from './components/modals/ConfirmModal'
+import EditModal from './components/modals/EditModal'
+import CreateTagModal from './components/modals/CreateTagModal'
+import RecurrentesPendientesModal from './components/modals/RecurrentesPendientesModal'
+
+// Componentes de notificaciones
+import NotificacionGastoAutomatico from './components/notificaciones/NotificacionGastoAutomatico'
+
+// Vistas principales
+import HistorialView from './components/views/HistorialView'
+import BusquedaView from './components/views/BusquedaView'
+import EtiquetasView from './components/views/EtiquetasView'
+import RecurrentesView from './components/views/RecurrentesView'
+import YearlyBreakdownView from './components/views/YearlyBreakdownView'
+import MonthlyBreakdownView from './components/views/MonthlyBreakdownView'
+import AnalysisView from './components/views/AnalysisView'
+
+// Componentes de dashboard
+import SummaryPanel from './components/dashboard/SummaryPanel'
+
+// Utilidades
 import { triggerConfetti } from './utils/confetti'
 import { formatEuro } from './utils/formatters'
+
+// ========================================
+// INTERFACES Y TIPOS
+// ========================================
 
 interface MovimientoDiario {
   id: number
@@ -46,21 +75,38 @@ interface AppRefactoredProps {
   onLogout?: () => void
 }
 
+// ========================================
+// COMPONENTE PRINCIPAL
+// ========================================
+
 const AppRefactored: React.FC<AppRefactoredProps> = ({ 
   externalIsDark = false, 
   onToggleDark,
   onLogout 
 }) => {
-  console.log('AppRefactored render - props:', { externalIsDark, onToggleDark: !!onToggleDark })
-  // Estados principales
+  // ========================================
+  // ESTADOS PRINCIPALES
+  // ========================================
+  
+  // Estados de datos
   const [movimientos, setMovimientos] = useState<MovimientoDiario[]>([])
-  const [activeSection, setActiveSection] = useState('historial')
   const [isLoading, setIsLoading] = useState(true)
+  
+  // Estados de navegación
+  const [activeSection, setActiveSection] = useState('historial')
+  const [showYearlyBreakdown, setShowYearlyBreakdown] = useState(false)
+  const [showMonthlyBreakdown, setShowMonthlyBreakdown] = useState(false)
+  const [selectedMonthYear, setSelectedMonthYear] = useState({ month: 0, year: 2024 })
+  
+  // Estados de UI
   const [isDark, setIsDark] = useState(externalIsDark)
 
-  // Estado para formulario de agregar item (simplificado) - ELIMINADO, ahora usando formulario inline
-
-  // Estados para etiquetas esenciales
+  // ========================================
+  // ESTADOS DE ETIQUETAS
+  // ========================================
+  
+  const [etiquetas, setEtiquetas] = useState({ ingresos: [], gastos: [] })
+  const [etiquetasCompletas, setEtiquetasCompletas] = useState<Etiqueta[]>([])
   const [etiquetasEsenciales, setEtiquetasEsenciales] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem('etiquetasEsenciales')
@@ -74,7 +120,18 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     }
   })
 
-
+  // ========================================
+  // ESTADOS DE FORMULARIOS Y MODALES
+  // ========================================
+  
+  // Estados para formulario de agregar movimiento
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [newMovementDate, setNewMovementDate] = useState(new Date().toISOString().split('T')[0])
+  const [tempIncomes, setTempIncomes] = useState([])
+  const [tempExpenses, setTempExpenses] = useState([])
+  const [newIncome, setNewIncome] = useState({ etiqueta: '', monto: '' })
+  const [newExpense, setNewExpense] = useState({ etiqueta: '', monto: '' })
+  
   // Estados para EditModal
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingMovimiento, setEditingMovimiento] = useState<MovimientoDiario | null>(null)
@@ -82,154 +139,78 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   // Estados para ConfirmModal
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [movimientoToDelete, setMovimientoToDelete] = useState<MovimientoDiario | null>(null)
-
+  const [showCreateConfirm, setShowCreateConfirm] = useState(false)
+  const [pendingMovement, setPendingMovement] = useState(null)
+  
   // Estados para CreateTagModal
   const [showCreateTagModal, setShowCreateTagModal] = useState(false)
-  const [createTagType, setCreateTagType] = useState<'ingreso' | 'gasto'>('ingreso')
-  const [pendingTagField, setPendingTagField] = useState<string>('')
-
-  // Estados para formulario inline de añadir movimiento
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [newMovementDate, setNewMovementDate] = useState(new Date().toISOString().split('T')[0])
-  const [newIncome, setNewIncome] = useState({ etiqueta: '', monto: '' })
-  const [newExpense, setNewExpense] = useState({ etiqueta: '', monto: '' })
-  const [tempIncomes, setTempIncomes] = useState<Array<{id: number, etiqueta: string, monto: number}>>([])
-  const [tempExpenses, setTempExpenses] = useState<Array<{id: number, etiqueta: string, monto: number}>>([])
-
-  // Estados para vistas de desglose
-  const [showMonthlyBreakdown, setShowMonthlyBreakdown] = useState(false)
-  const [showYearlyBreakdown, setShowYearlyBreakdown] = useState(false)
-  const [selectedMonthYear, setSelectedMonthYear] = useState({ month: new Date().getMonth(), year: new Date().getFullYear() })
+  const [pendingTagField, setPendingTagField] = useState('')
+  const [createTagType, setCreateTagType] = useState<'ingreso' | 'gasto'>('gasto')
+  const [newTagCreated, setNewTagCreated] = useState({ field: '', value: '' })
   
-  // Estados para etiquetas
-  const [etiquetasCompletas, setEtiquetasCompletas] = useState<Etiqueta[]>([])
-  const [etiquetas, setEtiquetas] = useState<{ingresos: string[], gastos: string[]}>({
-    ingresos: [],
-    gastos: []
-  })
+  // Estados para RecurrentesPendientesModal
+  const [showRecurrentesPendientes, setShowRecurrentesPendientes] = useState(false)
 
-  // Hooks personalizados
+  // ========================================
+  // HOOKS PERSONALIZADOS
+  // ========================================
+  
   const recurrentes = useRecurrentes()
+  const gastosPendientes = useRecurrentesPendientes(recurrentes.gastosRecurrentes)
+  const rechazosGastos = useRechazosGastos()
+  const notificacionesGastos = useNotificacionesGastos(recurrentes.gastosRecurrentes)
   // const analysis = useAnalysis(movimientos) // Temporalmente deshabilitado para debug
 
-  // Sincronizar tema externo
+  // ========================================
+  // EFECTOS DE INICIALIZACIÓN
+  // ========================================
+  
   useEffect(() => {
     setIsDark(externalIsDark)
   }, [externalIsDark])
 
-  // Función para formatear fecha para la API
-  const formatDateForAPI = (date: Date): string => {
-    return date.toISOString().split('T')[0]
-  }
-
-  // Función para obtener movimientos
-  const fetchMovimientos = async () => {
-    try {
-      console.log('Fetching movimientos...')
-      setIsLoading(true)
-      const response = await axios.get('/api/movimientos/?todos=true&limit=100', {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        timeout: 10000
-      })
-      console.log('Response received:', response.data?.length || 0, 'items')
-      console.log('Response data type:', typeof response.data, 'isArray:', Array.isArray(response.data))
-      console.log('Response status:', response.status, 'headers:', response.headers['content-type'])
-      console.log('First item structure:', JSON.stringify(response.data?.[0], null, 2))
-      
-      if (Array.isArray(response.data)) {
-        setMovimientos(response.data)
-        console.log('✅ Movimientos loaded successfully:', response.data.length)
-      } else {
-        console.error('❌ API returned non-array:', typeof response.data)
-        setMovimientos([])
-      }
-    } catch (error) {
-      console.error('Error al obtener movimientos:', error)
-      setMovimientos([]) // Set empty array on error
-    } finally {
-      console.log('Setting isLoading to false')
-      setIsLoading(false)
-    }
-  }
-
-  // Función para obtener etiquetas
-  const fetchEtiquetasFromAPI = async () => {
-    try {
-      console.log('🔄 Fetching etiquetas from API...')
-      const etiquetasData = await fetchEtiquetas()
-      
-      // Guardar etiquetas completas
-      setEtiquetasCompletas(etiquetasData)
-      
-      // Convertir a formato legacy para compatibilidad
-      const etiquetasLegacy = formatEtiquetasForLegacy(etiquetasData)
-      setEtiquetas(etiquetasLegacy)
-      
-      console.log('✅ Etiquetas loaded:', {
-        total: etiquetasData.length,
-        ingresos: etiquetasLegacy.ingresos.length,
-        gastos: etiquetasLegacy.gastos.length
-      })
-    } catch (error) {
-      console.error('❌ Error al obtener etiquetas:', error)
-      // Mantener arrays vacíos en caso de error
-      setEtiquetas({ ingresos: [], gastos: [] })
-      setEtiquetasCompletas([])
-    }
-  }
-
-  // Cargar datos al iniciar
   useEffect(() => {
-    fetchMovimientos()
-    fetchEtiquetasFromAPI()
+    const loadData = async () => {
+      setIsLoading(true)
+      try {
+        const [movimientosResponse, etiquetasData] = await Promise.all([
+          axios.get('/api/movimientos/'),
+          fetchEtiquetas()
+        ])
+
+        setMovimientos(movimientosResponse.data.sort((a, b) => 
+          new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        ))
+        
+        setEtiquetasCompletas(etiquetasData)
+        setEtiquetas(formatEtiquetasForLegacy(etiquetasData))
+        
+      } catch (error) {
+        console.error('Error loading data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadData()
   }, [])
 
-
-
-
-  // Manejar agregar nuevo item
-  const handleAddItem = async () => {
-    if (!newItem.etiqueta || !newItem.monto || !newItem.tipo) return
-
-    try {
-      const today = new Date().toISOString().split('T')[0]
-      
-      // Buscar o crear movimiento del día
-      let movimientoHoy = movimientos.find(m => m.fecha === today)
-      
-      if (!movimientoHoy) {
-        const response = await axios.post('/api/movimientos/', { fecha: today })
-        movimientoHoy = response.data
-      }
-
-      // Agregar el item al movimiento
-      const itemData = {
-        monto: parseFloat(newItem.monto),
-        etiqueta: newItem.etiqueta,
-        es_recurrente: false
-      }
-
-      const movimientoData = {
-        fecha: today,
-        ingresos: newItem.tipo === 'ingreso' ? [itemData] : [],
-        gastos: newItem.tipo === 'gasto' ? [itemData] : []
-      }
-
-      await axios.post('/api/movimientos/', movimientoData)
-
-      await fetchMovimientos()
-      
-      setShowAddForm(null)
-      setNewItem({tipo: '', etiqueta: '', monto: ''})
-    } catch (error) {
-      console.error('Error al agregar item:', error)
+  // Mostrar gastos pendientes si los hay
+  useEffect(() => {
+    if (gastosPendientes.length > 0) {
+      setShowRecurrentesPendientes(true)
     }
-  }
+  }, [gastosPendientes])
 
-  // Handlers para movimientos completos
+  // Guardar etiquetas esenciales en localStorage
+  useEffect(() => {
+    localStorage.setItem('etiquetasEsenciales', JSON.stringify(etiquetasEsenciales))
+  }, [etiquetasEsenciales])
+
+  // ========================================
+  // HANDLERS DE MOVIMIENTOS
+  // ========================================
+  
   const handleEditMovimiento = (movimiento: MovimientoDiario) => {
     setEditingMovimiento(movimiento)
     setShowEditModal(true)
@@ -244,56 +225,30 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     if (!movimientoToDelete) return
 
     try {
-      await axios.delete(`/api/movimientos/${movimientoToDelete.fecha}`)
-      
-      // Actualizar estado local inmediatamente (optimización de velocidad)
-      setMovimientos(prev => prev.filter(m => m.fecha !== movimientoToDelete.fecha))
-      
+      await axios.delete(`/api/movimientos/${movimientoToDelete.id}/`)
+      setMovimientos(prev => prev.filter(m => m.id !== movimientoToDelete.id))
       setShowDeleteConfirm(false)
       setMovimientoToDelete(null)
     } catch (error) {
-      console.error('❌ Error al eliminar movimiento:', error)
-      alert('Error al eliminar el movimiento. Por favor, inténtalo de nuevo.')
+      console.error('Error al eliminar movimiento:', error)
+      alert('Error al eliminar el movimiento')
     }
   }
 
-  // Handlers para EditModal
-  const handleDeleteItem = async (movimientoId: number, tipo: 'ingreso' | 'gasto', itemId: number) => {
-    const movimiento = movimientos.find(m => m.id === movimientoId)
-    if (!movimiento) return
-
+  const handleDeleteItem = async (tipo: 'ingreso' | 'gasto', itemId: number, movimientoId: number) => {
     try {
-      const endpoint = tipo === 'ingreso'
-        ? `/api/movimientos/${movimiento.fecha}/ingreso/${itemId}`
-        : `/api/movimientos/${movimiento.fecha}/gasto/${itemId}`
-
-      await axios.delete(endpoint)
+      const endpoint = tipo === 'ingreso' ? 'ingresos' : 'gastos'
+      await axios.delete(`/api/${endpoint}/${itemId}/`)
       
-      // Actualizar estado local inmediatamente (optimización de velocidad)
-      setMovimientos(prev => prev.map(m => {
-        if (m.fecha === movimiento.fecha) {
-          if (tipo === 'ingreso') {
-            const updatedIngresos = m.ingresos.filter(ing => ing.id !== itemId)
-            return {
-              ...m,
-              ingresos: updatedIngresos,
-              ingreso_total: updatedIngresos.reduce((sum, ing) => sum + ing.monto, 0),
-              balance: updatedIngresos.reduce((sum, ing) => sum + ing.monto, 0) - m.total_gastos
-            }
-          } else {
-            const updatedGastos = m.gastos.filter(gas => gas.id !== itemId)
-            return {
-              ...m,
-              gastos: updatedGastos,
-              total_gastos: updatedGastos.reduce((sum, gas) => sum + gas.monto, 0),
-              balance: m.ingreso_total - updatedGastos.reduce((sum, gas) => sum + gas.monto, 0)
-            }
-          }
-        }
-        return m
-      }))
+      const response = await axios.get(`/api/movimientos/${movimientoId}/`)
+      const movimientoActualizado = response.data
+      
+      setMovimientos(prev => 
+        prev.map(m => m.id === movimientoId ? movimientoActualizado : m)
+      )
     } catch (error) {
-      console.error('Error al eliminar item:', error)
+      console.error(`Error al eliminar ${tipo}:`, error)
+      alert(`Error al eliminar el ${tipo}`)
     }
   }
 
@@ -302,10 +257,12 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       const movimientoData = {
         fecha: movimiento.fecha,
         ingresos: movimiento.ingresos.map(ing => ({
+          id: ing.id,
           monto: ing.monto,
           etiqueta: ing.etiqueta
         })),
         gastos: movimiento.gastos.map(gas => ({
+          id: gas.id,
           monto: gas.monto,
           etiqueta: gas.etiqueta,
           es_recurrente: gas.es_recurrente || false
@@ -315,16 +272,14 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       const response = await axios.post('/api/movimientos/', movimientoData)
       const movimientoActualizado = response.data
       
-      // Actualizar estado local inmediatamente (optimización de velocidad)
       setMovimientos(prev => 
         prev.map(m => m.fecha === movimientoActualizado.fecha ? movimientoActualizado : m)
       )
       
       setShowEditModal(false)
     } catch (error) {
-      console.error('❌ Error al guardar cambios:', error)
+      console.error('Error al guardar cambios:', error)
       
-      // Mostrar error específico al usuario
       let errorMessage = 'Error al guardar los cambios del movimiento'
       if (error.response?.status === 400) {
         errorMessage = error.response.data.detail || errorMessage
@@ -336,7 +291,10 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     }
   }
 
-  // Handlers para formulario inline de añadir movimiento
+  // ========================================
+  // HANDLERS DE FORMULARIO INLINE
+  // ========================================
+  
   const handleAddNewIncome = () => {
     const monto = parseFloat(newIncome.monto)
     if (!newIncome.etiqueta || isNaN(monto) || monto <= 0) return
@@ -372,7 +330,6 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     }
 
     try {
-      // Crear el movimiento con la fecha seleccionada
       const ingresos = tempIncomes.map(item => ({
         id: item.id,
         etiqueta: item.etiqueta,
@@ -399,11 +356,9 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         balance: ingresoTotal - totalGastos
       }
 
-      // Enviar al backend
       const response = await axios.post('/api/movimientos/', nuevoMovimiento)
       const movimientoCreado = response.data
       
-      // Actualizar estado local inmediatamente (optimización de velocidad)
       setMovimientos(prev => {
         const filtered = prev.filter(m => m.fecha !== newMovementDate)
         return [movimientoCreado, ...filtered].sort((a, b) => 
@@ -411,13 +366,11 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         )
       })
       
-      // Mostrar confetti solo si el balance final es positivo y > 150€
       const balance = ingresoTotal - totalGastos
       if (balance > 150) {
         triggerConfetti()
       }
       
-      // Limpiar el formulario
       setTempIncomes([])
       setTempExpenses([])
       setNewMovementDate(new Date().toISOString().split('T')[0])
@@ -437,20 +390,20 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   }
 
   const handleToggleAddForm = () => {
-    console.log('🔄 Toggle Add Form - Before:', showAddForm)
     setShowAddForm(!showAddForm)
-    console.log('🔄 Toggle Add Form - After:', !showAddForm)
-    // Limpiar formulario al cerrar
     if (showAddForm) {
       setTempIncomes([])
       setTempExpenses([])
       setNewIncome({ etiqueta: '', monto: '' })
       setNewExpense({ etiqueta: '', monto: '' })
       setNewMovementDate(new Date().toISOString().split('T')[0])
-      console.log('🧹 Form cleaned')
     }
   }
 
+  // ========================================
+  // HANDLERS DE ETIQUETAS
+  // ========================================
+  
   const handleCreateNewTag = (field: string, tipo: 'ingreso' | 'gasto') => {
     setPendingTagField(field)
     setCreateTagType(tipo)
@@ -459,9 +412,6 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
 
   const handleCreateTagConfirm = async (tagName: string) => {
     try {
-      console.log('🔄 Creando etiqueta:', tagName, 'tipo:', createTagType)
-      
-      // Crear etiqueta en backend
       const nuevaEtiqueta = await createEtiqueta({
         nombre: tagName.trim(),
         tipo: createTagType,
@@ -469,117 +419,183 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         es_esencial: false
       })
       
-      console.log('✅ Etiqueta creada exitosamente:', nuevaEtiqueta)
-      
-      // Actualizar estado completo de etiquetas
       setEtiquetasCompletas(prev => [...prev, nuevaEtiqueta])
       
-      // Actualizar formato legacy
       if (createTagType === 'ingreso') {
         setEtiquetas(prev => ({ ...prev, ingresos: [...prev.ingresos, tagName] }))
-        // Para el EditModal (código legacy)
         if (pendingTagField === 'newIncome.etiqueta') {
           setNewIncome(prev => ({ ...prev, etiqueta: tagName }))
         }
       } else {
         setEtiquetas(prev => ({ ...prev, gastos: [...prev.gastos, tagName] }))
-        // Para el EditModal (código legacy)
         if (pendingTagField === 'newExpense.etiqueta') {
           setNewExpense(prev => ({ ...prev, etiqueta: tagName }))
         }
       }
 
-      // Notificar al AddMovementForm sobre la nueva etiqueta
       handleNewTagCreatedCallback(pendingTagField, tagName)
-      
-      // Cerrar modal
       setShowCreateTagModal(false)
       setPendingTagField('')
       
     } catch (error) {
-      console.error('❌ Error al crear etiqueta:', error)
-      
-      // Mostrar error al usuario
-      let errorMessage = 'Error al crear la etiqueta'
-      if (error.response?.status === 400) {
-        errorMessage = error.response.data.detail || errorMessage
-      }
-      
-      alert(`Error: ${errorMessage}`)
+      console.error('Error al crear etiqueta:', error)
+      alert('Error al crear la etiqueta')
     }
   }
 
-  // Estado para comunicarse con AddMovementForm sobre nuevas etiquetas
-  const [newTagCreated, setNewTagCreated] = useState<{field: string, tagName: string} | null>(null)
-
-  const handleNewTagCreatedCallback = (field: string, tagName: string) => {
-    setNewTagCreated({ field, tagName })
-    // Limpiar después de un breve delay para permitir que el AddMovementForm procese
-    setTimeout(() => setNewTagCreated(null), 100)
+  const handleNewTagCreatedCallback = (field: string, value: string) => {
+    setNewTagCreated({ field, value })
   }
 
-  // Nueva función para el componente AddMovementForm
-  const handleSaveMovementFromForm = async (movement: {
-    fecha: string
-    ingresos: Array<{ etiqueta: string, monto: number }>
-    gastos: Array<{ etiqueta: string, monto: number }>
-  }) => {
-    console.log('💾 Saving movement from form:', movement)
-    
+  // Handlers para EtiquetasView
+  const handleCreateEtiquetaFromView = async (nuevaEtiqueta: Omit<Etiqueta, 'id'>) => {
     try {
-      const ingresoTotal = movement.ingresos.reduce((sum, item) => sum + item.monto, 0)
-      const totalGastos = movement.gastos.reduce((sum, item) => sum + item.monto, 0)
+      const etiquetaCreada = await createEtiqueta(nuevaEtiqueta)
+      setEtiquetasCompletas(prev => [...prev, etiquetaCreada])
+      setEtiquetas(formatEtiquetasForLegacy([...etiquetasCompletas, etiquetaCreada]))
+    } catch (error) {
+      console.error('Error al crear etiqueta:', error)
+      throw error
+    }
+  }
+
+  const handleEditEtiquetaFromView = async (id: number, datosActualizados: Partial<Etiqueta>) => {
+    try {
+      const etiquetaActualizada = await updateEtiqueta(id, datosActualizados)
+      setEtiquetasCompletas(prev => 
+        prev.map(et => et.id === id ? etiquetaActualizada : et)
+      )
+      setEtiquetas(formatEtiquetasForLegacy(etiquetasCompletas.map(et => et.id === id ? etiquetaActualizada : et)))
+    } catch (error) {
+      console.error('Error al editar etiqueta:', error)
+      throw error
+    }
+  }
+
+  const handleDeleteEtiquetaFromView = async (id: number) => {
+    try {
+      await deleteEtiqueta(id)
+      const nuevasEtiquetas = etiquetasCompletas.filter(et => et.id !== id)
+      setEtiquetasCompletas(nuevasEtiquetas)
+      setEtiquetas(formatEtiquetasForLegacy(nuevasEtiquetas))
+    } catch (error) {
+      console.error('Error al eliminar etiqueta:', error)
+      throw error
+    }
+  }
+
+  // ========================================
+  // HANDLERS DE MOVIMIENTOS AVANZADOS
+  // ========================================
+  
+  const handleSaveMovementFromForm = (movementData: any) => {
+    setPendingMovement(movementData)
+    setShowCreateConfirm(true)
+  }
+
+  const handleConfirmCreateMovement = async () => {
+    if (!pendingMovement) return
+
+    try {
+      const ingresoTotal = pendingMovement.ingresos.reduce((sum, item) => sum + item.monto, 0)
+      const totalGastos = pendingMovement.gastos.reduce((sum, item) => sum + item.monto, 0)
 
       const nuevoMovimiento = {
-        fecha: movement.fecha,
-        ingreso_total: ingresoTotal,
-        ingresos: movement.ingresos.map(item => ({
-          id: Date.now() + Math.random(),
+        fecha: pendingMovement.fecha,
+        ingresos: pendingMovement.ingresos.map(item => ({
           etiqueta: item.etiqueta,
-          monto: item.monto,
-          fecha: movement.fecha
+          monto: item.monto
         })),
-        gastos: movement.gastos.map(item => ({
-          id: Date.now() + Math.random(),
+        gastos: pendingMovement.gastos.map(item => ({
           etiqueta: item.etiqueta,
-          monto: item.monto,
-          fecha: movement.fecha
-        })),
-        total_gastos: totalGastos,
-        balance: ingresoTotal - totalGastos
+          monto: item.monto
+        }))
       }
 
-      console.log('📤 Sending to API:', nuevoMovimiento)
-
-      // Enviar al backend
       const response = await axios.post('/api/movimientos/', nuevoMovimiento)
       const movimientoCreado = response.data
       
-      // Actualizar estado local inmediatamente (optimización de velocidad)
       setMovimientos(prev => {
-        const filtered = prev.filter(m => m.fecha !== movement.fecha)
+        const filtered = prev.filter(m => m.id !== movimientoCreado.id)
         return [movimientoCreado, ...filtered].sort((a, b) => 
           new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
         )
       })
       
-      // Mostrar confetti solo si el balance final es positivo y > 150€
       const balance = ingresoTotal - totalGastos
       if (balance > 150) {
         triggerConfetti()
       }
       
-      // Cerrar formulario
       setShowAddForm(false)
+      setShowCreateConfirm(false)
+      setPendingMovement(null)
       
     } catch (error) {
-      console.error('❌ Error al crear movimiento:', error)
+      console.error('Error al crear movimiento:', error)
       alert('Error al crear el movimiento. Por favor, inténtalo de nuevo.')
+      setShowCreateConfirm(false)
+      setPendingMovement(null)
     }
   }
 
-  // Debug: Mostrar estado de carga
-  console.log('AppRefactored - isLoading:', isLoading, 'movimientos:', movimientos.length)
+  // ========================================
+  // HANDLERS DE GASTOS RECURRENTES
+  // ========================================
+  
+  const handleConfirmarGasto = async (gasto: any) => {
+    try {
+      const movimientoData = {
+        fecha: gasto.fechaEsperada,
+        ingresos: [],
+        gastos: [{
+          etiqueta: gasto.gastoRecurrente.etiqueta,
+          monto: gasto.gastoRecurrente.monto,
+          es_recurrente: true
+        }]
+      }
+
+      const response = await axios.post('/api/movimientos/', movimientoData)
+      const movimientoCreado = response.data
+      
+      setMovimientos(prev => {
+        const filtered = prev.filter(m => m.fecha !== gasto.fechaEsperada)
+        return [movimientoCreado, ...filtered].sort((a, b) => 
+          new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        )
+      })
+      
+    } catch (error) {
+      console.error('Error al confirmar gasto recurrente:', error)
+      alert('Error al crear el gasto recurrente. Inténtalo de nuevo.')
+    }
+  }
+
+  const handleRechazarGasto = (gasto: any) => {
+    rechazosGastos.agregarRechazo(gasto.gastoRecurrente.etiqueta, gasto.fechaEsperada)
+  }
+
+  const handleConfirmarTodosGastos = async () => {
+    try {
+      for (const gasto of gastosPendientes) {
+        await handleConfirmarGasto(gasto)
+      }
+      setShowRecurrentesPendientes(false)
+    } catch (error) {
+      console.error('Error al confirmar todos los gastos:', error)
+    }
+  }
+
+  const handleRechazarTodosGastos = () => {
+    gastosPendientes.forEach(gasto => {
+      rechazosGastos.agregarRechazo(gasto.gastoRecurrente.etiqueta, gasto.fechaEsperada)
+    })
+    setShowRecurrentesPendientes(false)
+  }
+
+  // ========================================
+  // RENDER LOADING
+  // ========================================
   
   if (isLoading) {
     return (
@@ -591,12 +607,20 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     )
   }
 
+  // ========================================
+  // RENDER PRINCIPAL
+  // ========================================
+  
   return (
     <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}>
-      {/* Header original restaurado */}
+      
+      {/* ========================================
+          HEADER RESPONSIVE
+          ======================================== */}
       <header className={`${isDark ? 'bg-gray-800' : 'bg-white'} shadow-sm border-b ${isDark ? 'border-gray-700' : ''} py-4`}>
         <div className="container mx-auto px-4">
           <div className="flex gap-6">
+            {/* Logo Section */}
             <div className="flex-1 w-3/4">
               <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-md border-4 border-pink-300/70 hover:border-pink-400/80 transition-colors duration-300">
                 <img 
@@ -606,6 +630,8 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 />
               </div>
             </div>
+            
+            {/* Navigation Section */}
             <div className="w-1/4 flex items-center justify-end">
               <Navigation
                 activeSection={activeSection}
@@ -619,8 +645,12 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         </div>
       </header>
 
-      {/* Contenido principal */}
+      {/* ========================================
+          CONTENIDO PRINCIPAL
+          ======================================== */}
       <div className="container mx-auto px-4 py-8">
+        
+        {/* Vistas de Desglose */}
         {showYearlyBreakdown ? (
           <YearlyBreakdownView
             movimientos={movimientos}
@@ -633,34 +663,25 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
             }}
           />
         ) : showMonthlyBreakdown ? (
-          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
-            <div className="flex items-center justify-between mb-6">
-              <button
-                onClick={() => setShowMonthlyBreakdown(false)}
-                className={`group relative overflow-hidden px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isDark
-                    ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-md hover:shadow-gray-500/25 hover:from-gray-500 hover:to-gray-400'
-                    : 'bg-gradient-to-r from-gray-500 to-gray-400 text-white shadow-md hover:shadow-gray-400/25 hover:from-gray-400 hover:to-gray-300'
-                }`}
-              >
-                <span className="relative z-10 flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                  </svg>
-                  Volver
-                </span>
-              </button>
-              <h2 className={`text-2xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Desglose mensual - {new Date(selectedMonthYear.year, selectedMonthYear.month).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
-              </h2>
-            </div>
-            <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              Vista de desglose mensual en desarrollo...
-            </p>
-          </div>
+          <MonthlyBreakdownView
+            movimientos={movimientos}
+            selectedMonth={selectedMonthYear.month + 1}
+            selectedYear={selectedMonthYear.year}
+            isDark={isDark}
+            onBack={() => setShowMonthlyBreakdown(false)}
+            onNavigateToYearly={() => {
+              setShowMonthlyBreakdown(false)
+              setShowYearlyBreakdown(true)
+            }}
+            onEditMovimiento={handleEditMovimiento}
+            onDeleteMovimiento={handleDeleteMovimiento}
+          />
         ) : activeSection === 'historial' ? (
+          
+          {/* ========================================
+              VISTA HISTORIAL CON PANEL DE RESÚMENES
+              ======================================== */}
           <div className="grid lg:grid-cols-4 gap-8">
-            {/* Contenido principal - 3/4 del ancho */}
             <div className="lg:col-span-3">
               <HistorialView
                 movimientos={movimientos}
@@ -676,7 +697,6 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
               />
             </div>
             
-            {/* Panel lateral de resumen - 1/4 del ancho */}
             <div className="lg:col-span-1">
               <SummaryPanel
                 movimientos={movimientos}
@@ -686,54 +706,89 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
               />
             </div>
           </div>
+          
+        ) : activeSection === 'buscar' ? (
+          
+          {/* ========================================
+              VISTA BÚSQUEDA CON PANEL DE RESÚMENES
+              ======================================== */}
+          <div className="grid lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-3">
+              <BusquedaView
+                movimientos={movimientos}
+                isDark={isDark}
+                onEditMovimiento={handleEditMovimiento}
+                onDeleteMovimiento={handleDeleteMovimiento}
+              />
+            </div>
+            
+            <div className="lg:col-span-1">
+              <SummaryPanel
+                movimientos={movimientos}
+                isDark={isDark}
+                onShowMonthlyBreakdown={() => setShowMonthlyBreakdown(true)}
+                onShowYearlyBreakdown={() => setShowYearlyBreakdown(true)}
+              />
+            </div>
+          </div>
+          
         ) : (
+          
+          {/* ========================================
+              OTRAS VISTAS PRINCIPALES
+              ======================================== */}
           <div className="space-y-8">
+            
+            {/* Vista Etiquetas */}
+            {activeSection === 'etiquetas' && (
+              <EtiquetasView
+                etiquetas={etiquetas}
+                isDark={isDark}
+                etiquetasEsenciales={etiquetasEsenciales}
+                movimientos={movimientos}
+                onCreateEtiqueta={handleCreateEtiquetaFromView}
+                onEditEtiqueta={handleEditEtiquetaFromView}
+                onDeleteEtiqueta={handleDeleteEtiquetaFromView}
+                onViewEtiqueta={(etiqueta) => {
+                  console.log('👁️ Viendo estadísticas de etiqueta:', etiqueta)
+                }}
+              />
+            )}
 
-          {activeSection === 'buscar' && (
-            <BusquedaView
-              movimientos={movimientos}
-              isDark={isDark}
-              onEditMovimiento={handleEditMovimiento}
-              onDeleteMovimiento={handleDeleteMovimiento}
-            />
-          )}
+            {/* Vista Recurrentes */}
+            {activeSection === 'recurrentes' && (
+              <RecurrentesView
+                isDark={isDark}
+                gastosRecurrentes={recurrentes.gastosRecurrentes}
+                onAddGastoRecurrente={recurrentes.addGastoRecurrente}
+                onUpdateGastoRecurrente={recurrentes.updateGastoRecurrente}
+                onRemoveGastoRecurrente={recurrentes.removeGastoRecurrente}
+                rechazosGastos={rechazosGastos}
+                notificacionesGastos={notificacionesGastos}
+                etiquetas={etiquetas}
+                onCreateNewTag={handleCreateNewTag}
+                newTagCreated={newTagCreated}
+              />
+            )}
 
-          {activeSection === 'etiquetas' && (
-            <EtiquetasView
-              etiquetas={etiquetas}
-              isDark={isDark}
-              onCreateEtiqueta={() => alert('Crear nueva etiqueta')}
-              onEditEtiqueta={(etiqueta) => alert(`Editar ${etiqueta}`)}
-              onDeleteEtiqueta={(etiqueta) => alert(`Borrar ${etiqueta}`)}
-            />
-          )}
-
-          {activeSection === 'recurrentes' && (
-            <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
-              <h2 className={`text-xl font-semibold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Gastos Recurrentes
-              </h2>
-              <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                Vista en desarrollo...
-              </p>
-            </div>
-          )}
-
-          {activeSection === 'analisis' && (
-            <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-6`}>
-              <h2 className={`text-xl font-semibold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Análisis Financiero
-              </h2>
-              <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                Vista en desarrollo...
-              </p>
-            </div>
-          )}
+            {/* Vista Análisis */}
+            {activeSection === 'analisis' && (
+              <AnalysisView
+                movimientos={movimientos}
+                isDark={isDark}
+                onBack={() => setActiveSection('historial')}
+                etiquetasEsenciales={etiquetasEsenciales}
+              />
+            )}
 
           </div>
         )}
       </div>
 
+      {/* ========================================
+          MODALES
+          ======================================== */}
+      
       {/* Modal de confirmación para borrar movimiento */}
       <ConfirmModal
         isOpen={showDeleteConfirm}
@@ -747,7 +802,19 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         isDark={isDark}
       />
 
-      {/* Modal de agregar movimiento */}
+      {/* Modal de confirmación para crear movimiento */}
+      <ConfirmModal
+        isOpen={showCreateConfirm}
+        onClose={() => {
+          setShowCreateConfirm(false)
+          setPendingMovement(null)
+        }}
+        onConfirm={handleConfirmCreateMovement}
+        title="Confirmar creación de movimiento"
+        message={pendingMovement ? `¿Estás seguro de que quieres crear el movimiento del ${new Date(pendingMovement.fecha).toLocaleDateString('es-ES')}?` : ''}
+        isDark={isDark}
+      />
+
       {/* Modal de edición de movimiento */}
       <EditModal
         isOpen={showEditModal}
@@ -773,9 +840,35 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         tipo={createTagType}
         isDark={isDark}
       />
+
+      {/* Modal para gastos recurrentes pendientes */}
+      <RecurrentesPendientesModal
+        isOpen={showRecurrentesPendientes}
+        onClose={() => setShowRecurrentesPendientes(false)}
+        gastosPendientes={gastosPendientes}
+        onConfirmarGasto={handleConfirmarGasto}
+        onRechazarGasto={handleRechazarGasto}
+        onConfirmarTodos={handleConfirmarTodosGastos}
+        onRechazarTodos={handleRechazarTodosGastos}
+        isDark={isDark}
+      />
+
+      {/* ========================================
+          NOTIFICACIONES
+          ======================================== */}
+      
+      {/* Notificaciones de gastos automáticos */}
+      {notificacionesGastos.notificacionesActivas.map(notificacion => (
+        <NotificacionGastoAutomatico
+          key={notificacion.id}
+          notificacion={notificacion}
+          onCerrar={notificacionesGastos.cerrarNotificacion}
+          isDark={isDark}
+          onVerGastosFijos={() => setActiveSection('recurrentes')}
+        />
+      ))}
     </div>
   )
 }
 
 export default AppRefactored
-

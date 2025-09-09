@@ -37,17 +37,21 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}
-            className={`px-4 py-2 transition-colors ${
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               isDark 
-                ? 'text-gray-300 hover:text-white' 
-                : 'text-gray-600 hover:text-gray-800'
+                ? 'bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 text-white shadow-md'
+                : 'bg-gradient-to-r from-gray-400 to-gray-300 hover:from-gray-300 hover:to-gray-200 text-white shadow-md'
             }`}
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              isDark
+                ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white shadow-md'
+                : 'bg-gradient-to-r from-green-500 to-green-400 hover:from-green-400 hover:to-green-300 text-white shadow-md'
+            }`}
           >
             Confirmar
           </button>

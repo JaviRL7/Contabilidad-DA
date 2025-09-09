@@ -90,13 +90,10 @@ async def delete_ingreso(
     db: Session = Depends(get_db)
 ):
     """Eliminar un ingreso específico"""
-    try:
-        success = crud_movimientos.delete_ingreso(db, ingreso_id)
-        if not success:
-            raise HTTPException(status_code=404, detail="Ingreso no encontrado")
-        return {"message": "Ingreso eliminado correctamente"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al eliminar ingreso: {str(e)}")
+    success = crud_movimientos.delete_ingreso(db, ingreso_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Ingreso no encontrado")
+    return {"message": "Ingreso eliminado correctamente"}
 
 @router.delete("/{fecha}/gasto/{gasto_id}")
 async def delete_gasto(
@@ -105,13 +102,10 @@ async def delete_gasto(
     db: Session = Depends(get_db)
 ):
     """Eliminar un gasto específico"""
-    try:
-        success = crud_movimientos.delete_gasto(db, gasto_id)
-        if not success:
-            raise HTTPException(status_code=404, detail="Gasto no encontrado")
-        return {"message": "Gasto eliminado correctamente"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al eliminar gasto: {str(e)}")
+    success = crud_movimientos.delete_gasto(db, gasto_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Gasto no encontrado")
+    return {"message": "Gasto eliminado correctamente"}
 
 @router.get("/mes/{año}/{mes}", response_model=List[MovimientoResumen])
 async def get_movimientos_mes(

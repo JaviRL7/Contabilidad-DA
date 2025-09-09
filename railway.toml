@@ -1,0 +1,13 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd frontend && npm install && npm run build-production"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+[env]
+PORT = "8000"
+ENVIRONMENT = "production"

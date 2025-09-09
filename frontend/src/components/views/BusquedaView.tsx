@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Card from '../ui/Card'
-import Button from '../ui/Button'
+import GradientButton from '../ui/GradientButton'
 import MovementCard from '../dashboard/MovementCard'
 import { useSearch } from '../../hooks/useSearch'
 import { usePagination } from '../../hooks/usePagination'
@@ -47,23 +47,23 @@ const BusquedaView: React.FC<BusquedaViewProps> = ({
       return
     }
     
-    const params: any = {}
+    // Limpiar parámetros previos
+    search.clearSearch()
     
+    // Aplicar filtro de etiqueta si existe
     if (searchQuery.trim()) {
-      params.etiqueta = searchQuery.trim()
+      search.updateSearchParam('etiqueta', searchQuery.trim())
     }
     
+    // Aplicar filtros de fecha
     if (fechaDesde) {
-      params.fechaDesde = formatDateForAPI(fechaDesde)
+      const mes = fechaDesde.getMonth()
+      const año = fechaDesde.getFullYear()
+      search.updateSearchParam('mes', mes)
+      search.updateSearchParam('año', año)
     }
     
-    if (fechaHasta) {
-      params.fechaHasta = formatDateForAPI(fechaHasta)
-    }
-    
-    search.updateSearchParam('etiqueta', params.etiqueta)
     setHasSearched(true)
-    // TODO: Implementar filtros de fecha en useSearch
   }
 
   const clearSearch = () => {
@@ -138,17 +138,17 @@ const BusquedaView: React.FC<BusquedaViewProps> = ({
                   : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
               }`}
             />
-            <Button variant="primary" onClick={handleSearch} isDark={isDark}>
+            <GradientButton variant="primary" onClick={handleSearch} isDark={isDark}>
               Buscar
-            </Button>
+            </GradientButton>
           </div>
         </div>
       </div>
 
       <div className="flex gap-2 mb-6">
-        <Button variant="secondary" onClick={clearSearch} isDark={isDark}>
+        <GradientButton variant="secondary" onClick={clearSearch} isDark={isDark}>
           Limpiar filtros
-        </Button>
+        </GradientButton>
       </div>
 
       {!hasSearched ? (

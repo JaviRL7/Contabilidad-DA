@@ -8,7 +8,7 @@ class IngresoBase(BaseModel):
     etiqueta: str
 
 class IngresoCreate(IngresoBase):
-    pass
+    id: Optional[int] = None  # Para updates, incluir ID existente
 
 class Ingreso(IngresoBase):
     id: int
@@ -24,6 +24,7 @@ class GastoBase(BaseModel):
     etiqueta: str
 
 class GastoCreate(GastoBase):
+    id: Optional[int] = None  # Para updates, incluir ID existente
     es_recurrente: Optional[bool] = False
     recurrente_id: Optional[int] = None
 

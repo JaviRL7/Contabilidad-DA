@@ -5,11 +5,11 @@ import { getTiposGastosRecurrentesGlobal } from '../utils/calculations'
 interface GastoRecurrente {
   etiqueta: string
   monto: number
-  frecuencia: 'mensual' | 'semanal' | 'diario' | 'anual'
+  frecuencia: 'mensual' | 'semanal' | 'anual'
   diaMes?: number
-  diaSemana?: string
-  mesAnual?: string
-  diaAnual?: string
+  diaSemana?: 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo'
+  fechaAnual?: string // Format: 'MM-DD' (e.g., '03-15' for March 15)
+  fechaCreacion?: string // Fecha de creación del gasto recurrente
 }
 
 export const useRecurrentes = (gastos: any[] = []) => {
@@ -26,7 +26,11 @@ export const useRecurrentes = (gastos: any[] = []) => {
   }
 
   const addGastoRecurrente = (gasto: GastoRecurrente) => {
-    const updated = [...gastosRecurrentes, gasto]
+    const gastoConFecha = {
+      ...gasto,
+      fechaCreacion: gasto.fechaCreacion || new Date().toISOString().split('T')[0]
+    }
+    const updated = [...gastosRecurrentes, gastoConFecha]
     saveGastosRecurrentes(updated)
   }
 

@@ -44,43 +44,108 @@ def create_or_update_movimiento(
     db_movimiento = get_movimiento_by_fecha(db, movimiento_data.fecha)
     
     if db_movimiento:
-        # Eliminar ingresos y gastos existentes
-        db.query(Ingreso).filter(Ingreso.fecha == movimiento_data.fecha).delete()
-        db.query(Gasto).filter(Gasto.fecha == movimiento_data.fecha).delete()
+        # Para movimiento existente, manejar updates inteligentemente
+        # (No eliminar todo, sino actualizar/crear/eliminar según sea necesario)
+        print(f"🔄 Actualizando movimiento existente para fecha: {movimiento_data.fecha}")
     else:
         # Crear nuevo movimiento
         db_movimiento = MovimientoDiario(fecha=movimiento_data.fecha)
         db.add(db_movimiento)
+        print(f"✨ Creando nuevo movimiento para fecha: {movimiento_data.fecha}")
     
     # Calcular total de ingresos
     total_ingresos = sum(ingreso.monto for ingreso in movimiento_data.ingresos)
     db_movimiento.ingreso_total = total_ingresos
     
-    # Agregar ingresos
+    # Agregar ingresos (preservando IDs si existen)
     for ingreso_data in movimiento_data.ingresos:
-        db_ingreso = Ingreso(
-            fecha=movimiento_data.fecha,
-            monto=ingreso_data.monto,
-            etiqueta=ingreso_data.etiqueta
-        )
-        db.add(db_ingreso)
+        # Si el ingreso tiene ID, intentar actualizarlo en lugar de crear uno nuevo
+        if hasattr(ingreso_data, 'id') and ingreso_data.id:
+            db_ingreso = db.query(Ingreso).filter(
+                Ingreso.id == ingreso_data.id,
+                Ingreso.fecha == movimiento_data.fecha
+            ).first()
+            
+            if db_ingreso:
+                # Actualizar ingreso existente
+                db_ingreso.monto = ingreso_data.monto
+                db_ingreso.etiqueta = ingreso_data.etiqueta
+            else:
+                # El ID no existe, crear nuevo
+                db_ingreso = Ingreso(
+                    fecha=movimiento_data.fecha,
+                    monto=ingreso_data.monto,
+                    etiqueta=ingreso_data.etiqueta
+                )
+                db.add(db_ingreso)
+        else:
+            # No hay ID, crear nuevo ingreso
+            db_ingreso = Ingreso(
+                fecha=movimiento_data.fecha,
+                monto=ingreso_data.monto,
+                etiqueta=ingreso_data.etiqueta
+            )
+            db.add(db_ingreso)
         
         # Agregar etiqueta si no existe
         _ensure_etiqueta_exists(db, ingreso_data.etiqueta, 'ingreso')
     
-    # Agregar gastos
+    # Agregar gastos (preservando IDs si existen)
     for gasto_data in movimiento_data.gastos:
-        db_gasto = Gasto(
-            fecha=movimiento_data.fecha,
-            monto=gasto_data.monto,
-            etiqueta=gasto_data.etiqueta,
-            es_recurrente=getattr(gasto_data, 'es_recurrente', False),
-            recurrente_id=getattr(gasto_data, 'recurrente_id', None)
-        )
-        db.add(db_gasto)
+        # Si el gasto tiene ID, intentar actualizarlo en lugar de crear uno nuevo
+        if hasattr(gasto_data, 'id') and gasto_data.id:
+            db_gasto = db.query(Gasto).filter(
+                Gasto.id == gasto_data.id,
+                Gasto.fecha == movimiento_data.fecha
+            ).first()
+            
+            if db_gasto:
+                # Actualizar gasto existente
+                db_gasto.monto = gasto_data.monto
+                db_gasto.etiqueta = gasto_data.etiqueta
+                db_gasto.es_recurrente = getattr(gasto_data, 'es_recurrente', False)
+                db_gasto.recurrente_id = getattr(gasto_data, 'recurrente_id', None)
+            else:
+                # El ID no existe, crear nuevo
+                db_gasto = Gasto(
+                    fecha=movimiento_data.fecha,
+                    monto=gasto_data.monto,
+                    etiqueta=gasto_data.etiqueta,
+                    es_recurrente=getattr(gasto_data, 'es_recurrente', False),
+                    recurrente_id=getattr(gasto_data, 'recurrente_id', None)
+                )
+                db.add(db_gasto)
+        else:
+            # No hay ID, crear nuevo gasto
+            db_gasto = Gasto(
+                fecha=movimiento_data.fecha,
+                monto=gasto_data.monto,
+                etiqueta=gasto_data.etiqueta,
+                es_recurrente=getattr(gasto_data, 'es_recurrente', False),
+                recurrente_id=getattr(gasto_data, 'recurrente_id', None)
+            )
+            db.add(db_gasto)
         
         # Agregar etiqueta si no existe
         _ensure_etiqueta_exists(db, gasto_data.etiqueta, 'gasto')
+    
+    # Eliminar ingresos/gastos que ya no están en el payload (fueron eliminados por el usuario)
+    if db_movimiento.id:  # Solo para movimientos existentes
+        # IDs de ingresos que deben mantenerse
+        ingresos_ids_to_keep = [ing.id for ing in movimiento_data.ingresos if hasattr(ing, 'id') and ing.id]
+        if ingresos_ids_to_keep:
+            db.query(Ingreso).filter(
+                Ingreso.fecha == movimiento_data.fecha,
+                Ingreso.id.notin_(ingresos_ids_to_keep)
+            ).delete(synchronize_session=False)
+        
+        # IDs de gastos que deben mantenerse
+        gastos_ids_to_keep = [gas.id for gas in movimiento_data.gastos if hasattr(gas, 'id') and gas.id]
+        if gastos_ids_to_keep:
+            db.query(Gasto).filter(
+                Gasto.fecha == movimiento_data.fecha,
+                Gasto.id.notin_(gastos_ids_to_keep)
+            ).delete(synchronize_session=False)
     
     db.commit()
     db.refresh(db_movimiento)

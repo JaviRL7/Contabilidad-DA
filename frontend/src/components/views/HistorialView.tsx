@@ -43,7 +43,6 @@ const HistorialView: React.FC<HistorialViewProps> = ({
   onCreateNewTag,
   newTagCreated
 }) => {
-  console.log('📋 HistorialView render - showAddForm:', showAddForm)
   const today = new Date().toISOString().split('T')[0]
   
   // Ordenar movimientos por fecha ascendente (día 1 arriba, día 31 abajo)
@@ -63,18 +62,16 @@ const HistorialView: React.FC<HistorialViewProps> = ({
       <div className="mb-6">
         <button
           onClick={onToggleAddForm}
-          className={`group relative overflow-hidden px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+          className={`px-6 py-3 rounded-lg text-base font-medium transition-all duration-200 flex items-center gap-2 ${
             isDark
-              ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg hover:shadow-emerald-500/25 hover:from-emerald-500 hover:to-emerald-400'
-              : 'bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-lg hover:shadow-emerald-400/25 hover:from-emerald-400 hover:to-emerald-300'
+              ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white shadow-md'
+              : 'bg-gradient-to-r from-green-500 to-green-400 hover:from-green-400 hover:to-green-300 text-white shadow-md'
           }`}
         >
-          <span className="relative z-10 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            Añadir Movimiento
-          </span>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          {showAddForm ? 'Cerrar Formulario' : 'Añadir Movimiento'}
         </button>
       </div>
 

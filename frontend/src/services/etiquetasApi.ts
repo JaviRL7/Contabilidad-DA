@@ -27,6 +27,22 @@ export const createEtiqueta = async (etiquetaData: EtiquetaCreate): Promise<Etiq
   return response.data
 }
 
+// Actualizar etiqueta existente
+export const updateEtiqueta = async (id: number, etiquetaData: Partial<EtiquetaCreate>): Promise<Etiqueta> => {
+  const response = await axios.put(`/api/etiquetas/${id}`, etiquetaData)
+  return response.data
+}
+
+// Eliminar etiqueta
+export const deleteEtiqueta = async (id: number): Promise<void> => {
+  await axios.delete(`/api/etiquetas/${id}`)
+}
+
+// Buscar etiqueta por nombre
+export const findEtiquetaByName = (etiquetas: Etiqueta[], nombre: string): Etiqueta | undefined => {
+  return etiquetas.find(e => e.nombre.toLowerCase() === nombre.toLowerCase())
+}
+
 // Filtrar etiquetas por tipo
 export const filterEtiquetasByTipo = (etiquetas: Etiqueta[], tipo: 'gasto' | 'ingreso'): string[] => {
   return etiquetas
