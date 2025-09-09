@@ -133,6 +133,7 @@ const YearlyBreakdownView: React.FC<YearlyBreakdownViewProps> = ({
         onBack={onBack}
         currentView="yearly"
         breadcrumbItems={breadcrumbItems}
+        hideBackButton={true}
       />
 
       {/* Navegación de año modular */}

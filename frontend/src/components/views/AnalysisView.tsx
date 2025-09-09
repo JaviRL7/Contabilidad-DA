@@ -35,14 +35,31 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({
     const totalGastos = movimientos.reduce((sum, mov) => sum + mov.total_gastos, 0)
     const totalBalance = totalIngresos - totalGastos
     
-    const periodStart = movimientos.length > 0 ? new Date(movimientos[0].fecha) : new Date()
-    const periodEnd = movimientos.length > 0 ? new Date(movimientos[movimientos.length - 1].fecha) : new Date()
-    const daysDiff = Math.ceil((periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24))
+    // Obtener fechas ordenadas para calcular el período correctamente
+    if (movimientos.length === 0) {
+      return {
+        totalIngresos,
+        totalGastos,
+        totalBalance,
+        periodStart: null,
+        periodEnd: null,
+        daysPeriod: 0,
+        avgDailyBalance: 0,
+        totalTransactions: 0
+      }
+    }
+
+    const fechas = movimientos.map(mov => new Date(mov.fecha)).sort((a, b) => a.getTime() - b.getTime())
+    const periodStart = fechas[0]
+    const periodEnd = fechas[fechas.length - 1]
+    const daysDiff = Math.abs(Math.ceil((periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24))) + 1
     
     return {
       totalIngresos,
       totalGastos,
       totalBalance,
+      periodStart,
+      periodEnd,
       daysPeriod: daysDiff,
       avgDailyBalance: daysDiff > 0 ? totalBalance / daysDiff : 0,
       totalTransactions: movimientos.length
@@ -144,9 +161,15 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({
                 <p className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   Período de Análisis
                 </p>
-                <p className="text-lg font-bold text-purple-500">
-                  {analysisStats.daysPeriod} días
-                </p>
+                {analysisStats.periodStart && analysisStats.periodEnd ? (
+                  <div className="text-sm font-bold text-purple-500">
+                    <div>{analysisStats.periodStart.toLocaleDateString('es-ES')}</div>
+                    <div className="text-xs text-gray-500">a {analysisStats.periodEnd.toLocaleDateString('es-ES')}</div>
+                    <div className="text-xs text-purple-400">({analysisStats.daysPeriod} días)</div>
+                  </div>
+                ) : (
+                  <p className="text-sm font-bold text-purple-500">Sin datos</p>
+                )}
               </div>
             </div>
           </div>

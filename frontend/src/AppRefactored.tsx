@@ -29,6 +29,7 @@ import { useAnalysis } from './hooks/useAnalysis'
 
 // Componentes de layout y navegación
 import Navigation from './components/layout/Navigation'
+import ResponsiveHeader from './components/layout/ResponsiveHeader'
 
 // Componentes reutilizables (modales)
 import ConfirmModal from './components/modals/ConfirmModal'
@@ -617,45 +618,39 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       {/* ========================================
           HEADER RESPONSIVE
           ======================================== */}
-      <header className={`${isDark ? 'bg-gray-800' : 'bg-white'} shadow-sm border-b ${isDark ? 'border-gray-700' : ''} py-4`}>
-        <div className="container mx-auto px-4">
-          <div className="flex gap-6">
-            {/* Logo Section */}
-            <div className="flex-1 w-3/4">
-              <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-md border-4 border-pink-300/70 hover:border-pink-400/80 transition-colors duration-300">
-                <img 
-                  src="/Logo1.png" 
-                  alt="Logo" 
-                  className="w-24 h-24 object-contain"
-                />
-              </div>
-            </div>
-            
-            {/* Navigation Section */}
-            <div className="w-1/4 flex items-center justify-end">
-              <Navigation
-                activeSection={activeSection}
-                setActiveSection={setActiveSection}
-                isDark={isDark}
-                onToggleDark={onToggleDark}
-                setIsDark={setIsDark}
-              />
-            </div>
-          </div>
-        </div>
-      </header>
+      <ResponsiveHeader
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        isDark={isDark}
+        onToggleDark={onToggleDark}
+        setIsDark={setIsDark}
+        showBreakdownTabs={showYearlyBreakdown || showMonthlyBreakdown}
+        onShowYearlyBreakdown={() => {
+          setShowMonthlyBreakdown(false)
+          setShowYearlyBreakdown(true)
+        }}
+        onShowMonthlyBreakdown={() => {
+          setShowYearlyBreakdown(false)
+          setShowMonthlyBreakdown(true)
+        }}
+        showYearlyBreakdown={showYearlyBreakdown}
+        showMonthlyBreakdown={showMonthlyBreakdown}
+      />
 
       {/* ========================================
           CONTENIDO PRINCIPAL
           ======================================== */}
       <div className="container mx-auto px-4 py-8">
         
-        {/* Vistas de Desglose */}
+        {/* Vistas de Desglose - Navegación integrada en header */}
         {showYearlyBreakdown ? (
           <YearlyBreakdownView
             movimientos={movimientos}
             isDark={isDark}
-            onBack={() => setShowYearlyBreakdown(false)}
+            onBack={() => {
+              setShowYearlyBreakdown(false)
+              setActiveSection('historial')
+            }}
             onGoToMonthly={(month, year) => {
               setSelectedMonthYear({ month, year })
               setShowYearlyBreakdown(false)
@@ -668,7 +663,10 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
             selectedMonth={selectedMonthYear.month + 1}
             selectedYear={selectedMonthYear.year}
             isDark={isDark}
-            onBack={() => setShowMonthlyBreakdown(false)}
+            onBack={() => {
+              setShowMonthlyBreakdown(false)
+              setActiveSection('historial')
+            }}
             onNavigateToYearly={() => {
               setShowMonthlyBreakdown(false)
               setShowYearlyBreakdown(true)
@@ -678,11 +676,22 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
           />
         ) : activeSection === 'historial' ? (
           
-          {/* ========================================
-              VISTA HISTORIAL CON PANEL DE RESÚMENES
-              ======================================== */}
-          <div className="grid lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-3">
+          /* ========================================
+              VISTA HISTORIAL CON RESÚMENES INTEGRADOS
+              ======================================== */
+          <div className="space-y-6">
+            {/* Panel de resúmenes arriba */}
+            <div className="w-full">
+              <SummaryPanel
+                movimientos={movimientos}
+                isDark={isDark}
+                onShowMonthlyBreakdown={() => setShowMonthlyBreakdown(true)}
+                onShowYearlyBreakdown={() => setShowYearlyBreakdown(true)}
+              />
+            </div>
+            
+            {/* Vista principal abajo */}
+            <div className="w-full">
               <HistorialView
                 movimientos={movimientos}
                 isDark={isDark}
@@ -696,8 +705,16 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 newTagCreated={newTagCreated}
               />
             </div>
-            
-            <div className="lg:col-span-1">
+          </div>
+          
+        ) : activeSection === 'buscar' ? (
+          
+          /* ========================================
+              VISTA BÚSQUEDA CON RESÚMENES INTEGRADOS  
+              ======================================== */
+          <div className="space-y-6">
+            {/* Panel de resúmenes arriba */}
+            <div className="w-full">
               <SummaryPanel
                 movimientos={movimientos}
                 isDark={isDark}
@@ -705,15 +722,9 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 onShowYearlyBreakdown={() => setShowYearlyBreakdown(true)}
               />
             </div>
-          </div>
-          
-        ) : activeSection === 'buscar' ? (
-          
-          {/* ========================================
-              VISTA BÚSQUEDA CON PANEL DE RESÚMENES
-              ======================================== */}
-          <div className="grid lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-3">
+            
+            {/* Vista principal abajo */}
+            <div className="w-full">
               <BusquedaView
                 movimientos={movimientos}
                 isDark={isDark}
@@ -721,22 +732,13 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 onDeleteMovimiento={handleDeleteMovimiento}
               />
             </div>
-            
-            <div className="lg:col-span-1">
-              <SummaryPanel
-                movimientos={movimientos}
-                isDark={isDark}
-                onShowMonthlyBreakdown={() => setShowMonthlyBreakdown(true)}
-                onShowYearlyBreakdown={() => setShowYearlyBreakdown(true)}
-              />
-            </div>
           </div>
           
         ) : (
           
-          {/* ========================================
+          /* ========================================
               OTRAS VISTAS PRINCIPALES
-              ======================================== */}
+              ======================================== */
           <div className="space-y-8">
             
             {/* Vista Etiquetas */}

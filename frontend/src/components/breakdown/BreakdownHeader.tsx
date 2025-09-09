@@ -6,7 +6,7 @@ interface BreakdownHeaderProps {
   title: string
   subtitle?: string
   isDark: boolean
-  onBack: () => void
+  onBack?: () => void
   onNavigateToYearly?: () => void
   onNavigateToMonthly?: (month: number, year: number) => void
   currentView: 'monthly' | 'yearly'
@@ -15,6 +15,7 @@ interface BreakdownHeaderProps {
     onClick?: () => void
     isActive?: boolean
   }>
+  hideBackButton?: boolean
 }
 
 const BreakdownHeader: React.FC<BreakdownHeaderProps> = ({
@@ -25,22 +26,25 @@ const BreakdownHeader: React.FC<BreakdownHeaderProps> = ({
   onNavigateToYearly,
   onNavigateToMonthly,
   currentView,
-  breadcrumbItems
+  breadcrumbItems,
+  hideBackButton = false
 }) => {
   return (
     <div className="space-y-4">
       {/* Navegación principal */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <GradientButton
-            variant="secondary"
-            size="md"
-            onClick={onBack}
-            isDark={isDark}
-          >
-            <ChevronLeft className="w-5 h-5 mr-1" />
-            Volver
-          </GradientButton>
+          {!hideBackButton && onBack && (
+            <GradientButton
+              variant="secondary"
+              size="md"
+              onClick={onBack}
+              isDark={isDark}
+            >
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              Volver
+            </GradientButton>
+          )}
           
           <div className="flex items-center gap-3">
             <Calendar className={`w-8 h-8 ${isDark ? 'text-blue-400' : 'text-blue-500'}`} />

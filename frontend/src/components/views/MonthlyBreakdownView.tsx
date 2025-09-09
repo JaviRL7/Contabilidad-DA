@@ -149,6 +149,7 @@ const MonthlyBreakdownView: React.FC<MonthlyBreakdownViewProps> = ({
         onNavigateToYearly={onNavigateToYearly}
         currentView="monthly"
         breadcrumbItems={breadcrumbItems}
+        hideBackButton={true}
       />
 
       {/* Controles de vista */}
