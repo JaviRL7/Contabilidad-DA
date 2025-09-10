@@ -43,30 +43,45 @@ const MovementCard: React.FC<MovementCardProps> = ({
           : ''
     }`}>
       <div className="p-6">
-        {/* Header con fecha y balance */}
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex flex-col">
-            <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>
-              {new Date(movimiento.fecha).toLocaleDateString('es-ES', { 
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-              })}
-            </h2>
-            {isToday && (
-              <div className={`mt-1 text-sm font-medium ${isDark ? 'text-blue-300' : 'text-blue-600'}`}>
-                Hoy
+        {/* Header con fecha y balance mejorado */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col space-y-1">
+            <div className="flex items-center gap-3">
+              <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {new Date(movimiento.fecha).toLocaleDateString('es-ES', { 
+                  day: '2-digit',
+                  month: '2-digit'
+                })}
+              </h2>
+              <div className={`text-sm font-medium px-2 py-1 rounded-full ${isDark ? 'text-gray-400 bg-gray-700' : 'text-gray-600 bg-gray-100'}`}>
+                {new Date(movimiento.fecha).toLocaleDateString('es-ES', { year: 'numeric' })}
+              </div>
+              {isToday && (
+                <div className={`text-xs font-bold px-2 py-1 rounded-full ${isDark ? 'text-blue-200 bg-blue-800' : 'text-blue-700 bg-blue-100'}`}>
+                  HOY
+                </div>
+              )}
+            </div>
+            {tieneGastosRecurrentes && (
+              <div className={`text-xs font-medium flex items-center gap-1 ${isDark ? 'text-yellow-300' : 'text-yellow-600'}`}>
+                <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-yellow-300' : 'bg-yellow-500'}`}></div>
+                Contiene gastos automáticos
               </div>
             )}
           </div>
-          <div className="text-lg font-bold ml-auto text-blue-500">
-            Balance: {formatEuro(movimiento.balance)}
+          <div className={`text-right`}>
+            <div className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-1`}>
+              Balance Total
+            </div>
+            <div className={`text-2xl font-bold text-blue-500`}>
+              {formatEuro(movimiento.balance)}
+            </div>
           </div>
         </div>
         
         <div className="grid md:grid-cols-2 gap-8 relative">
-          {/* Línea separadora vertical con degradado */}
-          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px transform -translate-x-1/2">
+          {/* Línea separadora vertical con degradado - más corta */}
+          <div className="hidden md:block absolute left-1/2 top-4 bottom-4 w-px transform -translate-x-1/2">
             <div className={`h-full w-full ${
               isDark 
                 ? 'bg-gradient-to-b from-transparent via-gray-500/30 to-transparent' 
@@ -75,11 +90,17 @@ const MovementCard: React.FC<MovementCardProps> = ({
           </div>
           
           {/* Sección de ingresos */}
-          <div className="pr-3">
-            <div className="mb-3">
-              <h3 className="text-green-500 font-medium mb-2">
-                Ingresos ({formatEuro(movimiento.ingreso_total)})
-              </h3>
+          <div className="pr-4">
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-green-500 font-semibold text-lg flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  Ingresos
+                </h3>
+                <div className="text-green-600 font-bold text-lg">
+                  {formatEuro(movimiento.ingreso_total)}
+                </div>
+              </div>
               <div className={`h-px w-full ${
                 isDark 
                   ? 'bg-gradient-to-r from-transparent via-green-400/30 to-transparent' 
@@ -89,13 +110,15 @@ const MovementCard: React.FC<MovementCardProps> = ({
             {movimiento.ingresos && movimiento.ingresos.length > 0 ? (
               <ul className="space-y-2">
                 {movimiento.ingresos.map((ingreso) => (
-                  <li key={ingreso.id} className={`flex justify-between items-center p-2 rounded ${
-                    isDark ? 'bg-gray-700' : 'bg-green-50'
+                  <li key={ingreso.id} className={`flex justify-between items-center p-3 rounded-lg transition-all duration-200 ${
+                    isDark ? 'bg-gray-700/50 hover:bg-gray-700' : 'bg-green-50 hover:bg-green-100'
                   }`}>
-                    <span className={isDark ? 'text-gray-300' : 'text-gray-800'}>
+                    <span className={`font-medium ${
+                      isDark ? 'text-gray-200' : 'text-gray-800'
+                    }`}>
                       {ingreso.etiqueta}
                     </span>
-                    <span className="text-green-500 font-medium">
+                    <span className="text-green-600 font-bold text-base">
                       +{formatEuro(ingreso.monto)}
                     </span>
                   </li>
@@ -107,11 +130,17 @@ const MovementCard: React.FC<MovementCardProps> = ({
           </div>
           
           {/* Sección de gastos */}
-          <div className="pl-3">
-            <div className="mb-3">
-              <h3 className="text-red-500 font-medium mb-2">
-                Gastos ({formatEuro(movimiento.total_gastos)})
-              </h3>
+          <div className="pl-4">
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-red-500 font-semibold text-lg flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  Gastos
+                </h3>
+                <div className="text-red-600 font-bold text-lg">
+                  {formatEuro(movimiento.total_gastos)}
+                </div>
+              </div>
               <div className={`h-px w-full ${
                 isDark 
                   ? 'bg-gradient-to-r from-transparent via-red-400/30 to-transparent' 
@@ -121,20 +150,25 @@ const MovementCard: React.FC<MovementCardProps> = ({
             {movimiento.gastos && movimiento.gastos.length > 0 ? (
               <ul className="space-y-2">
                 {movimiento.gastos.map((gasto) => (
-                  <li key={gasto.id} className={`flex justify-between items-center p-2 rounded ${
-                    isDark ? 'bg-gray-700' : 'bg-red-50'
-                  } ${gasto.es_recurrente ? 'border-l-4 border-yellow-400' : ''}`}>
-                    <span className={`${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
-                      {gasto.etiqueta}
+                  <li key={gasto.id} className={`flex justify-between items-center p-3 rounded-lg transition-all duration-200 ${
+                    isDark ? 'bg-gray-700/50 hover:bg-gray-700' : 'bg-red-50 hover:bg-red-100'
+                  } ${gasto.es_recurrente ? 'border-l-4 border-yellow-400 bg-gradient-to-r ' + (isDark ? 'from-yellow-900/20 to-transparent' : 'from-yellow-50 to-transparent') : ''}`}>
+                    <div className="flex flex-col">
+                      <span className={`font-medium ${
+                        isDark ? 'text-gray-200' : 'text-gray-800'
+                      }`}>
+                        {gasto.etiqueta}
+                      </span>
                       {gasto.es_recurrente && (
-                        <span className={`ml-2 text-xs px-1 py-0.5 rounded ${
-                          isDark ? 'bg-yellow-900 text-yellow-300' : 'bg-yellow-100 text-yellow-800'
+                        <span className={`text-xs font-medium flex items-center gap-1 mt-1 ${
+                          isDark ? 'text-yellow-300' : 'text-yellow-600'
                         }`}>
-                          Auto
+                          <div className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-yellow-300' : 'bg-yellow-500'}`}></div>
+                          Gasto automático
                         </span>
                       )}
-                    </span>
-                    <span className="font-semibold text-red-500">
+                    </div>
+                    <span className="text-red-600 font-bold text-base">
                       {formatEuro(gasto.monto)}
                     </span>
                   </li>
@@ -149,11 +183,7 @@ const MovementCard: React.FC<MovementCardProps> = ({
         {/* Botones de acción en la parte inferior */}
         {(onEditMovimiento || onDeleteMovimiento) && (
           <>
-            <div className={`h-px w-full mt-8 mb-4 ${
-              isDark 
-                ? 'bg-gradient-to-r from-transparent via-gray-500/30 to-transparent' 
-                : 'bg-gradient-to-r from-transparent via-gray-300/40 to-transparent'
-            }`}></div>
+            <div className="mt-8 mb-4"></div>
             <div className="flex gap-3 justify-end">
               {onEditMovimiento && (
                 <button

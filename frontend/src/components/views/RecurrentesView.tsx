@@ -4,6 +4,7 @@ import Card from '../ui/Card'
 import GradientButton from '../ui/GradientButton'
 import ConfirmacionBorradoModal from '../modals/ConfirmacionBorradoModal'
 import ConfirmacionFechaPasadaModal from '../modals/ConfirmacionFechaPasadaModal'
+import EditRecurringExpenseModal from '../modals/EditRecurringExpenseModal'
 
 interface GastoRecurrente {
   etiqueta: string
@@ -55,7 +56,8 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
   newTagCreated
 }) => {
   const [showAddForm, setShowAddForm] = useState(false)
-  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingGasto, setEditingGasto] = useState<{ gasto: GastoRecurrente; index: number } | null>(null)
   const [formData, setFormData] = useState<GastoRecurrente>({
     etiqueta: '',
     monto: 0,
@@ -277,18 +279,13 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
       }
     }
 
-    if (editingIndex !== null) {
-      onUpdateGastoRecurrente(editingIndex, nuevoGasto)
-    } else {
-      onAddGastoRecurrente(nuevoGasto)
-    }
+    onAddGastoRecurrente(nuevoGasto)
     
     handleCancel()
   }
 
   const handleCancel = () => {
     setShowAddForm(false)
-    setEditingIndex(null)
     setFormData({
       etiqueta: '',
       monto: 0,
@@ -297,11 +294,18 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
     })
   }
 
+  const handleSaveEdit = (gastoActualizado: GastoRecurrente) => {
+    if (editingGasto) {
+      onUpdateGastoRecurrente(editingGasto.index, gastoActualizado)
+      setEditingGasto(null)
+      setShowEditModal(false)
+    }
+  }
+
   const handleEdit = (index: number) => {
     const gasto = gastosRecurrentes[index]
-    setFormData(gasto)
-    setEditingIndex(index)
-    setShowAddForm(true)
+    setEditingGasto({ gasto, index })
+    setShowEditModal(true)
   }
 
   const handleConfirmarEliminar = (index: number) => {
@@ -321,11 +325,7 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
 
   const confirmarGastoFechaPasada = () => {
     if (gastoFechaPasada) {
-      if (editingIndex !== null) {
-        onUpdateGastoRecurrente(editingIndex, gastoFechaPasada.gasto)
-      } else {
-        onAddGastoRecurrente(gastoFechaPasada.gasto)
-      }
+      onAddGastoRecurrente(gastoFechaPasada.gasto)
     }
     setShowConfirmacionFechaPasada(false)
     setGastoFechaPasada(null)
@@ -334,11 +334,7 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
 
   const rechazarGastoFechaPasada = () => {
     if (gastoFechaPasada) {
-      if (editingIndex !== null) {
-        onUpdateGastoRecurrente(editingIndex, gastoFechaPasada.gasto)
-      } else {
-        onAddGastoRecurrente(gastoFechaPasada.gasto)
-      }
+      onAddGastoRecurrente(gastoFechaPasada.gasto)
     }
     setShowConfirmacionFechaPasada(false)
     setGastoFechaPasada(null)
@@ -346,37 +342,75 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      {/* 1. HEADER CON ACCIÓN PRINCIPAL */}
-      <div className="flex justify-between items-center">
-        <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          Gastos Recurrentes
-        </h1>
-        <GradientButton 
-          variant="primary" 
-          size="lg"
-          onClick={() => setShowAddForm(!showAddForm)}
-          isDark={isDark}
-        >
-          {showAddForm ? (
-            <>
-              <X className="w-5 h-5 mr-2" />
-              Cerrar
-            </>
-          ) : (
-            <>
-              <Plus className="w-5 h-5 mr-2" />
-              Nuevo Gasto
-            </>
-          )}
-        </GradientButton>
+    <div className="max-w-7xl mx-auto">
+      {/* Header elegante */}
+      <div className="mb-8">
+        <div className="text-center mb-6">
+          <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Gastos Continuos
+          </h1>
+          <p className={`text-lg mt-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+            Automatiza y controla tus gastos regulares con inteligencia
+          </p>
+        </div>
+
+        {/* Estadísticas generales */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card isDark={isDark} className="text-center p-6">
+            <div className={`text-2xl font-bold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
+              {gastosRecurrentes.length}
+            </div>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Gastos configurados
+            </p>
+          </Card>
+          <Card isDark={isDark} className="text-center p-6">
+            <div className={`text-2xl font-bold ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>
+              {formatEuro(totalMensual)}
+            </div>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Estimación mensual
+            </p>
+          </Card>
+          <Card isDark={isDark} className="text-center p-6">
+            <div className={`text-2xl font-bold ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`}>
+              {formatEuro(totalMensual * 12)}
+            </div>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Proyección anual
+            </p>
+          </Card>
+        </div>
+
+        {/* Botón para crear nuevo gasto */}
+        <div className="text-center">
+          <GradientButton 
+            variant="primary" 
+            size="lg"
+            onClick={() => setShowAddForm(!showAddForm)}
+            isDark={isDark}
+            className="px-8 py-3"
+          >
+            {showAddForm ? (
+              <>
+                <X className="w-5 h-5 mr-2" />
+                Cerrar Formulario
+              </>
+            ) : (
+              <>
+                <Plus className="w-5 h-5 mr-2" />
+                Nuevo Gasto Continuo
+              </>
+            )}
+          </GradientButton>
+        </div>
       </div>
 
-      {/* 2. FORMULARIO COLAPSABLE */}
+      {/* Formulario colapsable */}
       {showAddForm && (
         <Card isDark={isDark}>
           <h2 className={`text-xl font-semibold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {editingIndex !== null ? 'Editar Gasto Recurrente' : 'Nuevo Gasto Recurrente'}
+            Nuevo Gasto Recurrente
           </h2>
           
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -627,7 +661,7 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
             <div className="flex gap-3">
               <GradientButton type="submit" variant="primary" size="lg" isDark={isDark}>
                 <Plus className="w-5 h-5 mr-2" />
-                {editingIndex !== null ? 'Actualizar' : 'Agregar'}
+                Agregar
               </GradientButton>
               <GradientButton type="button" variant="secondary" size="lg" onClick={handleCancel} isDark={isDark}>
                 <X className="w-5 h-5 mr-2" />
@@ -638,26 +672,40 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
         </Card>
       )}
 
-      {/* 3. CONTENIDO PRINCIPAL EN GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* COLUMNA PRINCIPAL: Gastos Configurados */}
-        <div className="lg:col-span-2">
-          <Card isDark={isDark}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+      {/* Contenido principal */}
+      <div className="space-y-12">
+        {/* Sección de gastos configurados */}
+        <div>
+          <div className={`flex items-center justify-center mb-6 pb-3 border-b-2 ${isDark ? 'border-blue-400/30' : 'border-blue-300/50'}`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isDark ? 'bg-blue-600/20' : 'bg-blue-100'}`}>
+                <svg className={`w-4 h-4 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className={`text-2xl font-bold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
                 Gastos Configurados
               </h2>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${isDark ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'}`}>
+              <span className={`text-sm px-3 py-1 rounded-full font-medium ${
+                isDark ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-800'
+              }`}>
                 {gastosRecurrentes.length} gastos
               </span>
             </div>
+          </div>
             
-            {gastosRecurrentes.length === 0 ? (
-              <div className={`text-center py-16 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                <div className="text-xl font-medium mb-3">Sin gastos recurrentes</div>
-                <div className="text-base mb-6">
-                  Comienza agregando tu primer gasto recurrente para automatizar tu contabilidad
-                </div>
+          {gastosRecurrentes.length === 0 ? (
+            <Card isDark={isDark} className="text-center py-12">
+              <div className={`text-6xl mb-4 ${isDark ? 'text-gray-600' : 'text-gray-300'}`}>
+                ⚡
+              </div>
+              <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                No tienes gastos continuos configurados
+              </p>
+              <p className={`text-sm mt-2 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                Automatiza tus gastos regulares para una gestión financiera más eficiente
+              </p>
+              <div className="mt-6">
                 <GradientButton 
                   variant="primary" 
                   onClick={() => setShowAddForm(true)}
@@ -666,222 +714,254 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
                   + Agregar Primer Gasto
                 </GradientButton>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {gastosRecurrentes.map((gasto, index) => {
-                  const rechazado = tieneRechazos(gasto.etiqueta)
-                  const ultimoRechazo = obtenerUltimoRechazo(gasto.etiqueta)
-                  const proximoGasto = proximosGastos.find(p => p.gasto.etiqueta === gasto.etiqueta)
-                  
-                  return (
-                    <div 
-                      key={index}
-                      className={`p-6 rounded-xl border transition-all duration-200 ${rechazado ? isDark ? 'border-yellow-700 bg-yellow-900/20' : 'border-yellow-300 bg-yellow-50' : isDark ? 'border-gray-600 bg-gray-700/30 hover:bg-gray-700/50' : 'border-gray-200 bg-white hover:shadow-md'}`}
-                    >
-                      <div className="flex flex-col h-full">
-                        {/* Header section */}
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                              <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                {gasto.etiqueta}
-                              </h3>
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${isDark ? 'bg-gray-600 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-                                {gasto.frecuencia}
-                              </span>
-                              {rechazado && (
-                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${isDark ? 'bg-yellow-800 text-yellow-200' : 'bg-yellow-200 text-yellow-800'}`}>
-                                  Rechazado
-                                </span>
-                              )}
-                            </div>
-                            
-                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {getFrecuenciaText(gasto)}
-                            </div>
-                            
-                            {rechazado && ultimoRechazo && (
-                              <div className={`p-3 rounded-lg mt-3 ${isDark ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200'}`}>
-                                <div className={`text-sm font-medium ${isDark ? 'text-yellow-200' : 'text-yellow-800'}`}>
-                                  Rechazado el {new Date(ultimoRechazo.fechaRechazo + 'T00:00:00').toLocaleDateString('es-ES')}
-                                </div>
-                              </div>
-                            )}
+            </Card>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              {gastosRecurrentes.map((gasto, index) => {
+                const rechazado = tieneRechazos(gasto.etiqueta)
+                const ultimoRechazo = obtenerUltimoRechazo(gasto.etiqueta)
+                const proximoGasto = proximosGastos.find(p => p.gasto.etiqueta === gasto.etiqueta)
+                
+                return (
+                  <Card 
+                    key={index}
+                    isDark={isDark}
+                    className={`p-4 transition-all duration-200 hover:shadow-lg ${rechazado ? isDark ? 'border-amber-400/50' : 'border-amber-300' : isDark ? 'hover:border-blue-400/50' : 'hover:border-blue-300'}`}
+                  >
+                    <div className="flex flex-col h-full">
+                      {/* Header */}
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            {gasto.etiqueta}
+                          </h3>
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            gasto.frecuencia === 'mensual'
+                              ? isDark ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-800'
+                              : gasto.frecuencia === 'semanal'
+                              ? isDark ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-100 text-purple-800'
+                              : isDark ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-100 text-indigo-800'
+                          }`}>
+                            {gasto.frecuencia}
+                          </span>
+                          {rechazado && (
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${isDark ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-800'}`}>
+                              Pausado
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {getFrecuenciaText(gasto)}
+                        </div>
+                        
+                        {/* Monto destacado */}
+                        <div className="mt-3">
+                          <div className={`text-2xl font-bold ${
+                            isDark ? 'text-slate-300' : 'text-slate-700'
+                          }`}>
+                            {formatEuro(gasto.monto)}
                           </div>
-                          
-                          <div className="text-right ml-4">
-                            <div className="text-2xl font-bold text-red-500 mb-1">
-                              -{formatEuro(gasto.monto)}
-                            </div>
-                            <div className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {gasto.frecuencia === 'mensual' ? 'por mes' : gasto.frecuencia === 'semanal' ? 'por semana' : 'por año'}
-                            </div>
+                          <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {gasto.frecuencia === 'mensual' ? 'por mes' : gasto.frecuencia === 'semanal' ? 'por semana' : 'por año'}
                           </div>
                         </div>
-
-                        {/* Spacer to push next section to bottom */}
-                        <div className="flex-1"></div>
                         
-                        {/* Bottom section - Próximo */}
-                        {proximoGasto && !rechazado && (
-                          <div className="flex items-center gap-2 mb-4">
-                            <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Próximo:</span>
-                            <span className={`text-sm font-medium ${proximoGasto.diasRestantes <= 3 ? 'text-red-500' : proximoGasto.diasRestantes <= 7 ? 'text-yellow-500' : 'text-green-500'}`}>
+                        {rechazado && ultimoRechazo && (
+                          <div className={`p-3 rounded-lg mt-3 ${isDark ? 'bg-amber-900/20 border border-amber-700' : 'bg-amber-50 border border-amber-200'}`}>
+                            <div className={`text-sm font-medium ${isDark ? 'text-amber-200' : 'text-amber-800'}`}>
+                              Pausado el {new Date(ultimoRechazo.fechaRechazo + 'T00:00:00').toLocaleDateString('es-ES')}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Spacer */}
+                      <div className="flex-1"></div>
+                      
+                      {/* Próximo */}
+                      {proximoGasto && !rechazado && (
+                        <div className={`mb-4 p-2 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Próximo:</span>
+                            <span className={`text-xs font-medium ${
+                              proximoGasto.diasRestantes <= 3 
+                                ? isDark ? 'text-orange-400' : 'text-orange-600'
+                                : proximoGasto.diasRestantes <= 7 
+                                ? isDark ? 'text-yellow-400' : 'text-yellow-600'
+                                : isDark ? 'text-green-400' : 'text-green-600'
+                            }`}>
                               {proximoGasto.proximaFecha.toLocaleDateString('es-ES', {
                                 day: 'numeric',
                                 month: 'short'
                               })} ({proximoGasto.diasRestantes === 0 ? 'Hoy' : proximoGasto.diasRestantes === 1 ? 'Mañana' : `${proximoGasto.diasRestantes}d`})
                             </span>
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       
-                      <div className="flex justify-end gap-2 mt-4">
-                        <GradientButton variant="secondary" size="sm" onClick={() => handleEdit(index)} isDark={isDark}>
+                      {/* Botones de acción */}
+                      <div className="flex gap-2">
+                        <GradientButton variant="secondary" size="sm" onClick={() => handleEdit(index)} isDark={isDark} className="flex-1">
                           <Edit className="w-4 h-4 mr-1" />
                           Editar
                         </GradientButton>
-                        <GradientButton variant="danger" size="sm" onClick={() => handleConfirmarEliminar(index)} isDark={isDark}>
+                        <GradientButton variant="danger" size="sm" onClick={() => handleConfirmarEliminar(index)} isDark={isDark} className="flex-1">
                           <Trash2 className="w-4 h-4 mr-1" />
                           Eliminar
                         </GradientButton>
                       </div>
                     </div>
+                  </Card>
                   )
-                })}
-              </div>
-            )}
-          </Card>
+              })
+}</div>
+          )}
         </div>
-        
-        {/* COLUMNA LATERAL: Panel de Resumen */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Métricas Resumen */}
-          <Card isDark={isDark}>
-            <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Resumen
-            </h3>
-            
-            <div className="space-y-4">
-              <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
-                <div className={`text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Total Gastos
+
+        {/* Sección de próximos gastos */}
+        {proximosGastos.length > 0 && (
+          <div>
+            <div className={`flex items-center justify-center mb-6 pb-3 border-b-2 ${isDark ? 'border-purple-400/30' : 'border-purple-300/50'}`}>
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isDark ? 'bg-purple-600/20' : 'bg-purple-100'}`}>
+                  <svg className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
-                <div className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {gastosRecurrentes.length}
-                </div>
-              </div>
-              
-              <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
-                <div className={`text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Estimación Mensual
-                </div>
-                <div className="text-xl font-bold text-red-500">
-                  -{formatEuro(totalMensual)}
-                </div>
-              </div>
-              
-              <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
-                <div className={`text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Estimación Anual
-                </div>
-                <div className="text-xl font-bold text-red-600">
-                  -{formatEuro(totalMensual * 12)}
-                </div>
-              </div>
-            </div>
-          </Card>
-          
-          {/* Próximos Gastos Urgentes */}
-          {proximosGastos.length > 0 && (
-            <Card isDark={isDark}>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  Próximos
-                </h3>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${isDark ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800'}`}>
-                  {proximosGastos.length}
+                <h2 className={`text-2xl font-bold ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>
+                  Próximos Gastos
+                </h2>
+                <span className={`text-sm px-3 py-1 rounded-full font-medium ${
+                  isDark ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-100 text-purple-800'
+                }`}>
+                  {proximosGastos.length} pendientes
                 </span>
               </div>
+            </div>
+            
+            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              {proximosGastos.slice(0, 6).map((proximo, index) => (
+                <Card 
+                  key={`${proximo.gasto.etiqueta}-${index}`}
+                  isDark={isDark}
+                  className={`p-4 transition-all duration-200 ${
+                    proximo.diasRestantes <= 3 
+                      ? isDark ? 'border-orange-400/50 hover:border-orange-400' : 'border-orange-300 hover:border-orange-400'
+                      : proximo.diasRestantes <= 7 
+                      ? isDark ? 'border-yellow-400/50 hover:border-yellow-400' : 'border-yellow-300 hover:border-yellow-400'
+                      : isDark ? 'hover:border-green-400/50' : 'hover:border-green-300'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {proximo.gasto.etiqueta}
+                      </h3>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        proximo.diasRestantes <= 3 
+                          ? isDark ? 'bg-orange-900/30 text-orange-300' : 'bg-orange-100 text-orange-800'
+                          : proximo.diasRestantes <= 7 
+                          ? isDark ? 'bg-yellow-900/30 text-yellow-300' : 'bg-yellow-100 text-yellow-800'
+                          : isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
+                      }`}>
+                        {proximo.diasRestantes === 0 ? 'Hoy' : proximo.diasRestantes === 1 ? 'Mañana' : `${proximo.diasRestantes}d`}
+                      </span>
+                    </div>
+                    
+                    <div className={`text-xl font-bold mb-2 ${
+                      isDark ? 'text-slate-300' : 'text-slate-700'
+                    }`}>
+                      {formatEuro(proximo.gasto.monto)}
+                    </div>
+                    
+                    <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {proximo.proximaFecha.toLocaleDateString('es-ES', {
+                        day: 'numeric',
+                        month: 'long'
+                      })}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Historial reciente */}
+        {notificacionesGastos && (() => {
+          const gastosGenerados = notificacionesGastos.obtenerNotificacionesRecientes()
+          return gastosGenerados.length > 0 ? (
+            <div>
+              <div className={`flex items-center justify-center mb-6 pb-3 border-b-2 ${isDark ? 'border-indigo-400/30' : 'border-indigo-300/50'}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isDark ? 'bg-indigo-600/20' : 'bg-indigo-100'}`}>
+                    <svg className={`w-4 h-4 ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h2 className={`text-2xl font-bold ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`}>
+                    Gastos Recientes
+                  </h2>
+                  <span className={`text-sm px-3 py-1 rounded-full font-medium ${
+                    isDark ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-100 text-indigo-800'
+                  }`}>
+                    Últimos 30 días
+                  </span>
+                </div>
+              </div>
               
-              <div className="space-y-3">
-                {proximosGastos.slice(0, 5).map((proximo, index) => (
-                  <div 
-                    key={`${proximo.gasto.etiqueta}-${index}`}
-                    className={`p-3 rounded-lg border ${proximo.diasRestantes <= 3 ? isDark ? 'border-red-600 bg-red-900/20' : 'border-red-300 bg-red-50' : proximo.diasRestantes <= 7 ? isDark ? 'border-yellow-600 bg-yellow-900/20' : 'border-yellow-300 bg-yellow-50' : isDark ? 'border-gray-600 bg-gray-700/30' : 'border-gray-200 bg-gray-50'}`}
+              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                {gastosGenerados.slice(0, 6).map((gasto: any, index: number) => (
+                  <Card 
+                    key={`${gasto.id}-${index}`}
+                    isDark={isDark}
+                    className="p-4 transition-all duration-200 hover:shadow-lg"
                   >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <div className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                          {proximo.gasto.etiqueta}
-                        </div>
-                        <div className={`text-xs ${proximo.diasRestantes <= 3 ? 'text-red-500' : proximo.diasRestantes <= 7 ? 'text-yellow-500' : isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {proximo.diasRestantes === 0 ? 'Hoy' : proximo.diasRestantes === 1 ? 'Mañana' : `En ${proximo.diasRestantes} días`}
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          {gasto.etiqueta}
+                        </h3>
+                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {new Date(gasto.fecha + 'T00:00:00').toLocaleDateString('es-ES', {
+                            day: 'numeric',
+                            month: 'long'
+                          })}
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-red-500 text-sm">
-                          -{formatEuro(proximo.gasto.monto)}
+                        <div className={`font-bold text-lg ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                          {formatEuro(gasto.monto)}
                         </div>
+                        <span className={`text-xs px-2 py-1 rounded-full ${isDark ? 'bg-emerald-900/30 text-emerald-300' : 'bg-emerald-100 text-emerald-800'}`}>
+                          Automático
+                        </span>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
-            </Card>
-          )}
-          
-          {/* Historial Reciente */}
-          {notificacionesGastos && (() => {
-            const gastosGenerados = notificacionesGastos.obtenerNotificacionesRecientes()
-            return gastosGenerados.length > 0 ? (
-              <Card isDark={isDark}>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    Recientes
-                  </h3>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${isDark ? 'bg-purple-900 text-purple-200' : 'bg-purple-100 text-purple-800'}`}>
-                    30d
-                  </span>
-                </div>
-                
-                <div className="space-y-3">
-                  {gastosGenerados.slice(0, 3).map((gasto: any, index: number) => (
-                    <div 
-                      key={`${gasto.id}-${index}`}
-                      className={`p-3 rounded-lg border ${isDark ? 'border-gray-600 bg-gray-700/30' : 'border-gray-200 bg-gray-50'}`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <div className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                            {gasto.etiqueta}
-                          </div>
-                          <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {new Date(gasto.fecha + 'T00:00:00').toLocaleDateString('es-ES', {
-                              day: 'numeric',
-                              month: 'short'
-                            })}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-red-500 text-sm">
-                            -{formatEuro(gasto.monto)}
-                          </div>
-                          <span className={`text-xs px-2 py-1 rounded-full ${isDark ? 'bg-green-800 text-green-200' : 'bg-green-100 text-green-800'}`}>
-                            Auto
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            ) : null
-          })()}
-        </div>
+            </div>
+          ) : null
+        })()}
       </div>
 
       {/* MODALES */}
+      <EditRecurringExpenseModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setEditingGasto(null)
+        }}
+        onSave={handleSaveEdit}
+        gasto={editingGasto?.gasto || null}
+        isDark={isDark}
+        etiquetas={etiquetas}
+        onCreateNewTag={onCreateNewTag}
+        newTagCreated={newTagCreated}
+      />
+
       <ConfirmacionBorradoModal
         isOpen={gastoAEliminar !== null}
         onClose={() => setGastoAEliminar(null)}

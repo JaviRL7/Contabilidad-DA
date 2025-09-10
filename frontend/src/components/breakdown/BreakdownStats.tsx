@@ -48,19 +48,27 @@ const BreakdownStats: React.FC<BreakdownStatsProps> = ({
   const mainStats = [
     {
       label: `Ingresos${period ? ` ${period}` : ''}`,
-      value: totalIngresos,
-      icon: <TrendingUp className="w-8 h-8 text-green-500" />,
+      value: totalIngresos.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      icon: (
+        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-500/20 text-green-500">
+          €
+        </div>
+      ),
       color: 'text-green-500'
     },
     {
       label: `Gastos${period ? ` ${period}` : ''}`,
-      value: totalGastos,
-      icon: <TrendingDown className="w-8 h-8 text-red-500" />,
+      value: totalGastos.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      icon: (
+        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-red-500/20 text-red-500">
+          €
+        </div>
+      ),
       color: 'text-red-500'
     },
     {
       label: 'Balance Final',
-      value: balance,
+      value: balance.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       icon: (
         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
           balance >= 0 
@@ -86,13 +94,29 @@ const BreakdownStats: React.FC<BreakdownStatsProps> = ({
                 <h3 className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   {stat.label}
                 </h3>
-                <p className={`text-2xl font-bold mt-1 ${
-                  stat.color || (index < 3 ? mainStats[index].color : getColorClasses())
-                }`}>
-                  {formatValue(stat.value)}
-                </p>
+                {index < 3 ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className={`text-2xl font-bold ${stat.color}`}>
+                      {stat.value}
+                    </p>
+                    {stat.icon}
+                  </div>
+                ) : typeof stat.value === 'number' && stat.icon ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className={`text-2xl font-bold ${stat.color || getColorClasses()}`}>
+                      {stat.value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                    {stat.icon}
+                  </div>
+                ) : (
+                  <p className={`text-2xl font-bold mt-1 ${
+                    stat.color || getColorClasses()
+                  }`}>
+                    {formatValue(stat.value)}
+                  </p>
+                )}
               </div>
-              {stat.icon}
+              {index >= 3 && !(typeof stat.value === 'number' && stat.icon) && stat.icon}
             </div>
           </div>
         </Card>

@@ -4,6 +4,7 @@ import BreakdownStats from '../breakdown/BreakdownStats'
 import CategoryRankings from '../breakdown/CategoryRankings'
 import YearNavigation from '../breakdown/YearNavigation'
 import MonthlyGrid from '../breakdown/MonthlyGrid'
+import YearlyIncomeEvolution from '../charts/YearlyIncomeEvolution'
 import { formatEuro } from '../../utils/formatters'
 
 interface MovimientoDiario {
@@ -156,6 +157,11 @@ const YearlyBreakdownView: React.FC<YearlyBreakdownViewProps> = ({
           {
             label: 'Promedio Mensual',
             value: yearlyTotals.balance / 12,
+            icon: (
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-500/20 text-gray-500">
+                €
+              </div>
+            ),
             color: 'gray'
           }
         ]}
@@ -175,6 +181,13 @@ const YearlyBreakdownView: React.FC<YearlyBreakdownViewProps> = ({
         currentYear={currentYear}
         isDark={isDark}
         onMonthClick={onGoToMonthly}
+      />
+
+      {/* Gráfica de evolución de ingresos */}
+      <YearlyIncomeEvolution
+        movimientos={movimientos}
+        isDark={isDark}
+        year={currentYear}
       />
     </div>
   )

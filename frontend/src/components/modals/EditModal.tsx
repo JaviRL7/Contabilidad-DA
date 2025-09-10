@@ -18,7 +18,7 @@ interface EditModalProps {
   onClose: () => void
   movimiento: MovimientoDiario | null
   isDark: boolean
-  onDeleteItem: (movimientoId: number, tipo: 'ingreso' | 'gasto', itemId: number) => void
+  onDeleteItem: (tipo: 'ingreso' | 'gasto', itemId: number, movimientoId: number) => void
   onSaveChanges: (movimiento: MovimientoDiario) => void
   etiquetas: {
     ingresos: string[]
@@ -60,6 +60,7 @@ const EditModal: React.FC<EditModalProps> = ({
   const [showAddForm, setShowAddForm] = useState<'ingreso' | 'gasto' | null>(null)
   const [tempValues, setTempValues] = useState({etiqueta: '', monto: ''})
   const [newItem, setNewItem] = useState({tipo: '', etiqueta: '', monto: ''})
+  const [deletingItems, setDeletingItems] = useState<Set<number>>(new Set())
   
   // Simple tag creation state
   const [showCreateTagModal, setShowCreateTagModal] = useState(false)
@@ -70,6 +71,7 @@ const EditModal: React.FC<EditModalProps> = ({
   useEffect(() => {
     if (originalMovimiento) {
       setEditedMovimiento({...originalMovimiento})
+      setDeletingItems(new Set()) // Limpiar estado de eliminación
     }
   }, [originalMovimiento])
 
@@ -442,8 +444,24 @@ const EditModal: React.FC<EditModalProps> = ({
                               </div>
                             </div>
                             <button
-                              onClick={() => onDeleteItem(editedMovimiento.id, 'ingreso', ingreso.id)}
-                              className="group p-2 rounded-lg hover:bg-red-500/10 transition-colors"
+                              onClick={() => {
+                                if (deletingItems.has(ingreso.id)) return // Evitar doble clic
+                                setDeletingItems(prev => new Set([...prev, ingreso.id]))
+                                onDeleteItem('ingreso', ingreso.id, editedMovimiento.id)
+                                  .finally(() => {
+                                    setDeletingItems(prev => {
+                                      const newSet = new Set(prev)
+                                      newSet.delete(ingreso.id)
+                                      return newSet
+                                    })
+                                  })
+                              }}
+                              disabled={deletingItems.has(ingreso.id)}
+                              className={`group p-2 rounded-lg transition-colors ${
+                                deletingItems.has(ingreso.id)
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : 'hover:bg-red-500/10'
+                              }`}
                               title="Eliminar ingreso"
                             >
                               <svg className="w-5 h-5 text-red-500 group-hover:text-red-600" fill="currentColor" viewBox="0 0 20 20">
@@ -640,8 +658,24 @@ const EditModal: React.FC<EditModalProps> = ({
                               </div>
                             </div>
                             <button
-                              onClick={() => onDeleteItem(editedMovimiento.id, 'gasto', gasto.id)}
-                              className="group p-2 rounded-lg hover:bg-red-500/10 transition-colors"
+                              onClick={() => {
+                                if (deletingItems.has(gasto.id)) return // Evitar doble clic
+                                setDeletingItems(prev => new Set([...prev, gasto.id]))
+                                onDeleteItem('gasto', gasto.id, editedMovimiento.id)
+                                  .finally(() => {
+                                    setDeletingItems(prev => {
+                                      const newSet = new Set(prev)
+                                      newSet.delete(gasto.id)
+                                      return newSet
+                                    })
+                                  })
+                              }}
+                              disabled={deletingItems.has(gasto.id)}
+                              className={`group p-2 rounded-lg transition-colors ${
+                                deletingItems.has(gasto.id)
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : 'hover:bg-red-500/10'
+                              }`}
                               title="Eliminar gasto"
                             >
                               <svg className="w-5 h-5 text-red-500 group-hover:text-red-600" fill="currentColor" viewBox="0 0 20 20">

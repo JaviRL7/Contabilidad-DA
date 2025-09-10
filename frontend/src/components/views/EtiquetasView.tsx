@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import Card from '../ui/Card'
 import GradientButton from '../ui/GradientButton'
 import ActionButton from '../ui/ActionButton'
@@ -191,129 +191,178 @@ const EtiquetasView: React.FC<EtiquetasViewProps> = ({
       return sum + amount
     }, 0)
 
-    console.log(`Etiqueta: ${tagName}`)
-    console.log('Todos los movimientos:', allMovements.length)
-    console.log('Movimientos de esta etiqueta:', tagMovements)
-    console.log('Total encontrado:', totalAmount)
     
     return { count: tagMovements.length, total: totalAmount }
   }
 
   const EtiquetaItem = ({ etiqueta, tipo }: { etiqueta: string, tipo: 'gasto' | 'ingreso' }) => {
     const esEsencial = etiquetasEsenciales.includes(etiqueta.toLowerCase())
-    const movementInfo = getTagMovementInfo(etiqueta)
+    const movementInfo = useMemo(() => getTagMovementInfo(etiqueta), [etiqueta, movimientos])
     
     return (
-      <div className={`flex items-center justify-between p-3 rounded-lg border transition-all duration-200 ${
-        isDark 
-          ? 'bg-gray-700/50 border-gray-600 hover:bg-gray-700' 
-          : tipo === 'ingreso' 
-            ? 'bg-green-50 border-green-200 hover:bg-green-100' 
-            : 'bg-red-50 border-red-200 hover:bg-red-100'
+      <Card isDark={isDark} className={`p-4 transition-all duration-200 hover:shadow-lg ${
+        tipo === 'ingreso' 
+          ? isDark ? 'hover:border-green-400/50' : 'hover:border-green-300'
+          : isDark ? 'hover:border-red-400/50' : 'hover:border-red-300'
       }`}>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className={`font-semibold text-base truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              {etiqueta}
-            </span>
-            <span className={`px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${
-              tipo === 'ingreso'
-                ? isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
-                : isDark ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-800'
-            }`}>
-              {tipo === 'ingreso' ? 'Ingreso' : 'Gasto'}
-            </span>
-            {esEsencial && (
-              <span className={`px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${
-                isDark 
-                  ? 'bg-amber-900/30 text-amber-300' 
-                  : 'bg-amber-100 text-amber-800'
-              }`}>
-                Esencial
+        <div className="flex items-center justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`font-semibold text-base truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                {etiqueta}
               </span>
-            )}
+              <span className={`px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${
+                tipo === 'ingreso'
+                  ? isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
+                  : isDark ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-800'
+              }`}>
+                {tipo === 'ingreso' ? 'Ingreso' : 'Gasto'}
+              </span>
+              {esEsencial && (
+                <span className={`px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${
+                  isDark 
+                    ? 'bg-amber-900/30 text-amber-300' 
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  Esencial
+                </span>
+              )}
+            </div>
+            <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              {movementInfo.count > 0 ? (
+                <>
+                  {movementInfo.count} mov • {new Intl.NumberFormat('es-ES', {
+                    style: 'currency',
+                    currency: 'EUR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(movementInfo.total)}
+                </>
+              ) : (
+                'Sin movimientos'
+              )}
+            </div>
           </div>
-          <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-            {movementInfo.count > 0 ? (
-              <>
-                {movementInfo.count} mov • {new Intl.NumberFormat('es-ES', {
-                  style: 'currency',
-                  currency: 'EUR',
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0
-                }).format(movementInfo.total)}
-              </>
-            ) : (
-              'Sin movimientos'
-            )}
+          
+          <div className="flex items-center gap-2 ml-3">
+            <ActionButton
+              variant="view"
+              onClick={() => handleVer(etiqueta, tipo)}
+              isDark={isDark}
+            >
+              Ver
+            </ActionButton>
+            <ActionButton
+              variant="edit"
+              onClick={() => handleEditar(etiqueta, tipo)}
+              isDark={isDark}
+            >
+              Editar
+            </ActionButton>
+            <ActionButton
+              variant="delete"
+              onClick={() => handleBorrar(etiqueta, tipo)}
+              isDark={isDark}
+            >
+              Borrar
+            </ActionButton>
           </div>
         </div>
-        
-        <div className="flex items-center gap-2 ml-3">
-          <ActionButton
-            variant="view"
-            onClick={() => handleVer(etiqueta, tipo)}
-            isDark={isDark}
-          >
-            Ver
-          </ActionButton>
-          <ActionButton
-            variant="edit"
-            onClick={() => handleEditar(etiqueta, tipo)}
-            isDark={isDark}
-          >
-            Editar
-          </ActionButton>
-          <ActionButton
-            variant="delete"
-            onClick={() => handleBorrar(etiqueta, tipo)}
-            isDark={isDark}
-          >
-            Borrar
-          </ActionButton>
-        </div>
-      </div>
+      </Card>
     )
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <Card isDark={isDark}>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+    <div className="max-w-7xl mx-auto">
+      {/* Header elegante */}
+      <div className="mb-8">
+        <div className="text-center mb-6">
+          <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Gestión de Etiquetas
-          </h2>
-          <GradientButton 
-            variant="primary" 
-            size="sm"
-            onClick={() => setShowCreateModal(true)}
-            isDark={isDark}
-          >
-            + Nueva
-          </GradientButton>
+          </h1>
+          <p className={`text-lg mt-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+            Organiza y administra tus categorías de ingresos y gastos
+          </p>
         </div>
 
-        {/* Layout de dos columnas más compacto */}
-        <div className="grid md:grid-cols-2 gap-6">
-        {/* Etiquetas de Ingresos */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className={`text-base font-medium ${isDark ? 'text-green-400' : 'text-green-600'}`}>
-              Ingresos
-            </h3>
-            <span className={`text-xs px-2 py-1 rounded-full ${
-              isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
-            }`}>
+        {/* Estadísticas generales */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card isDark={isDark} className="text-center p-6">
+            <div className={`text-2xl font-bold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
+              {todasLasEtiquetas.length}
+            </div>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Total de etiquetas
+            </p>
+          </Card>
+          <Card isDark={isDark} className="text-center p-6">
+            <div className={`text-2xl font-bold ${isDark ? 'text-green-400' : 'text-green-600'}`}>
               {etiquetasIngresos.length}
-            </span>
+            </div>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Etiquetas de ingresos
+            </p>
+          </Card>
+          <Card isDark={isDark} className="text-center p-6">
+            <div className={`text-2xl font-bold ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+              {etiquetasGastos.length}
+            </div>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Etiquetas de gastos
+            </p>
+          </Card>
+        </div>
+
+        {/* Botón para crear nueva etiqueta */}
+        <div className="text-center">
+          <GradientButton 
+            variant="primary" 
+            size="lg"
+            onClick={() => setShowCreateModal(true)}
+            isDark={isDark}
+            className="px-8 py-3"
+          >
+            + Nueva Etiqueta
+          </GradientButton>
+        </div>
+      </div>
+
+      {/* Secciones de etiquetas con diseño mejorado */}
+      <div className="space-y-12">
+        {/* Sección de Ingresos */}
+        <div>
+          <div className={`flex items-center justify-center mb-6 pb-3 border-b-2 ${isDark ? 'border-green-400/30' : 'border-green-300/50'}`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isDark ? 'bg-green-600/20' : 'bg-green-100'}`}>
+                <svg className={`w-4 h-4 ${isDark ? 'text-green-400' : 'text-green-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <h2 className={`text-2xl font-bold ${isDark ? 'text-green-400' : 'text-green-600'}`}>
+                Etiquetas de Ingresos
+              </h2>
+              <span className={`text-sm px-3 py-1 rounded-full font-medium ${
+                isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-800'
+              }`}>
+                {etiquetasIngresos.length} etiquetas
+              </span>
+            </div>
           </div>
           
           {etiquetasIngresos.length === 0 ? (
-            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              Sin etiquetas de ingresos
-            </p>
+            <Card isDark={isDark} className="text-center py-12">
+              <div className={`text-6xl mb-4 ${isDark ? 'text-gray-600' : 'text-gray-300'}`}>
+                📈
+              </div>
+              <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                No tienes etiquetas de ingresos aún
+              </p>
+              <p className={`text-sm mt-2 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                Crea tu primera etiqueta de ingreso para comenzar a organizar tus finanzas
+              </p>
+            </Card>
           ) : (
-            <div className="space-y-2">
+            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
               {etiquetasIngresos.map((etiqueta) => (
                 <EtiquetaItem key={`ingreso-${etiqueta}`} etiqueta={etiqueta} tipo="ingreso" />
               ))}
@@ -321,25 +370,40 @@ const EtiquetasView: React.FC<EtiquetasViewProps> = ({
           )}
         </div>
 
-        {/* Etiquetas de Gastos */}
+        {/* Sección de Gastos */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className={`text-base font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>
-              Gastos
-            </h3>
-            <span className={`text-xs px-2 py-1 rounded-full ${
-              isDark ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-800'
-            }`}>
-              {etiquetasGastos.length}
-            </span>
+          <div className={`flex items-center justify-center mb-6 pb-3 border-b-2 ${isDark ? 'border-red-400/30' : 'border-red-300/50'}`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isDark ? 'bg-red-600/20' : 'bg-red-100'}`}>
+                <svg className={`w-4 h-4 ${isDark ? 'text-red-400' : 'text-red-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+              </div>
+              <h2 className={`text-2xl font-bold ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+                Etiquetas de Gastos
+              </h2>
+              <span className={`text-sm px-3 py-1 rounded-full font-medium ${
+                isDark ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-800'
+              }`}>
+                {etiquetasGastos.length} etiquetas
+              </span>
+            </div>
           </div>
           
           {etiquetasGastos.length === 0 ? (
-            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              Sin etiquetas de gastos
-            </p>
+            <Card isDark={isDark} className="text-center py-12">
+              <div className={`text-6xl mb-4 ${isDark ? 'text-gray-600' : 'text-gray-300'}`}>
+                📉
+              </div>
+              <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                No tienes etiquetas de gastos aún
+              </p>
+              <p className={`text-sm mt-2 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                Crea tu primera etiqueta de gasto para comenzar a categorizar tus gastos
+              </p>
+            </Card>
           ) : (
-            <div className="space-y-2">
+            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
               {etiquetasGastos.map((etiqueta) => (
                 <EtiquetaItem key={`gasto-${etiqueta}`} etiqueta={etiqueta} tipo="gasto" />
               ))}
@@ -384,7 +448,6 @@ const EtiquetasView: React.FC<EtiquetasViewProps> = ({
         isDark={isDark}
         existingTags={todasLasEtiquetas}
       />
-      </Card>
     </div>
   )
 }

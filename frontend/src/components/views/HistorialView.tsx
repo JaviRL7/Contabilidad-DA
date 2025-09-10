@@ -30,6 +30,8 @@ interface HistorialViewProps {
   etiquetas: { ingresos: string[], gastos: string[] }
   onCreateNewTag: (field: string, tipo: 'ingreso' | 'gasto') => void
   newTagCreated?: {field: string, tagName: string} | null
+  onShowMonthlyBreakdown?: () => void
+  onShowYearlyBreakdown?: () => void
 }
 
 const HistorialView: React.FC<HistorialViewProps> = ({
@@ -42,7 +44,9 @@ const HistorialView: React.FC<HistorialViewProps> = ({
   onSaveNewMovement,
   etiquetas,
   onCreateNewTag,
-  newTagCreated
+  newTagCreated,
+  onShowMonthlyBreakdown,
+  onShowYearlyBreakdown
 }) => {
   const today = new Date().toISOString().split('T')[0]
   const currentMonth = new Date().getMonth()
@@ -178,8 +182,8 @@ const HistorialView: React.FC<HistorialViewProps> = ({
                 <span className="text-red-500 font-medium">Gastos:</span>
                 <span className="text-lg font-bold text-red-500">{todayGastos.toFixed(2)}€</span>
               </div>
-              <div className="my-4 h-px bg-gradient-to-r from-transparent via-gray-500/30 to-transparent"></div>
-              <div className="flex justify-between">
+              <div className="my-6 h-px bg-gradient-to-r from-transparent via-gray-500/30 to-transparent"></div>
+              <div className="flex justify-between pt-2">
                 <span className="font-medium text-blue-500">Balance:</span>
                 <span className="font-bold text-blue-500">{todayBalance.toFixed(2)}€</span>
               </div>
@@ -201,20 +205,29 @@ const HistorialView: React.FC<HistorialViewProps> = ({
                 <span className="text-lg font-bold text-red-500">{monthlyGastos.toFixed(2)}€</span>
               </div>
               <div className="h-px bg-gradient-to-r from-transparent via-gray-500/30 to-transparent"></div>
-              <div className="pt-2 mt-3">
-                <div className="flex justify-between items-center py-2 px-3">
+              <div className="pt-4 mt-4">
+                <div className="flex justify-between items-center py-3 px-3">
                   <span className="text-blue-500 font-medium">Balance</span>
                   <span className="text-lg font-bold text-blue-500">{monthlyBalance.toFixed(2)}€</span>
                 </div>
               </div>
             </div>
             <div className="mt-4 pt-3">
-              <button className="w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-500" title="Ver desglose mensual">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chart-column" aria-hidden="true">
-                  <path d="M3 3v16a2 2 0 0 0 2 2h16"></path>
-                  <path d="M18 17V9"></path>
-                  <path d="M13 17V5"></path>
-                  <path d="M8 17v-3"></path>
+              <button 
+                onClick={onShowMonthlyBreakdown}
+                className="w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-500" 
+                title="Ver desglose mensual"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 2v4"/>
+                  <path d="M16 2v4"/>
+                  <rect width="18" height="18" x="3" y="4" rx="2"/>
+                  <path d="M3 10h18"/>
+                  <path d="M8 14h.01"/>
+                  <path d="M12 14h.01"/>
+                  <path d="M16 14h.01"/>
+                  <path d="M8 18h.01"/>
+                  <path d="M12 18h.01"/>
                 </svg>
                 Ver Desglose Mensual
               </button>
@@ -244,10 +257,17 @@ const HistorialView: React.FC<HistorialViewProps> = ({
               </div>
             </div>
             <div className="mt-4 pt-3">
-              <button className="w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-purple-600 text-white hover:bg-purple-500" title="Ver desglose anual">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up" aria-hidden="true">
-                  <path d="M16 7h6v6"></path>
-                  <path d="m22 7-8.5 8.5-5-5L2 17"></path>
+              <button 
+                onClick={onShowYearlyBreakdown}
+                className="w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-purple-600 text-white hover:bg-purple-500" 
+                title="Ver desglose anual"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 3v16a2 2 0 0 0 2 2h16"/>
+                  <path d="M7 11v8"/>
+                  <path d="M11 7v12"/>
+                  <path d="M15 3v16"/>
+                  <path d="M19 8v11"/>
                 </svg>
                 Ver Desglose Anual
               </button>

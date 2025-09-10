@@ -19,6 +19,7 @@ import {
   formatEtiquetasForLegacy, 
   type Etiqueta 
 } from './services/etiquetasApi'
+import * as MovimientosAPI from './services/movimientosApi'
 
 // Hooks personalizados
 import { useRecurrentes } from './hooks/useRecurrentes'
@@ -33,7 +34,7 @@ import ResponsiveHeader from './components/layout/ResponsiveHeader'
 
 // Componentes reutilizables (modales)
 import ConfirmModal from './components/modals/ConfirmModal'
-import EditModal from './components/modals/EditModal'
+import EditModalRefactored from './components/modals/EditModalRefactored'
 import CreateTagModal from './components/modals/CreateTagModal'
 import RecurrentesPendientesModal from './components/modals/RecurrentesPendientesModal'
 
@@ -45,6 +46,7 @@ import HistorialView from './components/views/HistorialView'
 import BusquedaView from './components/views/BusquedaView'
 import EtiquetasView from './components/views/EtiquetasView'
 import RecurrentesView from './components/views/RecurrentesView'
+import DesglosesView from './components/views/DesglosesView'
 import YearlyBreakdownView from './components/views/YearlyBreakdownView'
 import MonthlyBreakdownView from './components/views/MonthlyBreakdownView'
 import AnalysisView from './components/views/AnalysisView'
@@ -174,12 +176,12 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     const loadData = async () => {
       setIsLoading(true)
       try {
-        const [movimientosResponse, etiquetasData] = await Promise.all([
-          axios.get('/api/movimientos/'),
+        const [movimientosData, etiquetasData] = await Promise.all([
+          MovimientosAPI.fetchMovimientos(),
           fetchEtiquetas()
         ])
 
-        setMovimientos(movimientosResponse.data.sort((a, b) => 
+        setMovimientos(movimientosData.sort((a, b) => 
           new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
         ))
         
@@ -188,6 +190,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         
       } catch (error) {
         console.error('Error loading data:', error)
+        alert('Error al cargar los datos: ' + (error instanceof Error ? error.message : 'Error desconocido'))
       } finally {
         setIsLoading(false)
       }
@@ -226,69 +229,50 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     if (!movimientoToDelete) return
 
     try {
-      await axios.delete(`/api/movimientos/${movimientoToDelete.id}/`)
+      await MovimientosAPI.deleteMovimiento(movimientoToDelete.fecha)
       setMovimientos(prev => prev.filter(m => m.id !== movimientoToDelete.id))
       setShowDeleteConfirm(false)
       setMovimientoToDelete(null)
     } catch (error) {
       console.error('Error al eliminar movimiento:', error)
-      alert('Error al eliminar el movimiento')
+      alert('Error al eliminar el movimiento: ' + (error instanceof Error ? error.message : 'Error desconocido'))
     }
   }
 
-  const handleDeleteItem = async (tipo: 'ingreso' | 'gasto', itemId: number, movimientoId: number) => {
-    try {
-      const endpoint = tipo === 'ingreso' ? 'ingresos' : 'gastos'
-      await axios.delete(`/api/${endpoint}/${itemId}/`)
-      
-      const response = await axios.get(`/api/movimientos/${movimientoId}/`)
-      const movimientoActualizado = response.data
-      
-      setMovimientos(prev => 
-        prev.map(m => m.id === movimientoId ? movimientoActualizado : m)
-      )
-    } catch (error) {
-      console.error(`Error al eliminar ${tipo}:`, error)
-      alert(`Error al eliminar el ${tipo}`)
-    }
-  }
+  // Eliminado - ahora se maneja dentro del EditModalRefactored
 
   const handleSaveChanges = async (movimiento: MovimientoDiario) => {
     try {
-      const movimientoData = {
-        fecha: movimiento.fecha,
-        ingresos: movimiento.ingresos.map(ing => ({
-          id: ing.id,
-          monto: ing.monto,
-          etiqueta: ing.etiqueta
-        })),
-        gastos: movimiento.gastos.map(gas => ({
-          id: gas.id,
-          monto: gas.monto,
-          etiqueta: gas.etiqueta,
-          es_recurrente: gas.es_recurrente || false
-        }))
+      const movimientoData = MovimientosAPI.transformarMovimientoParaApi(movimiento)
+      
+      // Validar antes de enviar
+      const errores = MovimientosAPI.validarMovimiento(movimientoData)
+      if (errores.length > 0) {
+        throw new Error('Errores de validación:\n' + errores.join('\n'))
       }
 
-      const response = await axios.post('/api/movimientos/', movimientoData)
-      const movimientoActualizado = response.data
+      const movimientoActualizado = await MovimientosAPI.updateMovimiento(movimientoData)
       
-      setMovimientos(prev => 
-        prev.map(m => m.fecha === movimientoActualizado.fecha ? movimientoActualizado : m)
-      )
+      // Actualizar el estado principal
+      setMovimientos(prev => {
+        const existingIndex = prev.findIndex(m => m.fecha === movimientoActualizado.fecha)
+        
+        if (existingIndex >= 0) {
+          const newMovimientos = [...prev]
+          newMovimientos[existingIndex] = movimientoActualizado
+          return newMovimientos
+        }
+        
+        return [movimientoActualizado, ...prev].sort((a, b) => 
+          new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        )
+      })
       
       setShowEditModal(false)
+      setEditingMovimiento(null)
     } catch (error) {
       console.error('Error al guardar cambios:', error)
-      
-      let errorMessage = 'Error al guardar los cambios del movimiento'
-      if (error.response?.status === 400) {
-        errorMessage = error.response.data.detail || errorMessage
-      } else if (error.response?.status === 404) {
-        errorMessage = 'Movimiento no encontrado'
-      }
-      
-      alert(`Error: ${errorMessage}`)
+      throw error // Relanzar para que el modal lo maneje
     }
   }
 
@@ -332,33 +316,20 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
 
     try {
       const ingresos = tempIncomes.map(item => ({
-        id: item.id,
         etiqueta: item.etiqueta,
-        monto: item.monto,
-        fecha: newMovementDate
+        monto: item.monto
       }))
       
       const gastos = tempExpenses.map(item => ({
-        id: item.id,
         etiqueta: item.etiqueta,
-        monto: item.monto,
-        fecha: newMovementDate
+        monto: item.monto
       }))
 
-      const ingresoTotal = tempIncomes.reduce((sum, item) => sum + item.monto, 0)
-      const totalGastos = tempExpenses.reduce((sum, item) => sum + item.monto, 0)
-
-      const nuevoMovimiento = {
-        fecha: newMovementDate,
-        ingreso_total: ingresoTotal,
+      const movimientoCreado = await MovimientosAPI.crearMovimientoDesdeFormulario(
+        newMovementDate,
         ingresos,
-        gastos,
-        total_gastos: totalGastos,
-        balance: ingresoTotal - totalGastos
-      }
-
-      const response = await axios.post('/api/movimientos/', nuevoMovimiento)
-      const movimientoCreado = response.data
+        gastos
+      )
       
       setMovimientos(prev => {
         const filtered = prev.filter(m => m.fecha !== newMovementDate)
@@ -367,7 +338,10 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         )
       })
       
+      const ingresoTotal = tempIncomes.reduce((sum, item) => sum + item.monto, 0)
+      const totalGastos = tempExpenses.reduce((sum, item) => sum + item.monto, 0)
       const balance = ingresoTotal - totalGastos
+      
       if (balance > 150) {
         triggerConfetti()
       }
@@ -379,6 +353,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       
     } catch (error) {
       console.error('Error al crear movimiento:', error)
+      alert('Error al crear el movimiento: ' + (error instanceof Error ? error.message : 'Error desconocido'))
     }
   }
 
@@ -498,10 +473,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     if (!pendingMovement) return
 
     try {
-      const ingresoTotal = pendingMovement.ingresos.reduce((sum, item) => sum + item.monto, 0)
-      const totalGastos = pendingMovement.gastos.reduce((sum, item) => sum + item.monto, 0)
-
-      const nuevoMovimiento = {
+      const movimientoData = {
         fecha: pendingMovement.fecha,
         ingresos: pendingMovement.ingresos.map(item => ({
           etiqueta: item.etiqueta,
@@ -513,17 +485,19 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         }))
       }
 
-      const response = await axios.post('/api/movimientos/', nuevoMovimiento)
-      const movimientoCreado = response.data
+      const movimientoCreado = await MovimientosAPI.createMovimiento(movimientoData)
       
       setMovimientos(prev => {
-        const filtered = prev.filter(m => m.id !== movimientoCreado.id)
+        const filtered = prev.filter(m => m.fecha !== movimientoCreado.fecha)
         return [movimientoCreado, ...filtered].sort((a, b) => 
           new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
         )
       })
       
+      const ingresoTotal = pendingMovement.ingresos.reduce((sum, item) => sum + item.monto, 0)
+      const totalGastos = pendingMovement.gastos.reduce((sum, item) => sum + item.monto, 0)
       const balance = ingresoTotal - totalGastos
+      
       if (balance > 150) {
         triggerConfetti()
       }
@@ -534,7 +508,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       
     } catch (error) {
       console.error('Error al crear movimiento:', error)
-      alert('Error al crear el movimiento. Por favor, inténtalo de nuevo.')
+      alert('Error al crear el movimiento: ' + (error instanceof Error ? error.message : 'Error desconocido'))
       setShowCreateConfirm(false)
       setPendingMovement(null)
     }
@@ -556,8 +530,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         }]
       }
 
-      const response = await axios.post('/api/movimientos/', movimientoData)
-      const movimientoCreado = response.data
+      const movimientoCreado = await MovimientosAPI.createMovimiento(movimientoData)
       
       setMovimientos(prev => {
         const filtered = prev.filter(m => m.fecha !== gasto.fechaEsperada)
@@ -568,7 +541,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       
     } catch (error) {
       console.error('Error al confirmar gasto recurrente:', error)
-      alert('Error al crear el gasto recurrente. Inténtalo de nuevo.')
+      alert('Error al crear el gasto recurrente: ' + (error instanceof Error ? error.message : 'Error desconocido'))
     }
   }
 
@@ -630,8 +603,14 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
           setShowYearlyBreakdown(true)
         }}
         onShowMonthlyBreakdown={() => {
+          const now = new Date()
+          setSelectedMonthYear({ month: now.getMonth(), year: now.getFullYear() })
           setShowYearlyBreakdown(false)
           setShowMonthlyBreakdown(true)
+        }}
+        onResetBreakdowns={() => {
+          setShowYearlyBreakdown(false)
+          setShowMonthlyBreakdown(false)
         }}
         showYearlyBreakdown={showYearlyBreakdown}
         showMonthlyBreakdown={showMonthlyBreakdown}
@@ -690,6 +669,16 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 etiquetas={etiquetas}
                 onCreateNewTag={handleCreateNewTag}
                 newTagCreated={newTagCreated}
+                onShowMonthlyBreakdown={() => {
+                  const now = new Date()
+                  setSelectedMonthYear({ month: now.getMonth(), year: now.getFullYear() })
+                  setShowYearlyBreakdown(false)
+                  setShowMonthlyBreakdown(true)
+                }}
+                onShowYearlyBreakdown={() => {
+                  setShowMonthlyBreakdown(false)
+                  setShowYearlyBreakdown(true)
+                }}
               />
           
         ) : activeSection === 'buscar' ? (
@@ -702,6 +691,16 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 isDark={isDark}
                 onEditMovimiento={handleEditMovimiento}
                 onDeleteMovimiento={handleDeleteMovimiento}
+                onShowMonthlyBreakdown={() => {
+                  const now = new Date()
+                  setSelectedMonthYear({ month: now.getMonth(), year: now.getFullYear() })
+                  setShowYearlyBreakdown(false)
+                  setShowMonthlyBreakdown(true)
+                }}
+                onShowYearlyBreakdown={() => {
+                  setShowMonthlyBreakdown(false)
+                  setShowYearlyBreakdown(true)
+                }}
               />
           
         ) : (
@@ -740,6 +739,29 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 etiquetas={etiquetas}
                 onCreateNewTag={handleCreateNewTag}
                 newTagCreated={newTagCreated}
+              />
+            )}
+
+            {/* Vista Desgloses */}
+            {activeSection === 'desgloses' && (
+              <DesglosesView
+                isDark={isDark}
+                movimientos={movimientos}
+                onShowMonthlyBreakdown={(month, year) => {
+                  if (month !== undefined && year !== undefined) {
+                    setSelectedMonthYear({ month, year })
+                  } else {
+                    const now = new Date()
+                    setSelectedMonthYear({ month: now.getMonth(), year: now.getFullYear() })
+                  }
+                  setShowYearlyBreakdown(false)
+                  setShowMonthlyBreakdown(true)
+                }}
+                onShowYearlyBreakdown={(year) => {
+                  // Podríamos usar el año si fuera necesario para filtrar
+                  setShowMonthlyBreakdown(false)
+                  setShowYearlyBreakdown(true)
+                }}
               />
             )}
 
@@ -788,7 +810,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       />
 
       {/* Modal de edición de movimiento */}
-      <EditModal
+      <EditModalRefactored
         isOpen={showEditModal}
         onClose={() => {
           setShowEditModal(false)
@@ -796,8 +818,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         }}
         movimiento={editingMovimiento}
         isDark={isDark}
-        onDeleteItem={handleDeleteItem}
-        onSaveChanges={handleSaveChanges}
+        onSave={handleSaveChanges}
         etiquetas={etiquetas}
       />
 
