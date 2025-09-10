@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import NumberInput from '../ui/NumberInput'
+import DatePicker from 'react-datepicker'
+import { parseISO } from 'date-fns'
+import { registerLocale } from 'react-datepicker'
+import { es } from 'date-fns/locale'
+
+registerLocale('es', es)
 
 interface AddMovementFormProps {
   isDark: boolean
@@ -22,7 +28,7 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
   onCreateNewTag,
   newTagCreated
 }) => {
-  const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0])
+  const [fecha, setFecha] = useState<Date>(new Date())
   const [ingresos, setIngresos] = useState<Array<{ id: number, etiqueta: string, monto: number }>>([])
   const [gastos, setGastos] = useState<Array<{ id: number, etiqueta: string, monto: number }>>([])
   const [newIngreso, setNewIngreso] = useState({ etiqueta: '', monto: '' })
@@ -96,7 +102,7 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
     }
 
     onSave({
-      fecha,
+      fecha: fecha.toISOString().split('T')[0],
       ingresos: ingresos.map(i => ({ etiqueta: i.etiqueta, monto: i.monto })),
       gastos: gastos.map(g => ({ etiqueta: g.etiqueta, monto: g.monto }))
     })
@@ -119,15 +125,18 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
         <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
           Fecha del movimiento
         </label>
-        <input
-          type="date"
-          value={fecha}
-          onChange={(e) => setFecha(e.target.value)}
+        <DatePicker
+          selected={fecha}
+          onChange={(date) => setFecha(date || new Date())}
+          dateFormat="dd/MM/yyyy"
+          locale="es"
+          placeholderText="Seleccionar fecha"
           className={`w-48 px-3 py-2 rounded-lg border text-sm ${
             isDark 
               ? 'bg-gray-700 border-gray-600 text-white' 
               : 'bg-white border-gray-300 text-gray-900'
           } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent`}
+          calendarClassName={isDark ? 'dark-calendar' : ''}
         />
       </div>
 

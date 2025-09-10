@@ -96,34 +96,27 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
   )
 
   return (
-    <header className={`sticky top-0 z-50 ${isDark ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm shadow-sm border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <header className={`sticky top-0 z-50 ${isDark ? 'bg-blue-900' : 'bg-white'} shadow-lg ${isDark ? '' : 'border-b border-gray-200'}`}>
+      <div className="container mx-auto px-6 lg:px-8">
+        <div className="flex items-center justify-between h-32">
           
-          {/* Logo Section - Responsive */}
-          <div className="flex items-center gap-4">
+          {/* Logo Section - Más hacia la derecha y tamaño ajustado */}
+          <div className="flex items-center justify-center flex-1 lg:flex-none lg:justify-start lg:ml-16">
             <div className="flex-shrink-0">
-              <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white rounded-full flex items-center justify-center shadow-md border-2 border-pink-300/70 hover:border-pink-400/80 transition-colors duration-300">
+              <div className="w-18 h-18 sm:w-20 sm:h-20 lg:w-28 lg:h-28 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-pink-300/70 hover:border-pink-400/80 transition-all duration-300 hover:scale-105">
                 <img 
                   src="/Logo1.png" 
                   alt="Logo" 
-                  className="w-8 h-8 lg:w-12 lg:h-12 object-contain"
+                  className="w-12 h-12 sm:w-14 sm:h-14 lg:w-20 lg:h-20 object-contain"
                 />
               </div>
             </div>
-            
-            {/* Title - Hidden on mobile */}
-            <div className="hidden sm:block">
-              <h1 className={`text-xl lg:text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Contabilidad
-              </h1>
-            </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-6">
+          {/* Desktop Navigation - Más a la izquierda y con más separación */}
+          <div className="hidden lg:flex items-center gap-12 mr-8">
             {/* Main Navigation */}
-            <nav className="flex space-x-1">
+            <nav className="flex space-x-4">
               {navItems.map((item) => (
                 <NavButton key={item.key} item={item} />
               ))}
@@ -131,7 +124,7 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
 
             {/* Breakdown Tabs - Only show when needed */}
             {showBreakdownTabs && (
-              <div className="flex items-center gap-1 pl-4 border-l border-gray-300 dark:border-gray-600">
+              <div className="flex items-center gap-2 pl-8">
                 {breakdownTabs.map((tab) => (
                   <BreakdownTab key={tab.key} tab={tab} />
                 ))}
@@ -141,10 +134,10 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
             {/* Dark Mode Toggle */}
             <button
               onClick={handleDarkToggle}
-              className={`p-2 rounded-lg transition-all duration-200 ${
+              className={`p-3 rounded-lg transition-all duration-200 ${
                 isDark 
-                  ? 'bg-gradient-to-r from-yellow-500 to-orange-400 text-white shadow-md hover:shadow-yellow-400/25 hover:from-yellow-400 hover:to-orange-300' 
-                  : 'bg-gradient-to-r from-slate-600 to-slate-500 text-white shadow-md hover:shadow-slate-400/25 hover:from-slate-500 hover:to-slate-400'
+                  ? 'bg-gradient-to-r from-yellow-500 to-orange-400 text-white shadow-lg hover:shadow-yellow-400/25 hover:from-yellow-400 hover:to-orange-300' 
+                  : 'bg-gradient-to-r from-slate-600 to-slate-500 text-white shadow-lg hover:shadow-slate-400/25 hover:from-slate-500 hover:to-slate-400'
               }`}
               title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
             >
@@ -161,7 +154,7 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
           </div>
 
           {/* Mobile Controls */}
-          <div className="lg:hidden flex items-center gap-3">
+          <div className="lg:hidden flex items-center gap-4 absolute right-6">
             {/* Dark Mode Toggle - Mobile */}
             <button
               onClick={handleDarkToggle}
@@ -186,7 +179,7 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={`p-2 rounded-lg transition-colors duration-200 ${
-                isDark ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                isDark ? 'text-blue-300 hover:text-white hover:bg-blue-800' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
               {mobileMenuOpen ? (
@@ -205,7 +198,7 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className={`lg:hidden absolute left-0 right-0 mt-2 mx-4 p-4 rounded-xl shadow-lg border transition-all duration-200 ${
-            isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            isDark ? 'bg-blue-800 border-blue-700' : 'bg-white border-gray-200'
           }`}>
             {/* Mobile Navigation */}
             <nav className="space-y-2">

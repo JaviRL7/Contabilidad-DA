@@ -30,11 +30,11 @@ const Card: React.FC<CardProps> = ({
       ? 'bg-gray-800 text-white' 
       : 'bg-white text-gray-900',
     today: isDark
-      ? 'bg-gradient-to-r from-blue-900 to-purple-900 border-2 border-blue-500 shadow-xl shadow-blue-500/25 text-white'
-      : 'bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 shadow-xl shadow-blue-200/25 text-gray-900',
+      ? 'bg-gray-800 text-white ring-2 ring-blue-500/30 shadow-blue-500/20'
+      : 'bg-white text-gray-900 ring-2 ring-blue-400/30 shadow-blue-400/20',
     recurring: isDark
-      ? 'bg-gradient-to-r from-green-900 to-teal-900 border border-green-500 shadow-lg shadow-green-500/20 text-white'
-      : 'bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 shadow-lg shadow-green-200/20 text-gray-900',
+      ? 'bg-gray-800 text-white border-2 border-yellow-300/40 shadow-yellow-300/10'
+      : 'bg-white text-gray-900 border-2 border-yellow-400/50 shadow-yellow-400/10',
     analysis: isDark
       ? 'bg-gray-800 border border-gray-700 text-white hover:shadow-lg'
       : 'bg-white border border-gray-200 text-gray-900 hover:shadow-lg'

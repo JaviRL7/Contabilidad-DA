@@ -679,20 +679,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
           /* ========================================
               VISTA HISTORIAL CON RESÚMENES INTEGRADOS
               ======================================== */
-          <div className="space-y-6">
-            {/* Panel de resúmenes arriba */}
-            <div className="w-full">
-              <SummaryPanel
-                movimientos={movimientos}
-                isDark={isDark}
-                onShowMonthlyBreakdown={() => setShowMonthlyBreakdown(true)}
-                onShowYearlyBreakdown={() => setShowYearlyBreakdown(true)}
-              />
-            </div>
-            
-            {/* Vista principal abajo */}
-            <div className="w-full">
-              <HistorialView
+          <HistorialView
                 movimientos={movimientos}
                 isDark={isDark}
                 onEditMovimiento={handleEditMovimiento}
@@ -704,35 +691,18 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 onCreateNewTag={handleCreateNewTag}
                 newTagCreated={newTagCreated}
               />
-            </div>
-          </div>
           
         ) : activeSection === 'buscar' ? (
           
           /* ========================================
               VISTA BÚSQUEDA CON RESÚMENES INTEGRADOS  
               ======================================== */
-          <div className="space-y-6">
-            {/* Panel de resúmenes arriba */}
-            <div className="w-full">
-              <SummaryPanel
-                movimientos={movimientos}
-                isDark={isDark}
-                onShowMonthlyBreakdown={() => setShowMonthlyBreakdown(true)}
-                onShowYearlyBreakdown={() => setShowYearlyBreakdown(true)}
-              />
-            </div>
-            
-            {/* Vista principal abajo */}
-            <div className="w-full">
-              <BusquedaView
+          <BusquedaView
                 movimientos={movimientos}
                 isDark={isDark}
                 onEditMovimiento={handleEditMovimiento}
                 onDeleteMovimiento={handleDeleteMovimiento}
               />
-            </div>
-          </div>
           
         ) : (
           
