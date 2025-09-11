@@ -175,7 +175,7 @@ const MonthList: React.FC<MonthListProps> = ({
                   <BarChart3 className={`w-6 h-6 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
                 </div>
                 <div className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {formatEuro(month.balanceBruto)}
+                  Total: {formatEuro(month.balanceBruto)}
                 </div>
               </div>
             </div>

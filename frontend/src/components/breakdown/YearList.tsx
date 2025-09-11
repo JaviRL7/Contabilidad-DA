@@ -177,7 +177,7 @@ const YearList: React.FC<YearListProps> = ({
                   <BarChart2 className="w-6 h-6 text-blue-400" />
                 </div>
                 <div className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {formatEuro(year.balanceBruto)}
+                  Total: {formatEuro(year.balanceBruto)}
                 </div>
               </div>
             </div>
