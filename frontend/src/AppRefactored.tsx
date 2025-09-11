@@ -683,6 +683,10 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         onToggleDark={onToggleDark}
         setIsDark={setIsDark}
         showBreakdownTabs={showYearlyBreakdown || showMonthlyBreakdown}
+        onResetBreakdowns={() => {
+          setShowYearlyBreakdown(false)
+          setShowMonthlyBreakdown(false)
+        }}
         onShowYearlyBreakdown={() => {
           setShowMonthlyBreakdown(false)
           setShowYearlyBreakdown(true)
@@ -715,6 +719,10 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
               setShowYearlyBreakdown(false)
               setActiveSection('historial')
             }}
+            onNavigateToDesgloses={() => {
+              setShowYearlyBreakdown(false)
+              setActiveSection('desgloses')
+            }}
             onGoToMonthly={(month, year) => {
               setSelectedMonthYear({ month, year })
               setShowYearlyBreakdown(false)
@@ -730,6 +738,10 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
             onBack={() => {
               setShowMonthlyBreakdown(false)
               setActiveSection('historial')
+            }}
+            onNavigateToDesgloses={() => {
+              setShowMonthlyBreakdown(false)
+              setActiveSection('desgloses')
             }}
             onNavigateToYearly={() => {
               setShowMonthlyBreakdown(false)

@@ -57,8 +57,8 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
       onClick={() => {
         setActiveSection(item.key)
         if (isMobile) setMobileMenuOpen(false)
-        // Resetear estados de desglose cuando se navegue a otra sección
-        if (item.key !== 'desgloses' && onResetBreakdowns) {
+        // Resetear estados de desglose cuando se navegue a otra sección o específicamente a desgloses
+        if (onResetBreakdowns) {
           onResetBreakdowns()
         }
       }}
