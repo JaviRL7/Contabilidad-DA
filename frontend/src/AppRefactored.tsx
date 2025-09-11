@@ -747,6 +747,9 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
               setShowMonthlyBreakdown(false)
               setShowYearlyBreakdown(true)
             }}
+            onMonthChange={(month, year) => {
+              setSelectedMonthYear({ month: month - 1, year })
+            }}
             onEditMovimiento={handleEditMovimiento}
             onDeleteMovimiento={handleDeleteMovimiento}
           />

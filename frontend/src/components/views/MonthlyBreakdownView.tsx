@@ -5,9 +5,11 @@ import BreakdownHeader from '../breakdown/BreakdownHeader'
 import BreakdownStats from '../breakdown/BreakdownStats'
 import CategoryRankings from '../breakdown/CategoryRankings'
 import DetailedMovementsList from '../breakdown/DetailedMovementsList'
+import MonthNavigation from '../breakdown/MonthNavigation'
 import ChartContainer from '../charts/ChartContainer'
 import SimpleBarChart from '../charts/SimpleBarChart'
 import SimplePieChart from '../charts/SimplePieChart'
+import SimpleLineChart from '../charts/SimpleLineChart'
 import { formatEuro } from '../../utils/formatters'
 
 interface MovimientoDiario {
@@ -28,6 +30,7 @@ interface MonthlyBreakdownViewProps {
   onBack: () => void
   onNavigateToDesgloses?: () => void
   onNavigateToYearly?: () => void
+  onMonthChange?: (month: number, year: number) => void
   onEditMovimiento?: (movimiento: MovimientoDiario) => void
   onDeleteMovimiento?: (movimiento: MovimientoDiario) => void
 }
@@ -40,11 +43,42 @@ const MonthlyBreakdownView: React.FC<MonthlyBreakdownViewProps> = ({
   onBack,
   onNavigateToDesgloses,
   onNavigateToYearly,
+  onMonthChange,
   onEditMovimiento,
   onDeleteMovimiento
 }) => {
   const [viewMode, setViewMode] = useState<'chart' | 'list'>('chart')
-  const [filterType, setFilterType] = useState<'all' | 'ingreso' | 'gasto'>('all')
+
+  // Obtener meses disponibles con movimientos
+  const availableMonths = useMemo(() => {
+    const monthsWithData = new Set<string>()
+    
+    movimientos.forEach(mov => {
+      const fecha = new Date(mov.fecha)
+      const month = fecha.getMonth() + 1
+      const year = fecha.getFullYear()
+      monthsWithData.add(`${year}-${month}`)
+    })
+    
+    const monthNames = [
+      'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+      'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+    ]
+    
+    return Array.from(monthsWithData)
+      .map(dateStr => {
+        const [year, month] = dateStr.split('-').map(Number)
+        return {
+          month,
+          year,
+          label: `${monthNames[month - 1]} ${year}`
+        }
+      })
+      .sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year
+        return b.month - a.month
+      })
+  }, [movimientos])
 
   // Filtrar movimientos del mes seleccionado
   const monthlyMovimientos = useMemo(() => {
@@ -125,6 +159,22 @@ const MonthlyBreakdownView: React.FC<MonthlyBreakdownViewProps> = ({
   const monthName = monthNames[selectedMonth - 1]
   const periodLabel = `${monthName} ${selectedYear}`
 
+  // Funciones para navegación de meses
+  const handleGoToCurrentMonth = () => {
+    const currentDate = new Date()
+    const currentMonth = currentDate.getMonth() + 1
+    const currentYear = currentDate.getFullYear()
+    
+    // Verificar si existe ese mes en los datos disponibles
+    const hasCurrentMonth = availableMonths.some(
+      m => m.month === currentMonth && m.year === currentYear
+    )
+    
+    if (hasCurrentMonth && onMonthChange) {
+      onMonthChange(currentMonth, currentYear)
+    }
+  }
+
   const breadcrumbItems = [
     {
       label: 'Análisis Financiero',
@@ -157,6 +207,18 @@ const MonthlyBreakdownView: React.FC<MonthlyBreakdownViewProps> = ({
         breadcrumbItems={breadcrumbItems}
         hideBackButton={true}
       />
+
+      {/* Navegación de mes */}
+      {onMonthChange && (
+        <MonthNavigation
+          currentMonth={selectedMonth}
+          currentYear={selectedYear}
+          availableMonths={availableMonths}
+          isDark={isDark}
+          onMonthChange={onMonthChange}
+          onGoToCurrent={handleGoToCurrentMonth}
+        />
+      )}
 
       {/* Controles de vista */}
       <div className="flex justify-end gap-2">
@@ -254,15 +316,17 @@ const MonthlyBreakdownView: React.FC<MonthlyBreakdownViewProps> = ({
             isDark={isDark}
             className="md:col-span-2"
           >
-            <SimpleBarChart
-              data={monthlyMovimientos.slice(0, 15).map(mov => ({
-                label: new Date(mov.fecha).getDate().toString(),
-                value: mov.balance
-              }))}
+            <SimpleLineChart
+              data={monthlyMovimientos
+                .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+                .map(mov => ({
+                  label: new Date(mov.fecha).getDate().toString(),
+                  value: mov.balance
+                }))}
               isDark={isDark}
-              maxHeight={150}
-              showValues={false}
-              horizontal={false}
+              maxHeight={180}
+              showValues={true}
+              showGrid={true}
             />
           </ChartContainer>
         </div>
@@ -272,9 +336,7 @@ const MonthlyBreakdownView: React.FC<MonthlyBreakdownViewProps> = ({
       {viewMode === 'list' && (
         <DetailedMovementsList
           weeklyData={weeklyData}
-          filterType={filterType}
           isDark={isDark}
-          onFilterChange={setFilterType}
           onEditMovimiento={onEditMovimiento}
           onDeleteMovimiento={onDeleteMovimiento}
         />

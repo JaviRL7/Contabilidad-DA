@@ -72,26 +72,36 @@ const SimpleBarChart: React.FC<SimpleBarChartProps> = ({
   }
 
   // Gráfico vertical
+  const textTopHeight = showValues ? 20 : 0 // Espacio reservado para texto superior
+  const textBottomHeight = 25 // Espacio reservado para etiquetas inferiores
+  const availableBarHeight = maxHeight - textTopHeight - textBottomHeight
+  
   return (
     <div className="flex items-end justify-between gap-2" style={{ height: maxHeight }}>
       {data.map((item, index) => {
         const percentage = maxValue > 0 ? (Math.abs(item.value) / maxValue) * 100 : 0
-        const height = (percentage / 100) * maxHeight
+        const height = (percentage / 100) * availableBarHeight
         
         return (
-          <div key={index} className="flex flex-col items-center gap-2 flex-1">
+          <div key={index} className="flex flex-col justify-end items-center flex-1" style={{ height: maxHeight }}>
             {showValues && (
-              <div className={`text-xs font-medium ${
-                item.value >= 0 ? 'text-green-500' : 'text-red-500'
-              }`}>
+              <div 
+                className={`text-xs font-medium mb-2 ${
+                  item.value >= 0 ? 'text-green-500' : 'text-red-500'
+                }`}
+                style={{ minHeight: textTopHeight }}
+              >
                 {typeof item.value === 'number' ? formatEuro(item.value) : item.value}
               </div>
             )}
             <div
-              className={`w-full rounded-t transition-all duration-500 ${getBarColor(item, index)} min-h-[4px]`}
+              className={`w-full rounded-t transition-all duration-500 ${getBarColor(item, index)} min-h-[4px] mb-2`}
               style={{ height: Math.max(4, height) }}
             />
-            <div className={`text-xs text-center font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            <div 
+              className={`text-xs text-center font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
+              style={{ minHeight: textBottomHeight }}
+            >
               {item.label}
             </div>
           </div>

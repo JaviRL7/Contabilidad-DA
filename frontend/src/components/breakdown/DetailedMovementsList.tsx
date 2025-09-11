@@ -1,7 +1,6 @@
 import React from 'react'
-import { Filter, Edit, Trash2 } from 'lucide-react'
+import { Edit, Trash2 } from 'lucide-react'
 import Card from '../ui/Card'
-import GradientButton from '../ui/GradientButton'
 import ActionButton from '../ui/ActionButton'
 import { formatEuro } from '../../utils/formatters'
 
@@ -21,69 +20,58 @@ interface WeeklyData {
 
 interface DetailedMovementsListProps {
   weeklyData: WeeklyData
-  filterType: 'all' | 'ingreso' | 'gasto'
   isDark: boolean
-  onFilterChange: (filter: 'all' | 'ingreso' | 'gasto') => void
   onEditMovimiento?: (movimiento: MovimientoDiario) => void
   onDeleteMovimiento?: (movimiento: MovimientoDiario) => void
 }
 
 const DetailedMovementsList: React.FC<DetailedMovementsListProps> = ({
   weeklyData,
-  filterType,
   isDark,
-  onFilterChange,
   onEditMovimiento,
   onDeleteMovimiento
 }) => {
   return (
     <Card variant="default" isDark={isDark}>
       <div className="p-6">
-        {/* Header con controles */}
-        <div className="flex items-center justify-between mb-6">
-          <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            Movimientos Detallados
+        {/* Header mejorado */}
+        <div className="mb-6">
+          <h3 className={`text-xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Lista de Movimientos
           </h3>
-          <div className="flex gap-2">
-            <GradientButton
-              variant={filterType === 'all' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => onFilterChange('all')}
-              isDark={isDark}
-            >
-              <Filter className="w-4 h-4 mr-1" />
-              Todos
-            </GradientButton>
-            <GradientButton
-              variant={filterType === 'ingreso' ? 'success' : 'secondary'}
-              size="sm"
-              onClick={() => onFilterChange('ingreso')}
-              isDark={isDark}
-            >
+          
+          {/* Tabla header con mejor diseño */}
+          <div className={`grid grid-cols-12 gap-4 py-4 px-6 rounded-t-xl ${
+            isDark 
+              ? 'bg-gray-800/50 border-b border-gray-600' 
+              : 'bg-gray-100 border-b border-gray-300'
+          }`}>
+            <div className={`col-span-3 font-bold text-sm uppercase tracking-wide ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Fecha
+            </div>
+            <div className={`col-span-2 font-bold text-sm uppercase tracking-wide text-center ${
+              isDark ? 'text-green-400' : 'text-green-600'
+            }`}>
               Ingresos
-            </GradientButton>
-            <GradientButton
-              variant={filterType === 'gasto' ? 'danger' : 'secondary'}
-              size="sm"
-              onClick={() => onFilterChange('gasto')}
-              isDark={isDark}
-            >
+            </div>
+            <div className={`col-span-2 font-bold text-sm uppercase tracking-wide text-center ${
+              isDark ? 'text-red-400' : 'text-red-600'
+            }`}>
               Gastos
-            </GradientButton>
+            </div>
+            <div className={`col-span-2 font-bold text-sm uppercase tracking-wide text-center ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Balance
+            </div>
+            <div className={`col-span-3 font-bold text-sm uppercase tracking-wide text-center ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Acciones
+            </div>
           </div>
-        </div>
-
-        {/* Tabla header */}
-        <div className={`grid grid-cols-12 gap-4 py-3 px-4 mb-4 rounded-lg border-b-2 ${
-          isDark 
-            ? 'bg-gray-700/50 border-gray-600 text-gray-300' 
-            : 'bg-gray-50 border-gray-200 text-gray-700'
-        }`}>
-          <div className="col-span-3 font-semibold">Fecha</div>
-          <div className="col-span-2 font-semibold text-center">Ingresos</div>
-          <div className="col-span-2 font-semibold text-center">Gastos</div>
-          <div className="col-span-2 font-semibold text-center">Balance</div>
-          <div className="col-span-3 font-semibold text-center">Acciones</div>
         </div>
 
         {/* Lista de movimientos por semana */}
@@ -124,7 +112,7 @@ const DetailedMovementsList: React.FC<DetailedMovementsListProps> = ({
 
                     {/* Ingresos */}
                     <div className="col-span-2 flex items-center justify-center">
-                      {(filterType === 'all' || filterType === 'ingreso') && mov.ingreso_total > 0 ? (
+                      {mov.ingreso_total > 0 ? (
                         <div className="text-center">
                           <div className="text-green-500 font-bold">
                             +{formatEuro(mov.ingreso_total)}
@@ -135,14 +123,14 @@ const DetailedMovementsList: React.FC<DetailedMovementsListProps> = ({
                         </div>
                       ) : (
                         <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                          --
+                          0,00€
                         </span>
                       )}
                     </div>
 
                     {/* Gastos */}
                     <div className="col-span-2 flex items-center justify-center">
-                      {(filterType === 'all' || filterType === 'gasto') && mov.total_gastos > 0 ? (
+                      {mov.total_gastos > 0 ? (
                         <div className="text-center">
                           <div className="text-red-500 font-bold">
                             -{formatEuro(mov.total_gastos)}
@@ -153,29 +141,23 @@ const DetailedMovementsList: React.FC<DetailedMovementsListProps> = ({
                         </div>
                       ) : (
                         <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                          --
+                          0,00€
                         </span>
                       )}
                     </div>
 
                     {/* Balance */}
                     <div className="col-span-2 flex items-center justify-center">
-                      {filterType === 'all' ? (
-                        <div className="text-center">
-                          <div className={`font-bold ${
-                            mov.balance >= 0 ? 'text-blue-500' : 'text-red-500'
-                          }`}>
-                            {formatEuro(mov.balance)}
-                          </div>
-                          <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {mov.balance >= 0 ? 'Positivo' : 'Negativo'}
-                          </div>
+                      <div className="text-center">
+                        <div className={`font-bold ${
+                          mov.balance >= 0 ? 'text-blue-500' : 'text-red-500'
+                        }`}>
+                          {formatEuro(mov.balance)}
                         </div>
-                      ) : (
-                        <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                          --
-                        </span>
-                      )}
+                        <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {mov.balance >= 0 ? 'Positivo' : 'Negativo'}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Acciones */}
