@@ -68,6 +68,8 @@ export const useRecurrentesPendientes = (
 
   // Función para verificar si existe un movimiento con este gasto en la fecha
   const existeMovimientoConGasto = (fecha: string, etiqueta: string): boolean => {
+    if (!movimientos || !Array.isArray(movimientos)) return false
+    
     const movimiento = movimientos.find(m => m.fecha === fecha)
     if (!movimiento) return false
     
@@ -78,6 +80,11 @@ export const useRecurrentesPendientes = (
 
   // Función principal para detectar gastos pendientes (solo mes actual)
   const detectarGastosPendientes = useCallback(() => {
+    if (!movimientos || !Array.isArray(movimientos) || !gastosRecurrentes || !Array.isArray(gastosRecurrentes)) {
+      setGastosPendientes([])
+      return
+    }
+    
     const hoy = new Date()
     const pendientes: GastoPendiente[] = []
 
@@ -160,10 +167,10 @@ export const useRecurrentesPendientes = (
 
   // Ejecutar detección cuando cambien los datos
   useEffect(() => {
-    if (gastosRecurrentes.length > 0) {
+    if (gastosRecurrentes && gastosRecurrentes.length > 0 && movimientos && Array.isArray(movimientos)) {
       detectarGastosPendientes()
     }
-  }, [detectarGastosPendientes, gastosRecurrentes])
+  }, [detectarGastosPendientes, gastosRecurrentes, movimientos])
 
   return {
     gastosPendientes,
