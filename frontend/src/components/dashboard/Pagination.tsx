@@ -1,5 +1,5 @@
 import React from 'react'
-import GradientButton from '../ui/GradientButton'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface PaginationProps {
   currentPage: number
@@ -43,71 +43,40 @@ const Pagination: React.FC<PaginationProps> = ({
   }
 
   return (
-    <div className="flex justify-center items-center gap-2 mt-6">
-      <GradientButton
-        variant="secondary"
-        size="sm"
+    <div className="flex items-center justify-center mt-4 gap-3">
+      <button
         onClick={onPrev}
         disabled={!hasPrev}
-        isDark={isDark}
+        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+          !hasPrev
+            ? isDark
+              ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            : isDark
+              ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+        }`}
       >
-        ‹ Anterior
-      </GradientButton>
-      
-      {currentPage > 2 && (
-        <>
-          <GradientButton
-            variant="secondary"
-            size="sm"
-            onClick={() => onGoToPage(0)}
-            isDark={isDark}
-          >
-            1
-          </GradientButton>
-          {currentPage > 3 && (
-            <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>...</span>
-          )}
-        </>
-      )}
-      
-      {getVisiblePages().map((page) => (
-        <GradientButton
-          key={page}
-          variant={page === currentPage ? 'primary' : 'secondary'}
-          size="sm"
-          onClick={() => onGoToPage(page)}
-          isDark={isDark}
-          className="min-w-[2rem]"
-        >
-          {page + 1}
-        </GradientButton>
-      ))}
-      
-      {currentPage < totalPages - 3 && (
-        <>
-          {currentPage < totalPages - 4 && (
-            <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>...</span>
-          )}
-          <GradientButton
-            variant="secondary"
-            size="sm"
-            onClick={() => onGoToPage(totalPages - 1)}
-            isDark={isDark}
-          >
-            {totalPages}
-          </GradientButton>
-        </>
-      )}
-      
-      <GradientButton
-        variant="secondary"
-        size="sm"
+        <ChevronLeft className="w-4 h-4" />
+      </button>
+      <span className={`px-3 py-1 text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+        {currentPage + 1} de {totalPages}
+      </span>
+      <button
         onClick={onNext}
         disabled={!hasNext}
-        isDark={isDark}
+        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+          !hasNext
+            ? isDark
+              ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            : isDark
+              ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+        }`}
       >
-        Siguiente ›
-      </GradientButton>
+        <ChevronRight className="w-4 h-4" />
+      </button>
     </div>
   )
 }

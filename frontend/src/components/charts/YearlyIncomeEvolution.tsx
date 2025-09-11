@@ -67,8 +67,14 @@ const YearlyIncomeEvolution: React.FC<YearlyIncomeEvolutionProps> = ({
         Evolución de Ingresos {year}
       </h3>
       
-      <div className="flex justify-center">
-        <svg width={chartWidth} height={chartHeight + 40} className="overflow-visible">
+      <div className="flex justify-center overflow-x-auto">
+        <svg 
+          width={chartWidth} 
+          height={chartHeight + 40} 
+          className="overflow-visible min-w-full max-w-none"
+          viewBox={`0 0 ${chartWidth} ${chartHeight + 40}`}
+          preserveAspectRatio="xMidYMid meet"
+        >
           {/* Grid lines */}
           {[0, 0.25, 0.5, 0.75, 1].map((ratio) => (
             <g key={ratio}>

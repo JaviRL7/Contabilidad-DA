@@ -141,9 +141,18 @@ const MonthList: React.FC<MonthListProps> = ({
               {/* Información del mes */}
               <div className="flex-1">
                 <div className="flex items-center gap-3">
-                  <h4 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  <h4 className={`text-lg font-semibold ${
+                    month.year === new Date().getFullYear() && month.month === new Date().getMonth() + 1
+                      ? isDark ? 'text-blue-400' : 'text-blue-600'
+                      : isDark ? 'text-white' : 'text-gray-900'
+                  }`}>
                     {month.monthName}
                   </h4>
+                  {month.year === new Date().getFullYear() && month.month === new Date().getMonth() + 1 && (
+                    <div className="px-2 py-1 rounded-full text-xs font-medium bg-blue-600 text-white">
+                      Actual
+                    </div>
+                  )}
                   <div className={`px-2 py-1 rounded-full text-xs font-medium ${
                     isDark ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
                   }`}>

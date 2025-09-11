@@ -4,7 +4,7 @@ interface ActionButtonProps {
   variant: 'view' | 'edit' | 'delete'
   onClick: () => void
   isDark?: boolean
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({ 
@@ -17,18 +17,27 @@ const ActionButton: React.FC<ActionButtonProps> = ({
     switch (variant) {
       case 'view':
         return isDark
-          ? 'bg-gradient-to-r from-slate-600 to-slate-500 text-white shadow hover:shadow-slate-500/25 hover:from-slate-500 hover:to-slate-400'
-          : 'bg-gradient-to-r from-slate-500 to-slate-400 text-white shadow hover:shadow-slate-400/25 hover:from-slate-400 hover:to-slate-300'
+          ? 'bg-slate-600 text-white hover:bg-slate-500'
+          : 'bg-slate-500 text-white hover:bg-slate-400'
       case 'edit':
         return isDark
-          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow hover:shadow-indigo-500/25 hover:from-indigo-500 hover:to-purple-500'
-          : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow hover:shadow-indigo-400/25 hover:from-indigo-400 hover:to-purple-400'
+          ? 'bg-indigo-600 text-white hover:bg-indigo-500'
+          : 'bg-indigo-500 text-white hover:bg-indigo-400'
       case 'delete':
         return isDark
-          ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow hover:shadow-red-500/25 hover:from-red-500 hover:to-red-400'
-          : 'bg-gradient-to-r from-red-500 to-red-400 text-white shadow hover:shadow-red-400/25 hover:from-red-400 hover:to-red-300'
+          ? 'bg-red-600 text-white hover:bg-red-500'
+          : 'bg-red-500 text-white hover:bg-red-400'
       default:
         return ''
+    }
+  }
+
+  const getTooltipText = () => {
+    switch (variant) {
+      case 'view': return 'Ver'
+      case 'edit': return 'Editar'
+      case 'delete': return 'Borrar'
+      default: return ''
     }
   }
 
@@ -59,15 +68,20 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   }
 
   return (
-    <button
-      onClick={onClick}
-      className={`group relative overflow-hidden px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${getVariantStyles()}`}
-    >
-      <span className="relative z-10 flex items-center gap-1">
+    <div className="relative group">
+      <button
+        onClick={onClick}
+        className={`p-2 rounded-full transition-all duration-200 ${getVariantStyles()}`}
+        title={getTooltipText()}
+      >
         {getIcon()}
-        {children}
-      </span>
-    </button>
+      </button>
+      {/* Tooltip on hover */}
+      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+        {getTooltipText()}
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+      </div>
+    </div>
   )
 }
 
