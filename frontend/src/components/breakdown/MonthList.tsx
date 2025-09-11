@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Calendar, BarChart3, ArrowUpDown, TrendingUp } from 'lucide-react'
+import { Calendar, BarChart3, ArrowUpDown, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react'
 import Card from '../ui/Card'
 import { formatEuro } from '../../utils/formatters'
 
@@ -32,6 +32,8 @@ const MonthList: React.FC<MonthListProps> = ({
 }) => {
   const [sortType, setSortType] = useState<SortType>('date')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const [currentPage, setCurrentPage] = useState(0)
+  const itemsPerPage = 6
 
   const toggleSort = (newSortType: SortType) => {
     if (sortType === newSortType) {
@@ -40,9 +42,26 @@ const MonthList: React.FC<MonthListProps> = ({
       setSortType(newSortType)
       setSortOrder('desc')
     }
+    setCurrentPage(0) // Reset to first page when sorting changes
   }
 
   const sortedMonths = getSortedMonths(sortType, sortOrder)
+  const totalPages = Math.ceil(sortedMonths.length / itemsPerPage)
+  const startIndex = currentPage * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentMonths = sortedMonths.slice(startIndex, endIndex)
+
+  const nextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1)
+    }
+  }
+
+  const prevPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
 
   return (
     <Card isDark={isDark} className="p-6">
@@ -64,8 +83,8 @@ const MonthList: React.FC<MonthListProps> = ({
           </div>
         </div>
 
-        {/* Botones de ordenación */}
-        <div className="flex gap-2">
+        {/* Botones de ordenación y paginación */}
+        <div className="flex items-center gap-2">
           <button
             onClick={() => toggleSort('date')}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
@@ -103,12 +122,51 @@ const MonthList: React.FC<MonthListProps> = ({
               <ArrowUpDown className={`w-3 h-3 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
             )}
           </button>
+
+          {/* Controles de paginación */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1 ml-2">
+              <button
+                onClick={prevPage}
+                disabled={currentPage === 0}
+                className={`p-2 rounded-lg transition-all duration-200 ${
+                  currentPage === 0
+                    ? isDark
+                      ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : isDark
+                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className={`px-3 py-1 text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                {currentPage + 1} / {totalPages}
+              </span>
+              <button
+                onClick={nextPage}
+                disabled={currentPage >= totalPages - 1}
+                className={`p-2 rounded-lg transition-all duration-200 ${
+                  currentPage >= totalPages - 1
+                    ? isDark
+                      ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : isDark
+                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Lista de meses */}
       <div className="space-y-3">
-        {sortedMonths.map((month) => (
+        {currentMonths.map((month) => (
           <div
             key={`${month.year}-${month.month}`}
             onClick={() => onMonthClick(month.month, month.year)}
