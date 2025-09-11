@@ -26,6 +26,7 @@ interface MonthlyBreakdownViewProps {
   selectedYear: number
   isDark: boolean
   onBack: () => void
+  onNavigateToDesgloses?: () => void
   onNavigateToYearly?: () => void
   onEditMovimiento?: (movimiento: MovimientoDiario) => void
   onDeleteMovimiento?: (movimiento: MovimientoDiario) => void
@@ -37,6 +38,7 @@ const MonthlyBreakdownView: React.FC<MonthlyBreakdownViewProps> = ({
   selectedYear,
   isDark,
   onBack,
+  onNavigateToDesgloses,
   onNavigateToYearly,
   onEditMovimiento,
   onDeleteMovimiento
@@ -127,6 +129,10 @@ const MonthlyBreakdownView: React.FC<MonthlyBreakdownViewProps> = ({
     {
       label: 'Análisis Financiero',
       onClick: onBack
+    },
+    {
+      label: 'Desgloses',
+      onClick: onNavigateToDesgloses
     },
     {
       label: 'Desglose Anual',
