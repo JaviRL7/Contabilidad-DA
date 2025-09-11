@@ -107,12 +107,6 @@ const HistorialView: React.FC<HistorialViewProps> = ({
         />
       )}
 
-      {/* Notificaciones pendientes */}
-      <PendingMovementCard
-        pendingCount={pendingNotificationsCount}
-        isDark={isDark}
-        onNavigateToCalendar={onNavigateToCalendar}
-      />
 
       {/* Texto de movimientos registrados */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-6">
@@ -129,12 +123,17 @@ const HistorialView: React.FC<HistorialViewProps> = ({
         <div className="lg:col-span-1 flex justify-end">
           <button
             onClick={onToggleAddForm}
-            className="rounded-lg font-medium transition-all duration-200 flex items-center gap-1 shadow-md px-6 py-3 text-base bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white cursor-pointer"
+            className="rounded-xl font-medium transition-all duration-200 flex items-center gap-3 shadow-lg hover:shadow-xl px-8 py-4 text-lg bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white cursor-pointer transform hover:scale-105"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus w-5 h-5 mr-2" aria-hidden="true">
-              <path d="M5 12h14"></path>
-              <path d="M12 5v14"></path>
-            </svg>
+            {showAddForm ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
+            )}
             {showAddForm ? 'Cerrar Formulario' : 'Nuevo Movimiento'}
           </button>
         </div>
@@ -181,6 +180,13 @@ const HistorialView: React.FC<HistorialViewProps> = ({
 
         {/* Columna derecha - Resúmenes */}
         <div className="lg:col-span-1 space-y-6">
+          {/* Notificaciones pendientes - justo arriba del resumen de hoy */}
+          <PendingMovementCard
+            pendingCount={pendingNotificationsCount}
+            isDark={isDark}
+            onNavigateToCalendar={onNavigateToCalendar}
+          />
+          
           {/* Resumen de Hoy */}
           <div className="bg-gray-800 rounded-lg shadow p-4">
             <h3 className="text-lg font-semibold mb-2 text-center text-white">Hoy</h3>

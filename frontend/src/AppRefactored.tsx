@@ -157,6 +157,9 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   
   // Estados para RecurrentesPendientesModal
   const [showRecurrentesPendientes, setShowRecurrentesPendientes] = useState(false)
+  
+  // Estado para notificación pendiente
+  const [pendingNotificationId, setPendingNotificationId] = useState<number | null>(null)
 
   // ========================================
   // HOOKS PERSONALIZADOS
@@ -306,6 +309,27 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     }
   }
 
+  const handleCreateMovementFromCalendarNotification = (notificacion: NotificacionCalendario) => {
+    // Guardar el ID de la notificación para convertirla después
+    setPendingNotificationId(notificacion.id!)
+    
+    // Cambiar a vista historial para mostrar el formulario
+    setActiveSection('historial')
+    setShowAddForm(true)
+    
+    // Pre-cargar la fecha de la notificación
+    setNewMovementDate(notificacion.fecha)
+    
+    // Si hay etiqueta, pre-cargarla según el tipo
+    if (notificacion.etiqueta) {
+      if (notificacion.tipo === 'ingreso') {
+        setNewIncome(prev => ({ ...prev, etiqueta: notificacion.etiqueta! }))
+      } else if (notificacion.tipo === 'gasto') {
+        setNewExpense(prev => ({ ...prev, etiqueta: notificacion.etiqueta! }))
+      }
+    }
+  }
+
   const handleNavigateToCalendar = () => {
     setActiveSection('calendario')
   }
@@ -394,6 +418,9 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       setTempExpenses([])
       setNewMovementDate(new Date().toISOString().split('T')[0])
       setShowAddForm(false)
+      
+      // Recargar notificaciones pendientes automáticamente
+      await reloadPendingNotifications()
       
     } catch (error) {
       console.error('Error al crear movimiento:', error)
@@ -549,6 +576,20 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       setShowAddForm(false)
       setShowCreateConfirm(false)
       setPendingMovement(null)
+      
+      // Si el movimiento fue creado desde una notificación, marcarla como convertida
+      if (pendingNotificationId) {
+        try {
+          const { notificacionesApi } = await import('./services/calendarApi')
+          await notificacionesApi.convertirNotificacion(pendingNotificationId)
+        } catch (conversionError) {
+          console.error('Error al marcar notificación como convertida:', conversionError)
+        }
+        setPendingNotificationId(null)
+      }
+      
+      // Recargar notificaciones pendientes automáticamente
+      await reloadPendingNotifications()
       
     } catch (error) {
       console.error('Error al crear movimiento:', error)
@@ -826,7 +867,10 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
               <CalendarView
                 isDark={isDark}
                 etiquetas={etiquetas}
-                onCreateMovementFromNotification={handleCreateMovementFromNotification}
+                onCreateMovementFromNotification={handleCreateMovementFromCalendarNotification}
+                onSaveNewMovement={handleSaveMovementFromForm}
+                onCreateNewTag={handleCreateNewTag}
+                newTagCreated={newTagCreated}
               />
             )}
 

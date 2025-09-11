@@ -120,89 +120,82 @@ const YearList: React.FC<YearListProps> = ({
             <div className="flex items-center justify-between">
               {/* Información del año */}
               <div className="flex-1">
-                <div className="flex items-center gap-4 mb-3">
-                  <h4 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    {year.year}
-                  </h4>
-                  <div className="flex gap-2">
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                {/* Header con año destacado */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h4 className={`text-3xl font-bold ${
+                      year.year === 2025 
+                        ? 'text-blue-400' 
+                        : isDark ? 'text-white' : 'text-gray-900'
+                    }`}>
+                      {year.year}
+                    </h4>
+                    {year.year === 2025 && (
+                      <div className="px-2 py-1 rounded-full text-xs font-medium bg-blue-600 text-white">
+                        Año Actual
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-3">
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                       isDark ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
                     }`}>
                       {year.movimientosCount} movimientos
                     </div>
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                       isDark ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800'
                     }`}>
-                      {year.monthsWithMovements} meses activos
+                      {year.monthsWithMovements} meses con actividad
+                    </div>
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      isDark ? 'bg-purple-900 text-purple-200' : 'bg-purple-100 text-purple-800'
+                    }`}>
+                      {Math.round((year.monthsWithMovements / 12) * 100)}% del año
                     </div>
                   </div>
                 </div>
                 
-                {/* Estadísticas detalladas */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-green-600 font-bold text-lg">
+                {/* Estadísticas principales */}
+                <div className="grid grid-cols-2 gap-6 mb-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Total Ingresos
+                      </span>
+                    </div>
+                    <div className="text-green-600 font-bold text-xl">
                       {formatEuro(year.totalIngresos)}
                     </div>
-                    <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Total Ingresos
-                    </div>
                   </div>
                   
-                  <div className="text-center">
-                    <div className="text-red-600 font-bold text-lg">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Total Gastos
+                      </span>
+                    </div>
+                    <div className="text-red-600 font-bold text-xl">
                       {formatEuro(year.totalGastos)}
                     </div>
-                    <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Total Gastos
-                    </div>
                   </div>
-                  
-                  <div className="text-center">
-                    <div className={`font-bold text-lg ${ 
-                      year.balance > 0 ? 'text-green-500' : 
-                      year.balance < 0 ? 'text-red-500' : 'text-blue-500'
-                    }`}>
+                </div>
+
+                {/* Balance destacado */}
+                <div className={`p-3 rounded-lg ${
+                  isDark ? 'bg-blue-900/30' : 'bg-blue-50'
+                } border-l-4 border-blue-500`}>
+                  <div className="flex items-center justify-between">
+                    <span className={`font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Balance Final {year.year}
+                    </span>
+                    <div className="font-bold text-xl text-blue-500">
                       {formatEuro(year.balance)}
                     </div>
-                    <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Balance
-                    </div>
                   </div>
-                  
-                  <div className="text-center">
-                    <div className={`font-bold text-lg ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>
-                      {formatEuro(year.balanceBruto)}
-                    </div>
-                    <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Actividad Total
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Indicador visual */}
-              <div className="flex flex-col items-center gap-2 ml-4">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                  isDark ? 'bg-gray-600' : 'bg-white'
-                } border-2 border-purple-200`}>
-                  <TrendingUp className={`w-8 h-8 ${
-                    year.balance > 0 ? 'text-green-500' : 
-                    year.balance < 0 ? 'text-red-500' : 
-                    isDark ? 'text-purple-400' : 'text-purple-600'
-                  }`} />
-                </div>
-                
-                {/* Progress bar para meses activos */}
-                <div className="w-16">
-                  <div className={`h-2 rounded-full ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}>
-                    <div 
-                      className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500"
-                      style={{ width: `${(year.monthsWithMovements / 12) * 100}%` }}
-                    ></div>
-                  </div>
-                  <div className={`text-xs text-center mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {Math.round((year.monthsWithMovements / 12) * 100)}%
+                  <div className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Actividad total: {formatEuro(year.balanceBruto)}
                   </div>
                 </div>
               </div>

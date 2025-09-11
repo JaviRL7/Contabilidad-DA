@@ -6,22 +6,40 @@ import {
   type NotificacionCalendarioCreate,
   notificacionesApi 
 } from '../../services/calendarApi'
+import AddMovementForm from '../forms/AddMovementForm'
+import PerfectScrollbar from 'react-perfect-scrollbar'
+import 'react-perfect-scrollbar/dist/css/styles.css'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
+import '../../datepicker.css'
 
 interface CalendarViewProps {
   isDark: boolean
   etiquetas: { ingresos: string[], gastos: string[] }
   onCreateMovementFromNotification: (notificacion: NotificacionCalendario) => void
+  onSaveNewMovement: (movement: {
+    fecha: string
+    ingresos: Array<{ etiqueta: string, monto: number }>
+    gastos: Array<{ etiqueta: string, monto: number }>
+  }) => void
+  onCreateNewTag: (field: string, tipo: 'ingreso' | 'gasto') => void
+  newTagCreated?: {field: string, tagName: string} | null
 }
 
 const CalendarView: React.FC<CalendarViewProps> = ({
   isDark,
   etiquetas,
-  onCreateMovementFromNotification
+  onCreateMovementFromNotification,
+  onSaveNewMovement,
+  onCreateNewTag,
+  newTagCreated
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [notificaciones, setNotificaciones] = useState<NotificacionCalendario[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showMovementModal, setShowMovementModal] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [preselectedTag, setPreselectedTag] = useState<{etiqueta: string, tipo: 'ingreso' | 'gasto'} | null>(null)
   
   // Form state
   const [newNotification, setNewNotification] = useState({
@@ -88,13 +106,26 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   }
 
   const handleConvertToMovement = async (notificacion: NotificacionCalendario) => {
+    onCreateMovementFromNotification(notificacion)
+  }
+
+  const handleSaveMovement = async (movement: {
+    fecha: string
+    ingresos: Array<{ etiqueta: string, monto: number }>
+    gastos: Array<{ etiqueta: string, monto: number }>
+  }) => {
     try {
-      await notificacionesApi.convertirNotificacion(notificacion.id!)
-      onCreateMovementFromNotification(notificacion)
-      await cargarNotificaciones()
+      await onSaveNewMovement(movement)
+      setShowMovementModal(false)
+      setPreselectedTag(null)
     } catch (error) {
-      console.error('Error al convertir notificación:', error)
+      console.error('Error al crear movimiento:', error)
     }
+  }
+
+  const handleCancelMovement = () => {
+    setShowMovementModal(false)
+    setPreselectedTag(null)
   }
 
   // Get month calendar
@@ -114,6 +145,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     !n.fue_cancelada && !n.fue_convertida_movimiento && 
     isAfter(new Date(n.fecha), today)
   )
+  const notificacionesConvertidas = notificaciones.filter(n => 
+    n.fue_convertida_movimiento && !n.fue_cancelada
+  ).slice(0, 10) // Mostrar solo las últimas 10 convertidas
 
   const getNotificationsForDate = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd')
@@ -150,15 +184,26 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               Gestiona tus recordatorios y movimientos pendientes
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Nueva Notificación
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowMovementModal(true)}
+              className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Nuevo Movimiento
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Nueva Notificación
+            </button>
+          </div>
         </div>
 
         {/* Alert para notificaciones pendientes */}
@@ -278,7 +323,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                               }`}
                               title={notif.texto_descriptivo}
                             >
-                              <div className="w-1 h-1 bg-current rounded-full flex-shrink-0"></div>
+                              {notif.fue_convertida_movimiento ? (
+                                <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              ) : (
+                                <div className="w-1 h-1 bg-current rounded-full flex-shrink-0"></div>
+                              )}
                               <span className="truncate">{notif.texto_descriptivo}</span>
                             </div>
                           ))}
@@ -359,23 +410,34 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                         </div>
                         
                         <div className="flex gap-2">
-                          <button
-                            onClick={() => handleConvertToMovement(notificacion)}
-                            className="flex-1 px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded-lg transition-colors flex items-center justify-center gap-1"
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            Crear Movimiento
-                          </button>
-                          <button
-                            onClick={() => handleCancelNotification(notificacion.id!)}
-                            className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition-colors"
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
+                          {notificacion.fue_convertida_movimiento ? (
+                            <div className="flex-1 px-3 py-1 bg-green-500 text-white text-xs rounded-lg flex items-center justify-center gap-1">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                              Movimiento Creado
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleConvertToMovement(notificacion)}
+                                className="flex-1 px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded-lg transition-colors flex items-center justify-center gap-1"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Crear Movimiento
+                              </button>
+                              <button
+                                onClick={() => handleCancelNotification(notificacion.id!)}
+                                className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition-colors"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -447,106 +509,251 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           </div>
         </div>
 
+        {/* Historial de Notificaciones Convertidas */}
+        {notificacionesConvertidas.length > 0 && (
+          <div className="mt-8">
+            <div className="grid lg:grid-cols-4 gap-8">
+              {/* Historial ocupa las 3 columnas como el calendario */}
+              <div className="lg:col-span-3">
+                <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg`}>
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${isDark ? 'bg-green-900/20' : 'bg-green-50'}`}>
+                        <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold">Historial de Movimientos Creados</h3>
+                        <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Notificaciones que se convirtieron en movimientos ({notificacionesConvertidas.length})
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6">
+                    <PerfectScrollbar className="max-h-60">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {notificacionesConvertidas.map((notificacion) => (
+                          <div
+                            key={notificacion.id}
+                            className={`p-3 rounded-lg border-l-4 border-green-500 ${
+                              isDark ? 'bg-green-900/10' : 'bg-green-50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <svg className="w-3 h-3 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                  <p className="font-medium text-sm truncate">{notificacion.texto_descriptivo}</p>
+                                </div>
+                                
+                                <div className="flex items-center gap-2 text-xs">
+                                  <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    {format(new Date(notificacion.fecha), 'dd/MM', { locale: es })}
+                                  </span>
+                                  {notificacion.tipo && notificacion.tipo !== 'general' && (
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                      notificacion.tipo === 'ingreso'
+                                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                                    }`}>
+                                      {notificacion.tipo === 'ingreso' ? '↑' : '↓'}
+                                    </span>
+                                  )}
+                                  {notificacion.etiqueta && (
+                                    <span className={`px-2 py-0.5 rounded text-xs font-medium truncate max-w-16 ${
+                                      isDark 
+                                        ? 'bg-gray-700 text-gray-300' 
+                                        : 'bg-gray-200 text-gray-700'
+                                    }`}>
+                                      {notificacion.etiqueta}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </PerfectScrollbar>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Columna vacía para mantener el layout */}
+              <div className="lg:col-span-1 hidden lg:block"></div>
+            </div>
+          </div>
+        )}
+
         {/* Create Notification Modal */}
         {showCreateModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl max-w-md w-full p-6`}>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold flex items-center gap-2">
-                  <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Nueva Notificación
-                </h3>
-                <button
-                  onClick={() => setShowCreateModal(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+            <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col`}>
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${isDark ? 'bg-blue-900/20' : 'bg-blue-50'}`}>
+                      <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold">Nueva Notificación</h3>
+                      <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Crea un recordatorio para tus movimientos
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowCreateModal(false)}
+                    className={`p-2 rounded-lg transition-colors ${
+                      isDark 
+                        ? 'hover:bg-gray-700 text-gray-400 hover:text-white' 
+                        : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
               </div>
+              
+              <div className="flex-1 min-h-0">
+                <PerfectScrollbar className="h-full">
+                  <div className="p-6 space-y-6">
+                    {/* Fecha */}
+                    <div>
+                      <label className="block text-sm font-medium mb-3 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Fecha
+                      </label>
+                      <DatePicker
+                        selected={new Date(newNotification.fecha)}
+                        onChange={(date) => setNewNotification(prev => ({ 
+                          ...prev, 
+                          fecha: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
+                        }))}
+                        dateFormat="dd/MM/yyyy"
+                        locale={es}
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          isDark 
+                            ? 'bg-gray-700 border-gray-600 text-white' 
+                            : 'bg-white border-gray-300 text-gray-900'
+                        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                        placeholderText="Selecciona una fecha"
+                      />
+                    </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    Fecha
-                  </label>
-                  <input
-                    type="date"
-                    value={newNotification.fecha}
-                    onChange={(e) => setNewNotification(prev => ({ ...prev, fecha: e.target.value }))}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  />
-                </div>
+                    {/* Descripción */}
+                    <div>
+                      <label className="block text-sm font-medium mb-3 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Descripción
+                      </label>
+                      <textarea
+                        value={newNotification.texto_descriptivo}
+                        onChange={(e) => setNewNotification(prev => ({ ...prev, texto_descriptivo: e.target.value }))}
+                        placeholder="Describe el recordatorio..."
+                        rows={3}
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          isDark 
+                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                        } focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Descripción
-                  </label>
-                  <textarea
-                    value={newNotification.texto_descriptivo}
-                    onChange={(e) => setNewNotification(prev => ({ ...prev, texto_descriptivo: e.target.value }))}
-                    placeholder="Describe la notificación..."
-                    rows={3}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark 
-                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  />
-                </div>
+                    {/* Tipo - Botones */}
+                    <div>
+                      <label className="block text-sm font-medium mb-3 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        Tipo de notificación
+                      </label>
+                      <div className="grid grid-cols-3 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setNewNotification(prev => ({ ...prev, tipo: 'general' }))}
+                          className={`p-3 rounded-lg border-2 transition-all font-medium ${
+                            newNotification.tipo === 'general'
+                              ? 'border-gray-500 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                              : isDark
+                                ? 'border-gray-600 hover:border-gray-500 text-gray-400 hover:text-gray-300'
+                                : 'border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-700'
+                          } flex items-center justify-center gap-2`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          General
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNewNotification(prev => ({ ...prev, tipo: 'ingreso' }))}
+                          className={`p-3 rounded-lg border-2 transition-all font-medium ${
+                            newNotification.tipo === 'ingreso'
+                              ? 'border-green-500 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200'
+                              : isDark
+                                ? 'border-gray-600 hover:border-green-500 text-gray-400 hover:text-green-300'
+                                : 'border-gray-300 hover:border-green-400 text-gray-600 hover:text-green-700'
+                          } flex items-center justify-center gap-2`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                          </svg>
+                          Ingreso
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNewNotification(prev => ({ ...prev, tipo: 'gasto' }))}
+                          className={`p-3 rounded-lg border-2 transition-all font-medium ${
+                            newNotification.tipo === 'gasto'
+                              ? 'border-red-500 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200'
+                              : isDark
+                                ? 'border-gray-600 hover:border-red-500 text-gray-400 hover:text-red-300'
+                                : 'border-gray-300 hover:border-red-400 text-gray-600 hover:text-red-700'
+                          } flex items-center justify-center gap-2`}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
+                          </svg>
+                          Gasto
+                        </button>
+                      </div>
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                    </svg>
-                    Tipo
-                  </label>
-                  <select
-                    value={newNotification.tipo}
-                    onChange={(e) => setNewNotification(prev => ({ ...prev, tipo: e.target.value as any }))}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  >
-                    <option value="general">General</option>
-                    <option value="ingreso">Ingreso</option>
-                    <option value="gasto">Gasto</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                    </svg>
-                    Etiqueta (opcional)
-                  </label>
-                  <select
-                    value={newNotification.etiqueta}
-                    onChange={(e) => setNewNotification(prev => ({ ...prev, etiqueta: e.target.value }))}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  >
-                    <option value="">Ninguna etiqueta</option>
+                    {/* Etiqueta */}
+                    <div>
+                      <label className="block text-sm font-medium mb-3 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        Etiqueta (opcional)
+                      </label>
+                      <select
+                        value={newNotification.etiqueta}
+                        onChange={(e) => setNewNotification(prev => ({ ...prev, etiqueta: e.target.value }))}
+                        className={`w-full px-4 py-3 rounded-lg border ${
+                          isDark 
+                            ? 'bg-gray-700 border-gray-600 text-white' 
+                            : 'bg-white border-gray-300 text-gray-900'
+                        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                      >
+                        <option value="">Ninguna etiqueta</option>
                     {newNotification.tipo === 'ingreso' || newNotification.tipo === 'general' ? (
                       etiquetas.ingresos.map(etiq => (
                         <option key={etiq} value={etiq}>{etiq}</option>
@@ -559,24 +766,87 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                     ) : null}
                   </select>
                 </div>
+                  </div>
+                </PerfectScrollbar>
               </div>
+              
+              {/* Botones del footer */}
+              <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div className="flex gap-4 justify-end">
+                  <button
+                    onClick={() => setShowCreateModal(false)}
+                    className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                      isDark
+                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900'
+                    }`}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleCreateNotification}
+                    className="px-6 py-3 rounded-lg font-medium transition-all duration-200 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg hover:shadow-xl flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Crear Notificación
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-              <div className="flex gap-3 justify-end mt-6">
-                <button
-                  onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleCreateNotification}
-                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Crear Notificación
-                </button>
+        {/* Modal para crear movimiento */}
+        {showMovementModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className={`max-w-4xl w-full max-h-[90vh] rounded-xl shadow-2xl ${
+              isDark ? 'bg-gray-800' : 'bg-white'
+            } flex flex-col`}>
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${isDark ? 'bg-green-900/20' : 'bg-green-50'}`}>
+                      <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">Crear Nuevo Movimiento</h2>
+                      <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Registra tus ingresos y gastos del día
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleCancelMovement}
+                    className={`p-2 rounded-lg transition-colors ${
+                      isDark 
+                        ? 'hover:bg-gray-700 text-gray-400 hover:text-white' 
+                        : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 min-h-0">
+                <PerfectScrollbar className="h-full">
+                  <div className="p-6">
+                    <AddMovementForm
+                      isDark={isDark}
+                      etiquetas={etiquetas}
+                      onSave={handleSaveMovement}
+                      onCancel={handleCancelMovement}
+                      onCreateNewTag={onCreateNewTag}
+                      newTagCreated={newTagCreated}
+                      preselectedTag={preselectedTag}
+                    />
+                  </div>
+                </PerfectScrollbar>
               </div>
             </div>
           </div>

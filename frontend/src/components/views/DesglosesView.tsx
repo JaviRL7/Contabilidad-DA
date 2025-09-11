@@ -3,6 +3,7 @@ import Card from '../ui/Card'
 import TotalDaysCounter from '../breakdown/TotalDaysCounter'
 import MonthList from '../breakdown/MonthList'
 import YearList from '../breakdown/YearList'
+import { BarChart, Calendar } from 'lucide-react'
 import { useMovementsStats } from '../../hooks/useMovementsStats'
 
 interface MovimientoDiario {
@@ -63,24 +64,6 @@ const DesglosesView: React.FC<DesglosesViewProps> = ({
     }
   }, [movimientos])
 
-  const breakdownOptions = [
-    {
-      title: 'Desglose Mensual',
-      description: 'Analiza tus finanzas mes a mes con gráficas detalladas y comparativas',
-      color: 'from-blue-600 to-blue-500',
-      hoverColor: 'hover:from-blue-500 hover:to-blue-400',
-      onClick: onShowMonthlyBreakdown,
-      stats: `${periodStats.months} meses registrados`
-    },
-    {
-      title: 'Desglose Anual',
-      description: 'Visualiza la evolución de tus finanzas durante todo el año con tendencias y patrones',
-      color: 'from-purple-600 to-purple-500',
-      hoverColor: 'hover:from-purple-500 hover:to-purple-400',
-      onClick: onShowYearlyBreakdown,
-      stats: `${periodStats.totalPeriods} años disponibles`
-    }
-  ]
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -137,52 +120,71 @@ const DesglosesView: React.FC<DesglosesViewProps> = ({
 
       {/* Listas de meses y años */}
       <div className="grid lg:grid-cols-2 gap-8 mt-8">
-        <MonthList
-          months={movementsStats.months}
-          isDark={isDark}
-          onMonthClick={handleMonthClick}
-          getSortedMonths={movementsStats.getSortedMonths}
-        />
-        
-        <YearList
-          years={movementsStats.years}
-          isDark={isDark}
-          onYearClick={handleYearClick}
-          getSortedYears={movementsStats.getSortedYears}
-        />
-      </div>
-
-      {/* Opciones de desglose */}
-      <div className="grid md:grid-cols-2 gap-8 mt-12">
-        {breakdownOptions.map((option, index) => (
-          <Card key={index} variant="default" isDark={isDark} className="hover:shadow-xl transition-all duration-300">
-            <div className="p-8">
-              <div className="flex flex-col items-center text-center">
-                {/* Contenido */}
-                <h3 className={`text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {option.title}
-                </h3>
-                <p className={`text-base mb-4 leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {option.description}
-                </p>
-                
-                {/* Estadísticas específicas */}
-                <div className={`mb-6 px-4 py-2 rounded-lg text-sm font-medium ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
-                  {option.stats}
+        <div className="space-y-6">
+          {/* Card Desglose Mensual */}
+          <div
+            onClick={() => onShowMonthlyBreakdown()}
+            className="p-4 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-lg bg-gradient-to-r from-blue-800 to-blue-700 hover:from-blue-700 hover:to-blue-600"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Calendar className="w-4 h-4 text-white/80" />
+                  <h3 className="text-sm font-medium text-white/90">
+                    Desglose Mensual
+                  </h3>
                 </div>
-                
-                {/* Botón */}
-                <button
-                  onClick={option.onClick}
-                  className={`px-8 py-3 rounded-lg font-semibold text-white transition-all duration-200 shadow-md bg-gradient-to-r ${option.color} ${option.hoverColor} transform hover:scale-105`}
-                >
-                  Ver {option.title}
-                </button>
+                <p className="text-lg font-bold text-white">
+                  {new Date().toLocaleDateString('es-ES', { month: 'long' }).charAt(0).toUpperCase() + new Date().toLocaleDateString('es-ES', { month: 'long' }).slice(1)} {new Date().getFullYear()}
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10">
+                <Calendar className="w-5 h-5 text-white" />
               </div>
             </div>
-          </Card>
-        ))}
+          </div>
+          
+          <MonthList
+            months={movementsStats.months}
+            isDark={isDark}
+            onMonthClick={handleMonthClick}
+            getSortedMonths={movementsStats.getSortedMonths}
+          />
+        </div>
+        
+        <div className="space-y-6">
+          {/* Card Desglose Anual */}
+          <div
+            onClick={() => onShowYearlyBreakdown()}
+            className="p-4 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-lg bg-gradient-to-r from-purple-800 to-purple-700 hover:from-purple-700 hover:to-purple-600"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <BarChart className="w-4 h-4 text-white/80" />
+                  <h3 className="text-sm font-medium text-white/90">
+                    Desglose Anual
+                  </h3>
+                </div>
+                <p className="text-lg font-bold text-white">
+                  Año 2025
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10">
+                <BarChart className="w-5 h-5 text-white" />
+              </div>
+            </div>
+          </div>
+          
+          <YearList
+            years={movementsStats.years}
+            isDark={isDark}
+            onYearClick={handleYearClick}
+            getSortedYears={movementsStats.getSortedYears}
+          />
+        </div>
       </div>
+
     </div>
   )
 }

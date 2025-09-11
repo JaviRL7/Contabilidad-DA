@@ -1,6 +1,4 @@
 import React from 'react'
-import { TrendingUp, TrendingDown } from 'lucide-react'
-import Card from '../ui/Card'
 import { formatEuro } from '../../utils/formatters'
 
 interface BreakdownStatsProps {
@@ -9,12 +7,7 @@ interface BreakdownStatsProps {
   balance: number
   isDark: boolean
   period?: string
-  additionalStats?: Array<{
-    label: string
-    value: string | number
-    icon?: React.ReactNode
-    color?: 'green' | 'red' | 'blue' | 'gray'
-  }>
+  onGoToCurrentMonth?: () => void
 }
 
 const BreakdownStats: React.FC<BreakdownStatsProps> = ({
@@ -23,104 +16,35 @@ const BreakdownStats: React.FC<BreakdownStatsProps> = ({
   balance,
   isDark,
   period,
-  additionalStats
+  onGoToCurrentMonth
 }) => {
-  const formatValue = (value: string | number) => {
-    if (typeof value === 'number') {
-      return formatEuro(value)
-    }
-    return value
-  }
-
-  const getColorClasses = (color?: string) => {
-    switch (color) {
-      case 'green':
-        return 'text-green-500'
-      case 'red':
-        return 'text-red-500'
-      case 'blue':
-        return 'text-blue-500'
-      default:
-        return isDark ? 'text-gray-300' : 'text-gray-700'
-    }
-  }
-
-  const mainStats = [
-    {
-      label: `Ingresos${period ? ` ${period}` : ''}`,
-      value: totalIngresos.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-      icon: (
-        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-500/20 text-green-500">
-          €
-        </div>
-      ),
-      color: 'text-green-500'
-    },
-    {
-      label: `Gastos${period ? ` ${period}` : ''}`,
-      value: totalGastos.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-      icon: (
-        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-red-500/20 text-red-500">
-          €
-        </div>
-      ),
-      color: 'text-red-500'
-    },
-    {
-      label: 'Balance Final',
-      value: balance.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-      icon: (
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-          balance >= 0 
-            ? 'bg-blue-500/20 text-blue-500' 
-            : 'bg-red-500/20 text-red-500'
-        }`}>
-          €
-        </div>
-      ),
-      color: balance >= 0 ? 'text-blue-500' : 'text-red-500'
-    }
-  ]
-
-  const allStats = [...mainStats, ...(additionalStats || [])]
+  const balancePercentage = totalIngresos > 0 ? ((balance / totalIngresos) * 100) : 0
 
   return (
-    <div className={`grid gap-6 ${allStats.length <= 3 ? 'md:grid-cols-3' : 'md:grid-cols-4'}`}>
-      {allStats.map((stat, index) => (
-        <Card key={index} variant="default" isDark={isDark}>
-          <div className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {stat.label}
-                </h3>
-                {index < 3 ? (
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className={`text-2xl font-bold ${stat.color}`}>
-                      {stat.value}
-                    </p>
-                    {stat.icon}
-                  </div>
-                ) : typeof stat.value === 'number' && stat.icon ? (
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className={`text-2xl font-bold ${stat.color || getColorClasses()}`}>
-                      {stat.value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                    {stat.icon}
-                  </div>
-                ) : (
-                  <p className={`text-2xl font-bold mt-1 ${
-                    stat.color || getColorClasses()
-                  }`}>
-                    {formatValue(stat.value)}
-                  </p>
-                )}
-              </div>
-              {index >= 3 && !(typeof stat.value === 'number' && stat.icon) && stat.icon}
-            </div>
-          </div>
-        </Card>
-      ))}
+    <div className={`rounded-lg p-4 mb-6 ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Resumen {period || 'Anual'}
+          </h2>
+          <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            Balance: <span className="font-medium text-blue-500">{balancePercentage.toFixed(1)}%</span>
+            {balancePercentage >= 0 ? ' positivo' : ' negativo'}
+          </p>
+        </div>
+        {onGoToCurrentMonth && (
+          <button
+            onClick={onGoToCurrentMonth}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isDark 
+                ? 'bg-blue-600 hover:bg-blue-500 text-white' 
+                : 'bg-blue-500 hover:bg-blue-600 text-white'
+            }`}
+          >
+            Ir al mes actual
+          </button>
+        )}
+      </div>
     </div>
   )
 }

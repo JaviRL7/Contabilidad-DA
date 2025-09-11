@@ -153,18 +153,12 @@ const YearlyBreakdownView: React.FC<YearlyBreakdownViewProps> = ({
         balance={yearlyTotals.balance}
         isDark={isDark}
         period={`${currentYear}`}
-        additionalStats={[
-          {
-            label: 'Promedio Mensual',
-            value: yearlyTotals.balance / 12,
-            icon: (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-500/20 text-gray-500">
-                €
-              </div>
-            ),
-            color: 'gray'
-          }
-        ]}
+        onGoToCurrentMonth={() => {
+          const currentDate = new Date()
+          const currentMonth = currentDate.getMonth()
+          const currentYear = currentDate.getFullYear()
+          onGoToMonthly(currentMonth, currentYear)
+        }}
       />
 
       {/* Ranking de categorías anuales */}

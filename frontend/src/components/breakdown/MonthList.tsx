@@ -142,10 +142,7 @@ const MonthList: React.FC<MonthListProps> = ({
                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
                     <span className="text-red-600 font-medium">{formatEuro(month.totalGastos)}</span>
                   </span>
-                  <span className={`font-semibold ${ 
-                    month.balance > 0 ? 'text-green-500' : 
-                    month.balance < 0 ? 'text-red-500' : 'text-blue-500'
-                  }`}>
+                  <span className="font-semibold text-blue-500">
                     Balance: {formatEuro(month.balance)}
                   </span>
                 </div>

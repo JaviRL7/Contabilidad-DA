@@ -141,28 +141,19 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({
           })()}
         </div>
         
-        <div className="mt-4 pt-3">
+        <div className="mt-3">
           <button
             onClick={onShowMonthlyBreakdown}
-            className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+            className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-between ${
               isDark
                 ? 'bg-blue-600 text-white hover:bg-blue-500'
                 : 'bg-blue-500 text-white hover:bg-blue-600'
             }`}
-            title="Ver desglose mensual"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M8 2v4"/>
-              <path d="M16 2v4"/>
-              <rect width="18" height="18" x="3" y="4" rx="2"/>
-              <path d="M3 10h18"/>
-              <path d="M8 14h.01"/>
-              <path d="M12 14h.01"/>
-              <path d="M16 14h.01"/>
-              <path d="M8 18h.01"/>
-              <path d="M12 18h.01"/>
-            </svg>
-            Ver Desglose Mensual
+            <span>Desglose Mensual</span>
+            <span className="text-xs opacity-75">
+              {new Date().toLocaleDateString('es-ES', { month: 'short' }).toUpperCase()}
+            </span>
           </button>
         </div>
       </div>
@@ -215,24 +206,19 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({
           </div>
         </div>
         
-        <div className="mt-4 pt-3">
+        <div className="mt-3">
           <button
             onClick={onShowYearlyBreakdown}
-            className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+            className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-between ${
               isDark
                 ? 'bg-purple-600 text-white hover:bg-purple-500'
                 : 'bg-purple-500 text-white hover:bg-purple-600'
             }`}
-            title="Ver desglose anual"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 3v16a2 2 0 0 0 2 2h16"/>
-              <path d="M7 11v8"/>
-              <path d="M11 7v12"/>
-              <path d="M15 3v16"/>
-              <path d="M19 8v11"/>
-            </svg>
-            Ver Desglose Anual
+            <span>Desglose Anual</span>
+            <span className="text-xs opacity-75">
+              {new Date().getFullYear()}
+            </span>
           </button>
         </div>
       </div>

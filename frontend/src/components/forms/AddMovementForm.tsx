@@ -4,6 +4,9 @@ import DatePicker from 'react-datepicker'
 import { parseISO } from 'date-fns'
 import { registerLocale } from 'react-datepicker'
 import { es } from 'date-fns/locale'
+import PerfectScrollbar from 'react-perfect-scrollbar'
+import 'react-perfect-scrollbar/dist/css/styles.css'
+import { ChevronDown, Check, Plus } from 'lucide-react'
 
 registerLocale('es', es)
 
@@ -18,6 +21,7 @@ interface AddMovementFormProps {
   onCancel: () => void
   onCreateNewTag: (field: string, tipo: 'ingreso' | 'gasto') => void
   newTagCreated?: {field: string, tagName: string} | null
+  preselectedTag?: {etiqueta: string, tipo: 'ingreso' | 'gasto'} | null
 }
 
 const AddMovementForm: React.FC<AddMovementFormProps> = ({ 
@@ -26,13 +30,18 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
   onSave, 
   onCancel, 
   onCreateNewTag,
-  newTagCreated
+  newTagCreated,
+  preselectedTag
 }) => {
   const [fecha, setFecha] = useState<Date>(new Date())
   const [ingresos, setIngresos] = useState<Array<{ id: number, etiqueta: string, monto: number }>>([])
   const [gastos, setGastos] = useState<Array<{ id: number, etiqueta: string, monto: number }>>([])
   const [newIngreso, setNewIngreso] = useState({ etiqueta: '', monto: '' })
   const [newGasto, setNewGasto] = useState({ etiqueta: '', monto: '' })
+  
+  // Estados para dropdowns
+  const [ingresoDropdownOpen, setIngresoDropdownOpen] = useState(false)
+  const [gastoDropdownOpen, setGastoDropdownOpen] = useState(false)
 
   console.log('💰 AddMovementForm render - isDark:', isDark, 'etiquetas:', etiquetas)
 
@@ -48,6 +57,37 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
       }
     }
   }, [newTagCreated])
+
+  // Effect para preseleccionar etiqueta desde notificación
+  useEffect(() => {
+    if (preselectedTag) {
+      console.log('🏷️ Preseleccionando etiqueta desde notificación:', preselectedTag)
+      
+      if (preselectedTag.tipo === 'ingreso') {
+        setNewIngreso(prev => ({ ...prev, etiqueta: preselectedTag.etiqueta }))
+      } else if (preselectedTag.tipo === 'gasto') {
+        setNewGasto(prev => ({ ...prev, etiqueta: preselectedTag.etiqueta }))
+      }
+    }
+  }, [preselectedTag])
+
+  // Effect para cerrar dropdowns al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (ingresoDropdownOpen && !target.closest('.dropdown-ingreso')) {
+        setIngresoDropdownOpen(false)
+      }
+      if (gastoDropdownOpen && !target.closest('.dropdown-gasto')) {
+        setGastoDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [ingresoDropdownOpen, gastoDropdownOpen])
 
   // Guard clause - if etiquetas is not loaded yet, show loading
   if (!etiquetas || !etiquetas.ingresos || !etiquetas.gastos) {
@@ -113,16 +153,37 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
   const balance = totalIngresos - totalGastos
 
   return (
-    <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg border p-6 mb-6 ${
-      isDark ? 'border-gray-700' : 'border-gray-200'
+    <div className={`rounded-xl shadow-xl border-2 p-8 mb-8 transition-all duration-300 ${
+      isDark 
+        ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-gray-600 hover:border-blue-500/50' 
+        : 'bg-gradient-to-br from-white to-gray-50 border-gray-200 hover:border-blue-400/50'
     }`}>
-      <h3 className={`text-xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-        Agregar Nuevo Movimiento
-      </h3>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+            isDark ? 'bg-gradient-to-br from-blue-600 to-indigo-700' : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+          }`}>
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          <div>
+            <h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Nuevo Movimiento
+            </h3>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Registra tus ingresos y gastos del día
+            </p>
+          </div>
+        </div>
+      </div>
       
       {/* Selector de fecha */}
-      <div className="mb-6">
-        <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+      <div className="mb-8">
+        <label className={`block text-sm font-semibold mb-3 flex items-center gap-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
           Fecha del movimiento
         </label>
         <DatePicker
@@ -131,52 +192,128 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
           dateFormat="dd/MM/yyyy"
           locale="es"
           placeholderText="Seleccionar fecha"
-          className={`w-48 px-3 py-2 rounded-lg border text-sm ${
+          className={`w-56 px-4 py-3 rounded-xl border-2 text-sm font-medium ${
             isDark 
-              ? 'bg-gray-700 border-gray-600 text-white' 
-              : 'bg-white border-gray-300 text-gray-900'
-          } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent`}
+              ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500' 
+              : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
+          } focus:outline-none transition-colors duration-200`}
           calendarClassName={isDark ? 'dark-calendar' : ''}
         />
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
         {/* Ingresos */}
-        <div>
-          <h4 className="text-green-500 font-semibold text-lg mb-4">Ingresos</h4>
+        <div className={`rounded-xl p-6 border-2 ${
+          isDark 
+            ? 'bg-green-900/10 border-green-500/20' 
+            : 'bg-green-50 border-green-200'
+        }`}>
+          <h4 className="text-green-500 font-bold text-xl mb-6 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+              <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </div>
+            Ingresos
+          </h4>
           
           <div className="space-y-4 mb-4">
             <div>
               <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                 Etiqueta
               </label>
-              <div className="relative">
-                <select
-                  value={newIngreso.etiqueta}
-                  onChange={(e) => {
-                    if (e.target.value === '__nueva__') {
-                      onCreateNewTag('newIngreso.etiqueta', 'ingreso')
-                    } else {
-                      setNewIngreso(prev => ({ ...prev, etiqueta: e.target.value }))
-                    }
-                  }}
-                  className={`appearance-none w-full px-3 py-2 pr-10 rounded-lg border ${
-                    isDark 
-                      ? 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600 hover:border-gray-500' 
-                      : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400'
-                  } focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200`}
+              <div className="relative dropdown-ingreso">
+                <button
+                  type="button"
+                  onClick={() => setIngresoDropdownOpen(!ingresoDropdownOpen)}
+                  className={`w-full px-4 py-3 pr-12 rounded-xl border-2 text-lg font-medium transition-all duration-200 text-left ${
+                    isDark
+                      ? 'bg-gray-700 border-gray-600 text-white focus:border-green-400 focus:bg-gray-600'
+                      : 'bg-white border-gray-300 text-gray-900 focus:border-green-500 focus:bg-green-50/30'
+                  } focus:outline-none focus:ring-0`}
                 >
-                  <option value="">Seleccionar etiqueta...</option>
-                  {etiquetas.ingresos.map(etiq => (
-                    <option key={etiq} value={etiq}>{etiq}</option>
-                  ))}
-                  <option value="__nueva__">+ Crear nueva etiqueta</option>
-                </select>
-                <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                  </svg>
-                </div>
+                  {newIngreso.etiqueta || 'Seleccionar etiqueta...'}
+                </button>
+                <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none transition-transform duration-200 ${
+                  ingresoDropdownOpen ? 'rotate-180' : ''
+                } ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                
+                {ingresoDropdownOpen && (
+                  <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-lg z-50 ${
+                    isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                  }`}>
+                    <PerfectScrollbar
+                      options={{
+                        suppressScrollX: true,
+                        wheelPropagation: false
+                      }}
+                      style={{ maxHeight: '200px' }}
+                    >
+                      <div className="py-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewIngreso(prev => ({ ...prev, etiqueta: '' }))
+                            setIngresoDropdownOpen(false)
+                          }}
+                          className={`w-full px-4 py-2 text-left text-lg transition-colors ${
+                            newIngreso.etiqueta === '' 
+                              ? isDark ? 'bg-green-600 text-white' : 'bg-green-500 text-white'
+                              : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {newIngreso.etiqueta === '' && <Check className="w-4 h-4" />}
+                            <span className={newIngreso.etiqueta === '' ? '' : 'ml-7'}>
+                              Seleccionar etiqueta...
+                            </span>
+                          </div>
+                        </button>
+                        
+                        {etiquetas.ingresos.map((etiqueta, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => {
+                              setNewIngreso(prev => ({ ...prev, etiqueta }))
+                              setIngresoDropdownOpen(false)
+                            }}
+                            className={`w-full px-4 py-2 text-left text-lg transition-colors ${
+                              newIngreso.etiqueta === etiqueta
+                                ? isDark ? 'bg-green-600 text-white' : 'bg-green-500 text-white'
+                                : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              {newIngreso.etiqueta === etiqueta && <Check className="w-4 h-4" />}
+                              <span className={newIngreso.etiqueta === etiqueta ? '' : 'ml-7'}>
+                                {etiqueta}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                        
+                        <div className={`border-t-2 mt-2 pt-2 ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onCreateNewTag('newIngreso.etiqueta', 'ingreso')
+                              setIngresoDropdownOpen(false)
+                            }}
+                            className={`w-full px-4 py-2 text-left text-lg transition-colors ${
+                              isDark ? 'text-green-400 hover:bg-gray-600' : 'text-green-600 hover:bg-gray-100'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Plus className="w-4 h-4" />
+                              <span>Crear nueva etiqueta</span>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </PerfectScrollbar>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -232,41 +369,117 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
         </div>
 
         {/* Gastos */}
-        <div>
-          <h4 className="text-red-500 font-semibold text-lg mb-4">Gastos</h4>
+        <div className={`rounded-xl p-6 border-2 ${
+          isDark 
+            ? 'bg-red-900/10 border-red-500/20' 
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <h4 className="text-red-500 font-bold text-xl mb-6 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
+              <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
+              </svg>
+            </div>
+            Gastos
+          </h4>
           
           <div className="space-y-4 mb-4">
             <div>
               <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                 Etiqueta
               </label>
-              <div className="relative">
-                <select
-                  value={newGasto.etiqueta}
-                  onChange={(e) => {
-                    if (e.target.value === '__nueva__') {
-                      onCreateNewTag('newGasto.etiqueta', 'gasto')
-                    } else {
-                      setNewGasto(prev => ({ ...prev, etiqueta: e.target.value }))
-                    }
-                  }}
-                  className={`appearance-none w-full px-3 py-2 pr-10 rounded-lg border ${
-                    isDark 
-                      ? 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600 hover:border-gray-500' 
-                      : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400'
-                  } focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors duration-200`}
+              <div className="relative dropdown-gasto">
+                <button
+                  type="button"
+                  onClick={() => setGastoDropdownOpen(!gastoDropdownOpen)}
+                  className={`w-full px-4 py-3 pr-12 rounded-xl border-2 text-lg font-medium transition-all duration-200 text-left ${
+                    isDark
+                      ? 'bg-gray-700 border-gray-600 text-white focus:border-red-400 focus:bg-gray-600'
+                      : 'bg-white border-gray-300 text-gray-900 focus:border-red-500 focus:bg-red-50/30'
+                  } focus:outline-none focus:ring-0`}
                 >
-                  <option value="">Seleccionar etiqueta...</option>
-                  {etiquetas.gastos.map(etiq => (
-                    <option key={etiq} value={etiq}>{etiq}</option>
-                  ))}
-                  <option value="__nueva__">+ Crear nueva etiqueta</option>
-                </select>
-                <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                  </svg>
-                </div>
+                  {newGasto.etiqueta || 'Seleccionar etiqueta...'}
+                </button>
+                <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none transition-transform duration-200 ${
+                  gastoDropdownOpen ? 'rotate-180' : ''
+                } ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                
+                {gastoDropdownOpen && (
+                  <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-lg z-50 ${
+                    isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                  }`}>
+                    <PerfectScrollbar
+                      options={{
+                        suppressScrollX: true,
+                        wheelPropagation: false
+                      }}
+                      style={{ maxHeight: '200px' }}
+                    >
+                      <div className="py-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewGasto(prev => ({ ...prev, etiqueta: '' }))
+                            setGastoDropdownOpen(false)
+                          }}
+                          className={`w-full px-4 py-2 text-left text-lg transition-colors ${
+                            newGasto.etiqueta === '' 
+                              ? isDark ? 'bg-red-600 text-white' : 'bg-red-500 text-white'
+                              : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {newGasto.etiqueta === '' && <Check className="w-4 h-4" />}
+                            <span className={newGasto.etiqueta === '' ? '' : 'ml-7'}>
+                              Seleccionar etiqueta...
+                            </span>
+                          </div>
+                        </button>
+                        
+                        {etiquetas.gastos.map((etiqueta, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => {
+                              setNewGasto(prev => ({ ...prev, etiqueta }))
+                              setGastoDropdownOpen(false)
+                            }}
+                            className={`w-full px-4 py-2 text-left text-lg transition-colors ${
+                              newGasto.etiqueta === etiqueta
+                                ? isDark ? 'bg-red-600 text-white' : 'bg-red-500 text-white'
+                                : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              {newGasto.etiqueta === etiqueta && <Check className="w-4 h-4" />}
+                              <span className={newGasto.etiqueta === etiqueta ? '' : 'ml-7'}>
+                                {etiqueta}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                        
+                        <div className={`border-t-2 mt-2 pt-2 ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onCreateNewTag('newGasto.etiqueta', 'gasto')
+                              setGastoDropdownOpen(false)
+                            }}
+                            className={`w-full px-4 py-2 text-left text-lg transition-colors ${
+                              isDark ? 'text-red-400 hover:bg-gray-600' : 'text-red-600 hover:bg-gray-100'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Plus className="w-4 h-4" />
+                              <span>Crear nueva etiqueta</span>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </PerfectScrollbar>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -358,27 +571,35 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
       )}
 
       {/* Botones de acción */}
-      <div className={`flex justify-end gap-3 mt-6 pt-6 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+      <div className={`flex justify-center gap-4 mt-8 pt-8 border-t-2 ${
+        isDark ? 'border-gray-600' : 'border-gray-200'
+      }`}>
         <button
           onClick={onCancel}
-          className={`px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+          className={`px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
             isDark 
-              ? 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-md hover:from-gray-500 hover:to-gray-400' 
-              : 'bg-gradient-to-r from-gray-400 to-gray-300 text-white shadow-md hover:from-gray-300 hover:to-gray-200'
+              ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border-2 border-gray-600 hover:border-gray-500' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-2 border-gray-300 hover:border-gray-400'
           }`}
         >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
           Cancelar
         </button>
         
         {(ingresos.length > 0 || gastos.length > 0) && (
           <button
             onClick={handleSave}
-            className={`px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg ${
               isDark
-                ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-md hover:from-emerald-500 hover:to-emerald-400'
-                : 'bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-md hover:from-emerald-400 hover:to-emerald-300'
-            }`}
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 shadow-blue-500/25'
+                : 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-400 hover:to-indigo-400 shadow-blue-500/25'
+            } transform hover:scale-105`}
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+            </svg>
             Crear Movimiento
           </button>
         )}
