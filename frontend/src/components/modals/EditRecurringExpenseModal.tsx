@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { X, Edit, Calendar, DollarSign, ChevronDown } from 'lucide-react'
+import { X, Edit, Calendar, DollarSign, ChevronDown, Check } from 'lucide-react'
 import Modal from '../ui/Modal'
 import GradientButton from '../ui/GradientButton'
 import ConfirmacionFechaPasadaModal from './ConfirmacionFechaPasadaModal'
+import PerfectScrollbar from 'react-perfect-scrollbar'
+import 'react-perfect-scrollbar/dist/css/styles.css'
 
 interface GastoRecurrente {
   etiqueta: string
@@ -47,6 +49,7 @@ const EditRecurringExpenseModal: React.FC<EditRecurringExpenseModalProps> = ({
   const [isDiaMesFocused, setIsDiaMesFocused] = useState(false)
   const [showConfirmacionFechaPasada, setShowConfirmacionFechaPasada] = useState(false)
   const [gastoFechaPasada, setGastoFechaPasada] = useState<{ gasto: GastoRecurrente; proximaFecha: Date } | null>(null)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   // Inicializar formulario cuando se abre el modal con datos
   useEffect(() => {
@@ -71,6 +74,21 @@ const EditRecurringExpenseModal: React.FC<EditRecurringExpenseModalProps> = ({
       setFormData(prev => ({ ...prev, etiqueta: newTagCreated.tagName }))
     }
   }, [newTagCreated, isOpen])
+
+  // Cerrar dropdown cuando se haga clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element
+      if (isDropdownOpen && !target.closest('.dropdown-container')) {
+        setIsDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isDropdownOpen])
 
   // Funciones de validación
   const validateForm = (): boolean => {
@@ -208,7 +226,7 @@ const EditRecurringExpenseModal: React.FC<EditRecurringExpenseModalProps> = ({
   return (
     <>
       <Modal isOpen={isOpen} onClose={handleClose} isDark={isDark}>
-        <div className="p-8 max-w-4xl w-full mx-4">
+        <div className="p-8 max-w-5xl w-full mx-auto">
           {/* Header del modal */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -244,18 +262,12 @@ const EditRecurringExpenseModal: React.FC<EditRecurringExpenseModalProps> = ({
                 <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                   Etiqueta
                 </label>
-                <div className="relative">
-                  <select
-                    value={formData.etiqueta}
-                    onChange={(e) => {
-                      if (e.target.value === '__nueva__') {
-                        onCreateNewTag('etiqueta', 'gasto')
-                      } else {
-                        setFormData({...formData, etiqueta: e.target.value})
-                        clearError('etiqueta')
-                      }
-                    }}
-                    className={`appearance-none w-full px-4 py-3 pr-12 rounded-xl border-2 text-lg font-medium transition-all duration-200 ${
+                <div className="relative dropdown-container">
+                  {/* Custom Dropdown with Perfect Scrollbar */}
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className={`w-full px-4 py-3 pr-12 rounded-xl border-2 text-lg font-medium transition-all duration-200 text-left ${
                       formErrors.etiqueta
                         ? 'border-red-300 bg-red-50/50 text-red-800'
                         : isDark
@@ -263,17 +275,94 @@ const EditRecurringExpenseModal: React.FC<EditRecurringExpenseModalProps> = ({
                         : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:bg-blue-50/30'
                     } focus:outline-none focus:ring-0`}
                   >
-                    <option value="">Selecciona una etiqueta</option>
-                    {etiquetas.gastos.map((etiqueta, index) => (
-                      <option key={index} value={etiqueta}>
-                        {etiqueta}
-                      </option>
-                    ))}
-                    <option value="__nueva__">+ Crear nueva etiqueta</option>
-                  </select>
-                  <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none ${
-                    isDark ? 'text-gray-400' : 'text-gray-500'
-                  }`} />
+                    {formData.etiqueta || 'Selecciona una etiqueta'}
+                  </button>
+                  <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none transition-transform duration-200 ${
+                    isDropdownOpen ? 'rotate-180' : ''
+                  } ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                  
+                  {/* Dropdown Options with Perfect Scrollbar */}
+                  {isDropdownOpen && (
+                    <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-lg z-50 ${
+                      isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                    }`}>
+                      <PerfectScrollbar
+                        options={{
+                          suppressScrollX: true,
+                          wheelPropagation: false
+                        }}
+                        style={{ maxHeight: '200px' }}
+                      >
+                        <div className="py-2">
+                          {/* Empty option */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({...formData, etiqueta: ''})
+                              clearError('etiqueta')
+                              setIsDropdownOpen(false)
+                            }}
+                            className={`w-full px-4 py-2 text-left text-lg transition-colors ${
+                              formData.etiqueta === '' 
+                                ? isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                                : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              {formData.etiqueta === '' && <Check className="w-4 h-4" />}
+                              <span className={formData.etiqueta === '' ? '' : 'ml-7'}>
+                                Selecciona una etiqueta
+                              </span>
+                            </div>
+                          </button>
+                          
+                          {/* Existing tags */}
+                          {etiquetas.gastos.map((etiqueta, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              onClick={() => {
+                                setFormData({...formData, etiqueta})
+                                clearError('etiqueta')
+                                setIsDropdownOpen(false)
+                              }}
+                              className={`w-full px-4 py-2 text-left text-lg transition-colors ${
+                                formData.etiqueta === etiqueta 
+                                  ? isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                                  : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                {formData.etiqueta === etiqueta && <Check className="w-4 h-4" />}
+                                <span className={formData.etiqueta === etiqueta ? '' : 'ml-7'}>
+                                  {etiqueta}
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                          
+                          {/* Create new tag option */}
+                          <div className={`border-t-2 mt-2 pt-2 ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onCreateNewTag('etiqueta', 'gasto')
+                                setIsDropdownOpen(false)
+                              }}
+                              className={`w-full px-4 py-2 text-left text-lg transition-colors ${
+                                isDark ? 'text-blue-400 hover:bg-gray-600' : 'text-blue-600 hover:bg-blue-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="text-xl">+</span>
+                                <span>Crear nueva etiqueta</span>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+                      </PerfectScrollbar>
+                    </div>
+                  )}
                 </div>
                 {formErrors.etiqueta && (
                   <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
@@ -308,7 +397,12 @@ const EditRecurringExpenseModal: React.FC<EditRecurringExpenseModalProps> = ({
                     }}
                     onFocus={() => setIsMontoFocused(true)}
                     onBlur={() => setIsMontoFocused(false)}
-                    className={`w-full pl-4 pr-12 py-3 rounded-xl border-2 text-lg font-medium transition-all duration-200 ${
+                    style={{
+                      MozAppearance: 'textfield',
+                      WebkitAppearance: 'none',
+                      appearance: 'none'
+                    }}
+                    className={`w-full pl-4 pr-12 py-3 rounded-xl border-2 text-lg font-medium transition-all duration-200 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                       formErrors.monto
                         ? 'border-red-300 bg-red-50/50 text-red-800'
                         : isDark
@@ -377,7 +471,12 @@ const EditRecurringExpenseModal: React.FC<EditRecurringExpenseModalProps> = ({
                     }}
                     onFocus={() => setIsDiaMesFocused(true)}
                     onBlur={() => setIsDiaMesFocused(false)}
-                    className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 text-lg font-medium transition-all duration-200 ${
+                    style={{
+                      MozAppearance: 'textfield',
+                      WebkitAppearance: 'none',
+                      appearance: 'none'
+                    }}
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 text-lg font-medium transition-all duration-200 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                       formErrors.diaMes
                         ? 'border-red-300 bg-red-50/50 text-red-800'
                         : isDark

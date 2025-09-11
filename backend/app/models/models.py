@@ -52,3 +52,17 @@ class Etiqueta(Base):
     tipo = Column(String, nullable=False, default='gasto', index=True)  # 'gasto' o 'ingreso'
     es_predefinida = Column(Boolean, default=False)
     es_esencial = Column(Boolean, default=False)
+
+class NotificacionCalendario(Base):
+    __tablename__ = "notificaciones_calendario"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    fecha = Column(Date, nullable=False, index=True)
+    texto_descriptivo = Column(String, nullable=False)
+    etiqueta = Column(String, nullable=True)  # Etiqueta opcional para precargar al crear movimiento
+    tipo = Column(String, nullable=False, default='general', index=True)  # 'general', 'ingreso', 'gasto'
+    esta_vencida = Column(Boolean, default=False, index=True)  # True si la fecha ya pasó
+    fue_convertida_movimiento = Column(Boolean, default=False)  # True si ya se creó el movimiento
+    fue_cancelada = Column(Boolean, default=False)  # True si fue cancelada por el usuario
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

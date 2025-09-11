@@ -90,3 +90,32 @@ class Etiqueta(EtiquetaBase):
     
     class Config:
         from_attributes = True
+
+# Schemas para NotificacionCalendario
+class NotificacionCalendarioBase(BaseModel):
+    fecha: date
+    texto_descriptivo: str
+    etiqueta: Optional[str] = None
+    tipo: str = "general"  # 'general', 'ingreso', 'gasto'
+
+class NotificacionCalendarioCreate(NotificacionCalendarioBase):
+    pass
+
+class NotificacionCalendarioUpdate(BaseModel):
+    fecha: Optional[date] = None
+    texto_descriptivo: Optional[str] = None
+    etiqueta: Optional[str] = None
+    tipo: Optional[str] = None
+    fue_convertida_movimiento: Optional[bool] = None
+    fue_cancelada: Optional[bool] = None
+
+class NotificacionCalendario(NotificacionCalendarioBase):
+    id: int
+    esta_vencida: bool = False
+    fue_convertida_movimiento: bool = False
+    fue_cancelada: bool = False
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True

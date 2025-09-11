@@ -20,6 +20,7 @@ import {
   type Etiqueta 
 } from './services/etiquetasApi'
 import * as MovimientosAPI from './services/movimientosApi'
+import { notificacionesApi, type NotificacionCalendario } from './services/calendarApi'
 
 // Hooks personalizados
 import { useRecurrentes } from './hooks/useRecurrentes'
@@ -50,6 +51,7 @@ import DesglosesView from './components/views/DesglosesView'
 import YearlyBreakdownView from './components/views/YearlyBreakdownView'
 import MonthlyBreakdownView from './components/views/MonthlyBreakdownView'
 import AnalysisView from './components/views/AnalysisView'
+import CalendarView from './components/views/CalendarView'
 
 // Componentes de dashboard
 import SummaryPanel from './components/dashboard/SummaryPanel'
@@ -94,6 +96,8 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   // Estados de datos
   const [movimientos, setMovimientos] = useState<MovimientoDiario[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [pendingNotifications, setPendingNotifications] = useState<NotificacionCalendario[]>([])
+  const [pendingNotificationsCount, setPendingNotificationsCount] = useState(0)
   
   // Estados de navegación
   const [activeSection, setActiveSection] = useState('historial')
@@ -176,9 +180,10 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     const loadData = async () => {
       setIsLoading(true)
       try {
-        const [movimientosData, etiquetasData] = await Promise.all([
+        const [movimientosData, etiquetasData, pendientesData] = await Promise.all([
           MovimientosAPI.fetchMovimientos(),
-          fetchEtiquetas()
+          fetchEtiquetas(),
+          notificacionesApi.obtenerNotificacionesPendientes().catch(() => []) // No fallar si las notificaciones fallan
         ])
 
         setMovimientos(movimientosData.sort((a, b) => 
@@ -187,6 +192,9 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         
         setEtiquetasCompletas(etiquetasData)
         setEtiquetas(formatEtiquetasForLegacy(etiquetasData))
+        
+        setPendingNotifications(pendientesData)
+        setPendingNotificationsCount(pendientesData.length)
         
       } catch (error) {
         console.error('Error loading data:', error)
@@ -273,6 +281,42 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     } catch (error) {
       console.error('Error al guardar cambios:', error)
       throw error // Relanzar para que el modal lo maneje
+    }
+  }
+
+  // ========================================
+  // HANDLERS DE NOTIFICACIONES
+  // ========================================
+
+  const handleCreateMovementFromNotification = (notificacion: NotificacionCalendario) => {
+    // Cambiar a vista historial para mostrar el formulario
+    setActiveSection('historial')
+    setShowAddForm(true)
+    
+    // Pre-cargar la fecha de la notificación
+    setNewMovementDate(notificacion.fecha)
+    
+    // Si hay etiqueta, pre-cargarla según el tipo
+    if (notificacion.etiqueta) {
+      if (notificacion.tipo === 'ingreso') {
+        setNewIncome(prev => ({ ...prev, etiqueta: notificacion.etiqueta! }))
+      } else if (notificacion.tipo === 'gasto') {
+        setNewExpense(prev => ({ ...prev, etiqueta: notificacion.etiqueta! }))
+      }
+    }
+  }
+
+  const handleNavigateToCalendar = () => {
+    setActiveSection('calendario')
+  }
+
+  const reloadPendingNotifications = async () => {
+    try {
+      const pendientes = await notificacionesApi.obtenerNotificacionesPendientes()
+      setPendingNotifications(pendientes)
+      setPendingNotificationsCount(pendientes.length)
+    } catch (error) {
+      console.error('Error al recargar notificaciones pendientes:', error)
     }
   }
 
@@ -669,6 +713,8 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 etiquetas={etiquetas}
                 onCreateNewTag={handleCreateNewTag}
                 newTagCreated={newTagCreated}
+                pendingNotificationsCount={pendingNotificationsCount}
+                onNavigateToCalendar={handleNavigateToCalendar}
                 onShowMonthlyBreakdown={() => {
                   const now = new Date()
                   setSelectedMonthYear({ month: now.getMonth(), year: now.getFullYear() })
@@ -772,6 +818,15 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 isDark={isDark}
                 onBack={() => setActiveSection('historial')}
                 etiquetasEsenciales={etiquetasEsenciales}
+              />
+            )}
+
+            {/* Vista Calendario */}
+            {activeSection === 'calendario' && (
+              <CalendarView
+                isDark={isDark}
+                etiquetas={etiquetas}
+                onCreateMovementFromNotification={handleCreateMovementFromNotification}
               />
             )}
 

@@ -4,6 +4,7 @@ import Pagination from '../dashboard/Pagination'
 import { usePagination } from '../../hooks/usePagination'
 import AddMovementForm from '../forms/AddMovementForm'
 import WeeklyIncomeChart from '../charts/WeeklyIncomeChart'
+import PendingMovementCard from '../notifications/PendingMovementCard'
 
 interface MovimientoDiario {
   id: number
@@ -32,6 +33,8 @@ interface HistorialViewProps {
   newTagCreated?: {field: string, tagName: string} | null
   onShowMonthlyBreakdown?: () => void
   onShowYearlyBreakdown?: () => void
+  pendingNotificationsCount?: number
+  onNavigateToCalendar?: () => void
 }
 
 const HistorialView: React.FC<HistorialViewProps> = ({
@@ -46,7 +49,9 @@ const HistorialView: React.FC<HistorialViewProps> = ({
   onCreateNewTag,
   newTagCreated,
   onShowMonthlyBreakdown,
-  onShowYearlyBreakdown
+  onShowYearlyBreakdown,
+  pendingNotificationsCount = 0,
+  onNavigateToCalendar = () => {}
 }) => {
   const today = new Date().toISOString().split('T')[0]
   const currentMonth = new Date().getMonth()
@@ -101,6 +106,13 @@ const HistorialView: React.FC<HistorialViewProps> = ({
           newTagCreated={newTagCreated}
         />
       )}
+
+      {/* Notificaciones pendientes */}
+      <PendingMovementCard
+        pendingCount={pendingNotificationsCount}
+        isDark={isDark}
+        onNavigateToCalendar={onNavigateToCalendar}
+      />
 
       {/* Texto de movimientos registrados */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-6">

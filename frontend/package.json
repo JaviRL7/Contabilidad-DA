@@ -13,14 +13,17 @@
   "dependencies": {
     "@tanstack/react-query": "^5.85.6",
     "@types/node": "^24.3.0",
+    "@types/react-calendar": "^3.9.0",
     "axios": "^1.11.0",
     "canvas-confetti": "^1.9.3",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.542.0",
     "react": "^19.1.1",
+    "react-calendar": "^6.0.0",
     "react-datepicker": "*",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.62.0",
+    "react-perfect-scrollbar": "^1.5.8",
     "react-router-dom": "^7.8.2",
     "recharts": "^3.1.2"
   },

@@ -35,7 +35,8 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
     { key: 'etiquetas', label: 'Etiquetas' },
     { key: 'recurrentes', label: 'Gastos Continuos' },
     { key: 'desgloses', label: 'Desgloses' },
-    { key: 'analisis', label: 'Análisis' }
+    { key: 'analisis', label: 'Análisis' },
+    { key: 'calendario', label: 'Calendario' }
   ]
 
   const breakdownTabs = [

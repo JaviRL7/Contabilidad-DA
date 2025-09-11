@@ -111,22 +111,30 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid md:grid-cols-4 gap-4">
+      {/* Summary Cards - Mejoradas */}
+      <div className="grid md:grid-cols-3 gap-6">
         <Card variant="default" isDark={isDark}>
-          <div className="p-4">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${isDark ? 'bg-green-500/20' : 'bg-green-100'}`}>
-                <TrendingUp className="w-5 h-5 text-green-500" />
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-xl ${isDark ? 'bg-green-500/20' : 'bg-green-100'}`}>
+                <TrendingUp className="w-7 h-7 text-green-500" />
               </div>
-              <div>
-                <p className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <div className="flex-1">
+                <p className={`text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   Balance Total
                 </p>
-                <p className={`text-lg font-bold ${
-                  analysisStats.totalBalance >= 0 ? 'text-green-500' : 'text-red-500'
-                }`}>
-                  €{analysisStats.totalBalance.toLocaleString()}
+                <div className="flex items-baseline gap-1">
+                  <p className={`text-3xl font-bold ${
+                    analysisStats.totalBalance >= 0 ? 'text-green-500' : 'text-red-500'
+                  }`}>
+                    {analysisStats.totalBalance.toLocaleString()}
+                  </p>
+                  <span className={`text-xl font-semibold ${
+                    analysisStats.totalBalance >= 0 ? 'text-green-400' : 'text-red-400'
+                  }`}>€</span>
+                </div>
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                  {analysisStats.totalBalance >= 0 ? '↗ Positivo' : '↘ Negativo'} • {analysisStats.daysPeriod} días
                 </p>
               </div>
             </div>
@@ -134,17 +142,23 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({
         </Card>
 
         <Card variant="default" isDark={isDark}>
-          <div className="p-4">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${isDark ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
-                <BarChart3 className="w-5 h-5 text-blue-500" />
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-xl ${isDark ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
+                <BarChart3 className="w-7 h-7 text-blue-500" />
               </div>
-              <div>
-                <p className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <div className="flex-1">
+                <p className={`text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   Promedio Diario
                 </p>
-                <p className="text-lg font-bold text-blue-500">
-                  €{analysisStats.avgDailyBalance.toFixed(0)}
+                <div className="flex items-baseline gap-1">
+                  <p className="text-3xl font-bold text-blue-500">
+                    {analysisStats.avgDailyBalance.toFixed(0)}
+                  </p>
+                  <span className="text-xl font-semibold text-blue-400">€</span>
+                </div>
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                  Balance promedio por día
                 </p>
               </div>
             </div>
@@ -152,41 +166,23 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({
         </Card>
 
         <Card variant="default" isDark={isDark}>
-          <div className="p-4">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${isDark ? 'bg-purple-500/20' : 'bg-purple-100'}`}>
-                <Calendar className="w-5 h-5 text-purple-500" />
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-xl ${isDark ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
+                <PieChart className="w-7 h-7 text-orange-500" />
               </div>
-              <div>
-                <p className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Período de Análisis
-                </p>
-                {analysisStats.periodStart && analysisStats.periodEnd ? (
-                  <div className="text-sm font-bold text-purple-500">
-                    <div>{analysisStats.periodStart.toLocaleDateString('es-ES')}</div>
-                    <div className="text-xs text-gray-500">a {analysisStats.periodEnd.toLocaleDateString('es-ES')}</div>
-                    <div className="text-xs text-purple-400">({analysisStats.daysPeriod} días)</div>
-                  </div>
-                ) : (
-                  <p className="text-sm font-bold text-purple-500">Sin datos</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        <Card variant="default" isDark={isDark}>
-          <div className="p-4">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${isDark ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
-                <PieChart className="w-5 h-5 text-orange-500" />
-              </div>
-              <div>
-                <p className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <div className="flex-1">
+                <p className={`text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   Total Movimientos
                 </p>
-                <p className="text-lg font-bold text-orange-500">
-                  {analysisStats.totalTransactions}
+                <div className="flex items-baseline gap-1">
+                  <p className="text-3xl font-bold text-orange-500">
+                    {analysisStats.totalTransactions}
+                  </p>
+                  <span className="text-xl font-semibold text-orange-400">días</span>
+                </div>
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                  Ingresos: {analysisStats.totalIngresos.toLocaleString()}€ • Gastos: {analysisStats.totalGastos.toLocaleString()}€
                 </p>
               </div>
             </div>

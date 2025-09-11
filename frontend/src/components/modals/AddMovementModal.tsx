@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import DatePicker from 'react-datepicker'
 import { parseISO } from 'date-fns'
 import { formatEuro } from '../../utils/formatters'
+import PerfectScrollbar from 'react-perfect-scrollbar'
+import 'react-perfect-scrollbar/dist/css/styles.css'
 
 interface AddMovementModalProps {
   isOpen: boolean
@@ -44,6 +46,10 @@ const AddMovementModal: React.FC<AddMovementModalProps> = ({
   const [createTagType, setCreateTagType] = useState<'ingreso' | 'gasto'>('ingreso')
   const [newTagName, setNewTagName] = useState('')
   const [pendingTagField, setPendingTagField] = useState<string | null>(null)
+  
+  // Dropdown states
+  const [isIngresoDropdownOpen, setIsIngresoDropdownOpen] = useState(false)
+  const [isGastoDropdownOpen, setIsGastoDropdownOpen] = useState(false)
 
   if (!isOpen) return null
 
@@ -186,31 +192,90 @@ const AddMovementModal: React.FC<AddMovementModalProps> = ({
                       Etiqueta
                     </label>
                     <div className="relative">
-                      <select 
-                        value={newIncome.etiqueta}
-                        onChange={(e) => {
-                          if (e.target.value === '__nueva__') {
-                            handleCreateNewTag('newIncome.etiqueta', 'ingreso')
-                          } else {
-                            setNewIncome(prev => ({...prev, etiqueta: e.target.value}))
-                          }
-                        }}
-                        className={`appearance-none w-full px-3 py-2 pr-10 rounded-lg border ${
+                      {/* Custom Dropdown Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => setIsIngresoDropdownOpen(!isIngresoDropdownOpen)}
+                        className={`appearance-none w-full px-3 py-2 pr-10 rounded-lg border text-left ${
                         isDark 
                           ? 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600 hover:border-gray-500' 
                           : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400'
                       } focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200`}>
-                        <option value="">Seleccionar etiqueta...</option>
-                        {etiquetas.ingresos.map(etiq => (
-                          <option key={etiq} value={etiq}>{etiq}</option>
-                        ))}
-                        <option value="__nueva__">+ Crear nueva etiqueta</option>
-                      </select>
+                        {newIncome.etiqueta || "Seleccionar etiqueta..."}
+                      </button>
                       <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
                         <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                           <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
                         </svg>
                       </div>
+
+                      {/* Dropdown Options with Perfect Scrollbar */}
+                      {isIngresoDropdownOpen && (
+                        <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-lg z-50 ${
+                          isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                        }`}>
+                          <PerfectScrollbar
+                            options={{
+                              suppressScrollX: true,
+                              wheelPropagation: false
+                            }}
+                            style={{ maxHeight: '200px' }}
+                          >
+                            <div className="py-2">
+                              <div className="px-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setNewIncome(prev => ({...prev, etiqueta: ''}))
+                                    setIsIngresoDropdownOpen(false)
+                                  }}
+                                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-150 ${
+                                    isDark 
+                                      ? 'hover:bg-gray-600 text-gray-300 hover:text-white' 
+                                      : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900'
+                                  } ${!newIncome.etiqueta ? (isDark ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-900') : ''}`}
+                                >
+                                  <span>Seleccionar etiqueta...</span>
+                                </button>
+                              </div>
+                              {etiquetas.ingresos.map((etiq) => (
+                                <div key={etiq} className="px-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setNewIncome(prev => ({...prev, etiqueta: etiq}))
+                                      setIsIngresoDropdownOpen(false)
+                                    }}
+                                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-150 ${
+                                      isDark 
+                                        ? 'hover:bg-gray-600 text-gray-300 hover:text-white' 
+                                        : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900'
+                                    } ${newIncome.etiqueta === etiq ? (isDark ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-900') : ''}`}
+                                  >
+                                    <span>{etiq}</span>
+                                  </button>
+                                </div>
+                              ))}
+                              <div className="px-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleCreateNewTag('newIncome.etiqueta', 'ingreso')
+                                    setIsIngresoDropdownOpen(false)
+                                  }}
+                                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-150 ${
+                                    isDark 
+                                      ? 'hover:bg-green-600 text-green-400 hover:text-white' 
+                                      : 'hover:bg-green-100 text-green-700 hover:text-green-800'
+                                  }`}
+                                >
+                                  <span>+ Crear nueva etiqueta</span>
+                                </button>
+                              </div>
+                            </div>
+                          </PerfectScrollbar>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -291,31 +356,90 @@ const AddMovementModal: React.FC<AddMovementModalProps> = ({
                       Etiqueta
                     </label>
                     <div className="relative">
-                      <select 
-                        value={newExpense.etiqueta}
-                        onChange={(e) => {
-                          if (e.target.value === '__nueva__') {
-                            handleCreateNewTag('newExpense.etiqueta', 'gasto')
-                          } else {
-                            setNewExpense(prev => ({...prev, etiqueta: e.target.value}))
-                          }
-                        }}
-                        className={`appearance-none w-full px-3 py-2 pr-10 rounded-lg border ${
+                      {/* Custom Dropdown Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => setIsGastoDropdownOpen(!isGastoDropdownOpen)}
+                        className={`appearance-none w-full px-3 py-2 pr-10 rounded-lg border text-left ${
                         isDark 
                           ? 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600 hover:border-gray-500' 
                           : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400'
                       } focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors duration-200`}>
-                        <option value="">Seleccionar etiqueta...</option>
-                        {etiquetas.gastos.map(etiq => (
-                          <option key={etiq} value={etiq}>{etiq}</option>
-                        ))}
-                        <option value="__nueva__">+ Crear nueva etiqueta</option>
-                      </select>
+                        {newExpense.etiqueta || "Seleccionar etiqueta..."}
+                      </button>
                       <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
                         <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                           <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
                         </svg>
                       </div>
+
+                      {/* Dropdown Options with Perfect Scrollbar */}
+                      {isGastoDropdownOpen && (
+                        <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-lg z-50 ${
+                          isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                        }`}>
+                          <PerfectScrollbar
+                            options={{
+                              suppressScrollX: true,
+                              wheelPropagation: false
+                            }}
+                            style={{ maxHeight: '200px' }}
+                          >
+                            <div className="py-2">
+                              <div className="px-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setNewExpense(prev => ({...prev, etiqueta: ''}))
+                                    setIsGastoDropdownOpen(false)
+                                  }}
+                                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-150 ${
+                                    isDark 
+                                      ? 'hover:bg-gray-600 text-gray-300 hover:text-white' 
+                                      : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900'
+                                  } ${!newExpense.etiqueta ? (isDark ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-900') : ''}`}
+                                >
+                                  <span>Seleccionar etiqueta...</span>
+                                </button>
+                              </div>
+                              {etiquetas.gastos.map((etiq) => (
+                                <div key={etiq} className="px-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setNewExpense(prev => ({...prev, etiqueta: etiq}))
+                                      setIsGastoDropdownOpen(false)
+                                    }}
+                                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-150 ${
+                                      isDark 
+                                        ? 'hover:bg-gray-600 text-gray-300 hover:text-white' 
+                                        : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900'
+                                    } ${newExpense.etiqueta === etiq ? (isDark ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-900') : ''}`}
+                                  >
+                                    <span>{etiq}</span>
+                                  </button>
+                                </div>
+                              ))}
+                              <div className="px-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleCreateNewTag('newExpense.etiqueta', 'gasto')
+                                    setIsGastoDropdownOpen(false)
+                                  }}
+                                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-150 ${
+                                    isDark 
+                                      ? 'hover:bg-red-600 text-red-400 hover:text-white' 
+                                      : 'hover:bg-red-100 text-red-700 hover:text-red-800'
+                                  }`}
+                                >
+                                  <span>+ Crear nueva etiqueta</span>
+                                </button>
+                              </div>
+                            </div>
+                          </PerfectScrollbar>
+                        </div>
+                      )}
                     </div>
                   </div>
                   

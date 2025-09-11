@@ -96,18 +96,26 @@ const CategoryAnalysis: React.FC<CategoryAnalysisProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Tarjetas de insights */}
-      <div className="grid md:grid-cols-4 gap-4">
+      {/* Tarjetas de insights - Mejoradas */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card variant="default" isDark={isDark}>
-          <div className="p-4">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-500" />
-              <div>
-                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-xl ${isDark ? 'bg-yellow-500/20' : 'bg-yellow-100'}`}>
+                <Star className="w-7 h-7 text-yellow-500" />
+              </div>
+              <div className="flex-1">
+                <p className={`text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   Gastos Esenciales
                 </p>
-                <p className="text-lg font-bold text-yellow-500">
-                  {categoryInsights.essentialPercentage.toFixed(1)}%
+                <div className="flex items-baseline gap-1">
+                  <p className="text-3xl font-bold text-yellow-500">
+                    {categoryInsights.essentialPercentage.toFixed(1)}
+                  </p>
+                  <span className="text-xl font-semibold text-yellow-400">%</span>
+                </div>
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                  Del total de gastos registrados
                 </p>
               </div>
             </div>
@@ -115,15 +123,22 @@ const CategoryAnalysis: React.FC<CategoryAnalysisProps> = ({
         </Card>
 
         <Card variant="default" isDark={isDark}>
-          <div className="p-4">
-            <div className="flex items-center gap-2">
-              <TrendingDown className="w-5 h-5 text-red-500" />
-              <div>
-                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Mayor Gasto
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-xl ${isDark ? 'bg-red-500/20' : 'bg-red-100'}`}>
+                <TrendingDown className="w-7 h-7 text-red-500" />
+              </div>
+              <div className="flex-1">
+                <p className={`text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Mayor Gasto por Categoría
                 </p>
-                <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {categoryInsights.mostExpensive?.name || 'N/A'}
+                <div className="flex items-baseline gap-1">
+                  <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {categoryInsights.mostExpensive?.name || 'N/A'}
+                  </p>
+                </div>
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                  {categoryInsights.mostExpensive ? `${formatEuro(categoryInsights.mostExpensive.total)} total` : 'Sin datos disponibles'}
                 </p>
               </div>
             </div>
@@ -131,15 +146,22 @@ const CategoryAnalysis: React.FC<CategoryAnalysisProps> = ({
         </Card>
 
         <Card variant="default" isDark={isDark}>
-          <div className="p-4">
-            <div className="flex items-center gap-2">
-              <Tag className="w-5 h-5 text-blue-500" />
-              <div>
-                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Más Frecuente
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-xl ${isDark ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
+                <Tag className="w-7 h-7 text-blue-500" />
+              </div>
+              <div className="flex-1">
+                <p className={`text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Categoría Más Frecuente
                 </p>
-                <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {categoryInsights.mostFrequent?.name || 'N/A'}
+                <div className="flex items-baseline gap-1">
+                  <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {categoryInsights.mostFrequent?.name || 'N/A'}
+                  </p>
+                </div>
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                  {categoryInsights.mostFrequent ? `${categoryInsights.mostFrequent.count} transacciones` : 'Sin datos disponibles'}
                 </p>
               </div>
             </div>
@@ -147,15 +169,23 @@ const CategoryAnalysis: React.FC<CategoryAnalysisProps> = ({
         </Card>
 
         <Card variant="default" isDark={isDark}>
-          <div className="p-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-500" />
-              <div>
-                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-xl ${isDark ? 'bg-green-500/20' : 'bg-green-100'}`}>
+                <TrendingUp className="w-7 h-7 text-green-500" />
+              </div>
+              <div className="flex-1">
+                <p className={`text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   Categorías Activas
                 </p>
-                <p className="text-lg font-bold text-green-500">
-                  {categoryInsights.totalCategories}
+                <div className="flex items-baseline gap-1">
+                  <p className="text-3xl font-bold text-green-500">
+                    {categoryInsights.totalCategories}
+                  </p>
+                  <span className="text-xl font-semibold text-green-400">total</span>
+                </div>
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                  Entre ingresos y gastos
                 </p>
               </div>
             </div>

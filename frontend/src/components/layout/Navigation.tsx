@@ -20,7 +20,8 @@ const Navigation: React.FC<NavigationProps> = ({
     { key: 'buscar', label: 'Buscar' },
     { key: 'etiquetas', label: 'Etiquetas' },
     { key: 'recurrentes', label: 'Gastos Continuos' },
-    { key: 'analisis', label: 'Análisis' }
+    { key: 'analisis', label: 'Análisis' },
+    { key: 'calendario', label: 'Calendario' }
   ]
 
   return (
