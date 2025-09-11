@@ -83,8 +83,8 @@ const MonthList: React.FC<MonthListProps> = ({
           </div>
         </div>
 
-        {/* Botones de ordenación y paginación */}
-        <div className="flex items-center gap-2">
+        {/* Botones de ordenación */}
+        <div className="flex gap-2">
           <button
             onClick={() => toggleSort('date')}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
@@ -122,45 +122,6 @@ const MonthList: React.FC<MonthListProps> = ({
               <ArrowUpDown className={`w-3 h-3 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
             )}
           </button>
-
-          {/* Controles de paginación */}
-          {totalPages > 1 && (
-            <div className="flex items-center gap-1 ml-2">
-              <button
-                onClick={prevPage}
-                disabled={currentPage === 0}
-                className={`p-2 rounded-lg transition-all duration-200 ${
-                  currentPage === 0
-                    ? isDark
-                      ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : isDark
-                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className={`px-3 py-1 text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                {currentPage + 1} / {totalPages}
-              </span>
-              <button
-                onClick={nextPage}
-                disabled={currentPage >= totalPages - 1}
-                className={`p-2 rounded-lg transition-all duration-200 ${
-                  currentPage >= totalPages - 1
-                    ? isDark
-                      ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : isDark
-                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -221,6 +182,45 @@ const MonthList: React.FC<MonthListProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Controles de paginación en la parte inferior */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center mt-4 gap-3">
+          <button
+            onClick={prevPage}
+            disabled={currentPage === 0}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              currentPage === 0
+                ? isDark
+                  ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : isDark
+                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className={`px-3 py-1 text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+            {currentPage + 1} de {totalPages}
+          </span>
+          <button
+            onClick={nextPage}
+            disabled={currentPage >= totalPages - 1}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              currentPage >= totalPages - 1
+                ? isDark
+                  ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : isDark
+                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </Card>
   )
 }
