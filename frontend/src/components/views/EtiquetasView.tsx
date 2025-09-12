@@ -47,7 +47,7 @@ const EtiquetasView: React.FC<EtiquetasViewProps> = ({
   const [selectedTag, setSelectedTag] = useState<{name: string, type: 'gasto' | 'ingreso'} | null>(null)
 
   // Combinar todas las etiquetas y eliminar duplicados
-  const todasLasEtiquetas = [...new Set([...etiquetas.ingresos, ...etiquetas.gastos])].sort()
+  const todasLasEtiquetas = [...new Set([...(etiquetas.ingresos || []), ...(etiquetas.gastos || [])])].sort()
   
   // Separar por tipo
   const etiquetasIngresos = etiquetas.ingresos.sort()

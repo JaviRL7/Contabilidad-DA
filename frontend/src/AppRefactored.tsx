@@ -949,7 +949,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
           handleCreateTagConfirm(name)
         }}
         isDark={isDark}
-        existingTags={[...etiquetas.ingresos, ...etiquetas.gastos]}
+        existingTags={[...(etiquetas.ingresos || []), ...(etiquetas.gastos || [])]}
       />
 
       {/* Modal para gastos recurrentes pendientes */}

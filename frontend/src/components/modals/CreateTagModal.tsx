@@ -6,7 +6,7 @@ interface CreateTagModalProps {
   onClose: () => void
   onCreate: (name: string, type: 'gasto' | 'ingreso', isEssential?: boolean) => void
   isDark: boolean
-  existingTags: string[]
+  existingTags?: string[]
 }
 
 const CreateTagModal: React.FC<CreateTagModalProps> = ({
@@ -37,7 +37,7 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({
     const normalizedInput = inputName.toLowerCase().trim()
     const similar = []
 
-    for (const existing of existingTags) {
+    for (const existing of (existingTags || [])) {
       const normalizedExisting = existing.toLowerCase()
       
       // Verificar coincidencias exactas (case insensitive)
@@ -127,7 +127,7 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({
     }
 
     // Check if tag already exists (case insensitive)
-    if (existingTags.some(tag => tag.toLowerCase() === trimmedName.toLowerCase())) {
+    if ((existingTags || []).some(tag => tag.toLowerCase() === trimmedName.toLowerCase())) {
       setError('Ya existe una etiqueta con este nombre')
       return
     }
