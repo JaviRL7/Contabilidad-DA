@@ -538,44 +538,65 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                         {notificacionesConvertidas.map((notificacion) => (
                           <div
                             key={notificacion.id}
-                            className={`p-3 rounded-lg border-l-4 border-green-500 ${
-                              isDark ? 'bg-green-900/10' : 'bg-green-50'
+                            className={`p-4 rounded-xl border-l-4 transition-all duration-200 hover:scale-[1.02] ${
+                              notificacion.tipo === 'ingreso'
+                                ? `border-green-500 ${isDark ? 'bg-gradient-to-r from-green-900/20 to-green-800/10 hover:bg-green-900/30' : 'bg-gradient-to-r from-green-50 to-green-25 hover:bg-green-100'}`
+                                : notificacion.tipo === 'gasto'
+                                ? `border-red-500 ${isDark ? 'bg-gradient-to-r from-red-900/20 to-red-800/10 hover:bg-red-900/30' : 'bg-gradient-to-r from-red-50 to-red-25 hover:bg-red-100'}`
+                                : `border-gray-500 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`
                             }`}
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <svg className="w-3 h-3 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                  </svg>
-                                  <p className="font-medium text-sm truncate">{notificacion.texto_descriptivo}</p>
-                                </div>
-                                
-                                <div className="flex items-center gap-2 text-xs">
-                                  <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    {format(new Date(notificacion.fecha), 'dd/MM', { locale: es })}
-                                  </span>
-                                  {notificacion.tipo && notificacion.tipo !== 'general' && (
-                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                <div className="flex items-center gap-3 mb-2">
+                                  {notificacion.tipo && notificacion.tipo !== 'general' ? (
+                                    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
                                       notificacion.tipo === 'ingreso'
-                                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                                        ? 'bg-green-500 text-white'
+                                        : 'bg-red-500 text-white'
                                     }`}>
-                                      {notificacion.tipo === 'ingreso' ? '↑' : '↓'}
-                                    </span>
+                                      {notificacion.tipo === 'ingreso' ? (
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                                        </svg>
+                                      ) : (
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-500 text-white">
+                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                      </svg>
+                                    </div>
                                   )}
-                                  {notificacion.etiqueta && (
-                                    <span className={`px-2 py-0.5 rounded text-xs font-medium truncate max-w-16 ${
-                                      isDark 
-                                        ? 'bg-gray-700 text-gray-300' 
-                                        : 'bg-gray-200 text-gray-700'
-                                    }`}>
-                                      {notificacion.etiqueta}
-                                    </span>
-                                  )}
+                                  
+                                  <div className="flex-1">
+                                    <p className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                      {notificacion.texto_descriptivo}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} flex items-center gap-1`}>
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        {format(new Date(notificacion.fecha), 'dd/MM', { locale: es })}
+                                      </span>
+                                      {notificacion.etiqueta && (
+                                        <span className={`px-2 py-1 rounded-md text-xs font-medium ${
+                                          notificacion.tipo === 'ingreso'
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
+                                            : notificacion.tipo === 'gasto'
+                                            ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
+                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                                        }`}>
+                                          {notificacion.etiqueta}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>

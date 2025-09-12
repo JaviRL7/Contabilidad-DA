@@ -317,12 +317,28 @@ const MonthlyBreakdownView: React.FC<MonthlyBreakdownViewProps> = ({
             className="md:col-span-2"
           >
             <SimpleLineChart
-              data={monthlyMovimientos
-                .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
-                .map(mov => ({
-                  label: new Date(mov.fecha).getDate().toString(),
-                  value: mov.balance
-                }))}
+              data={(() => {
+                // Obtener el número de días del mes actual
+                const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate()
+                const dailyData = []
+                
+                // Crear un mapa de movimientos por día
+                const movimientosPorDia = new Map()
+                monthlyMovimientos.forEach(mov => {
+                  const day = new Date(mov.fecha).getDate()
+                  movimientosPorDia.set(day, mov.balance)
+                })
+                
+                // Crear datos para todos los días del mes
+                for (let day = 1; day <= daysInMonth; day++) {
+                  dailyData.push({
+                    label: day.toString(),
+                    value: movimientosPorDia.get(day) || 0
+                  })
+                }
+                
+                return dailyData
+              })()}
               isDark={isDark}
               maxHeight={180}
               showValues={true}

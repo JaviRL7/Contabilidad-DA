@@ -194,30 +194,40 @@ const BusquedaView: React.FC<BusquedaViewProps> = ({
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <button
                   onClick={handleSearch}
-                  className="rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-md px-6 py-3 text-base bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white cursor-pointer"
+                  className={`group relative overflow-hidden rounded-xl px-8 py-3 text-base font-semibold transition-all duration-300 transform hover:scale-105 ${
+                    isDark
+                      ? 'bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 hover:from-blue-500 hover:via-blue-400 hover:to-indigo-500 text-white shadow-lg hover:shadow-blue-500/25'
+                      : 'bg-gradient-to-r from-blue-500 via-blue-400 to-indigo-500 hover:from-blue-400 hover:via-blue-300 hover:to-indigo-400 text-white shadow-lg hover:shadow-blue-400/25'
+                  }`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
-                  </svg>
-                  Buscar
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform duration-200">
+                      <circle cx="11" cy="11" r="8"/>
+                      <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <span>Buscar</span>
+                  </div>
                 </button>
+                
                 <button
                   onClick={clearSearch}
-                  className={`rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-md px-6 py-3 text-base ${
+                  className={`group relative overflow-hidden rounded-xl px-6 py-3 text-base font-medium transition-all duration-300 border-2 ${
                     isDark 
-                      ? 'bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400' 
-                      : 'bg-gradient-to-r from-gray-500 to-gray-400 hover:from-gray-400 hover:to-gray-300'
-                  } text-white cursor-pointer`}
+                      ? 'border-gray-600 text-gray-300 hover:border-gray-500 hover:bg-gray-700/50 hover:text-white'
+                      : 'border-gray-300 text-gray-600 hover:border-gray-400 hover:bg-gray-50 hover:text-gray-800'
+                  }`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
-                    <path d="M18 6 6 18"/>
-                    <path d="m6 6 12 12"/>
-                  </svg>
-                  Limpiar
+                  <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform duration-200">
+                      <path d="M18 6 6 18"/>
+                      <path d="m6 6 12 12"/>
+                    </svg>
+                    <span>Limpiar</span>
+                  </div>
                 </button>
               </div>
           </div>

@@ -5,6 +5,7 @@ import GradientButton from '../ui/GradientButton'
 import ConfirmacionBorradoModal from '../modals/ConfirmacionBorradoModal'
 import ConfirmacionFechaPasadaModal from '../modals/ConfirmacionFechaPasadaModal'
 import EditRecurringExpenseModal from '../modals/EditRecurringExpenseModal'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 interface GastoRecurrente {
   etiqueta: string
@@ -514,33 +515,36 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
               </div>
               
               <div>
-                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                <label className={`block text-sm font-medium mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <Calendar className="w-4 h-4 inline mr-2" />
                   Frecuencia
                 </label>
-                <div className="relative">
-                  <Calendar className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-                    isDark ? 'text-blue-400' : 'text-blue-500'
-                  }`} />
-                  <select
-                    value={formData.frecuencia}
-                    onChange={(e) => setFormData({...formData, frecuencia: e.target.value as any})}
-                    className={`appearance-none w-full pl-12 pr-12 py-3 rounded-xl border-2 text-lg font-medium transition-all duration-200 ${
-                      isDark
-                        ? 'border-gray-600 bg-gray-700 text-white hover:border-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500'
-                        : 'border-gray-300 bg-white text-gray-900 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500'
-                    } focus:outline-none cursor-pointer`}
-                  >
-                    <option value="mensual">Mensual</option>
-                    <option value="semanal">Semanal</option>
-                    <option value="anual">Anual</option>
-                  </select>
-                  <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 ${
-                    isDark ? 'text-blue-400' : 'text-blue-500'
-                  }`}>
-                    <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                    </svg>
-                  </div>
+                <div className="flex gap-2">
+                  {[
+                    { value: 'mensual', label: 'Mensual', icon: '📅' },
+                    { value: 'semanal', label: 'Semanal', icon: '📆' },
+                    { value: 'anual', label: 'Anual', icon: '🗓️' }
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setFormData({...formData, frecuencia: option.value as any})}
+                      className={`flex-1 py-3 px-4 rounded-xl border-2 font-medium transition-all duration-200 ${
+                        formData.frecuencia === option.value
+                          ? isDark
+                            ? 'border-blue-500 bg-blue-600 text-white shadow-lg'
+                            : 'border-blue-500 bg-blue-500 text-white shadow-lg'
+                          : isDark
+                            ? 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500 hover:bg-gray-600'
+                            : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-lg">{option.icon}</span>
+                        <span className="text-sm">{option.label}</span>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
               
@@ -658,19 +662,42 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
               )}
             </div>
             
-            <div className="flex gap-3">
-              <GradientButton type="submit" variant="primary" size="lg" isDark={isDark}>
-                <Plus className="w-5 h-5 mr-2" />
-                Agregar
-              </GradientButton>
-              <GradientButton type="button" variant="secondary" size="lg" onClick={handleCancel} isDark={isDark}>
-                <X className="w-5 h-5 mr-2" />
-                Cancelar
-              </GradientButton>
+            <div className="flex gap-4 pt-4">
+              <button
+                type="submit"
+                className={`group relative overflow-hidden rounded-xl px-8 py-4 text-base font-semibold transition-all duration-300 transform hover:scale-105 ${
+                  isDark
+                    ? 'bg-gradient-to-r from-green-600 via-green-500 to-emerald-600 hover:from-green-500 hover:via-green-400 hover:to-emerald-500 text-white shadow-xl hover:shadow-green-500/25'
+                    : 'bg-gradient-to-r from-green-500 via-green-400 to-emerald-500 hover:from-green-400 hover:via-green-300 hover:to-emerald-400 text-white shadow-xl hover:shadow-green-400/25'
+                }`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative flex items-center gap-2">
+                  <Plus className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+                  <span>Agregar Gasto</span>
+                </div>
+              </button>
+              
+              <button
+                type="button"
+                onClick={handleCancel}
+                className={`group relative overflow-hidden rounded-xl px-6 py-4 text-base font-medium transition-all duration-300 border-2 ${
+                  isDark 
+                    ? 'border-gray-600 text-gray-300 hover:border-gray-500 hover:bg-gray-700/50 hover:text-white'
+                    : 'border-gray-300 text-gray-600 hover:border-gray-400 hover:bg-gray-50 hover:text-gray-800'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <X className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
+                  <span>Cancelar</span>
+                </div>
+              </button>
             </div>
           </form>
         </Card>
       )}
+
+      <div className="mb-8"></div>
 
       {/* Contenido principal */}
       <div className="space-y-12">
@@ -716,8 +743,9 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
               </div>
             </Card>
           ) : (
-            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-              {gastosRecurrentes.map((gasto, index) => {
+            <PerfectScrollbar className="max-h-96">
+              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3 pr-2">
+                {gastosRecurrentes.map((gasto, index) => {
                 const rechazado = tieneRechazos(gasto.etiqueta)
                 const ultimoRechazo = obtenerUltimoRechazo(gasto.etiqueta)
                 const proximoGasto = proximosGastos.find(p => p.gasto.etiqueta === gasto.etiqueta)
@@ -814,8 +842,9 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
                     </div>
                   </Card>
                   )
-              })
-}</div>
+                })}
+              </div>
+            </PerfectScrollbar>
           )}
         </div>
 
