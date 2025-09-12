@@ -10,11 +10,12 @@ export const API_BASE_URL = isProduction
   ? 'https://web-production-a862.up.railway.app/api'
   : import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-// Log para debugging (solo en desarrollo)
-if (!isProduction) {
-  console.log('🔗 API_BASE_URL configurada:', API_BASE_URL);
-  console.log('🌍 Entorno:', isProduction ? 'Production' : 'Development');
-}
+// Log para debugging en TODOS los casos para ver qué está pasando
+console.log('🔗 API_BASE_URL configurada:', API_BASE_URL);
+console.log('🌍 Entorno:', isProduction ? 'Production' : 'Development');
+console.log('🏠 Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'SSR');
+console.log('🔧 VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('📦 PROD mode:', import.meta.env.PROD);
 
 export const ETIQUETAS_PREDEFINIDAS = {
   gastos: ['Comida', 'Transporte', 'Casa', 'Ropa', 'Salud', 'Entretenimiento', 'Facturas', 'Otros'],

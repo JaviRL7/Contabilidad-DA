@@ -10,14 +10,33 @@ const api = axios.create({
   }
 })
 
-// Interceptor para requests - agregar auth headers si existen
+// Interceptor para requests - agregar auth headers y forzar HTTPS en producción
 api.interceptors.request.use(
   (config) => {
+    // CRITICAL FIX: Forzar HTTPS en producción
+    if (typeof window !== 'undefined' && 
+        window.location.hostname === 'contabilidad-da-production.up.railway.app') {
+      // Si estamos en producción, forzar HTTPS en todas las URLs
+      if (config.url && config.url.includes('web-production-a862.up.railway.app')) {
+        config.url = config.url.replace('http://', 'https://');
+      }
+      if (config.baseURL && config.baseURL.includes('web-production-a862.up.railway.app')) {
+        config.baseURL = config.baseURL.replace('http://', 'https://');
+      }
+    }
+    
     // Agregar headers de autenticación si existen
     const token = localStorage.getItem('auth_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    
+    // Debug logging
+    if (import.meta.env.MODE === 'development') {
+      // eslint-disable-next-line no-console
+      console.log('🔄 Request:', config.method?.toUpperCase(), config.baseURL + config.url);
+    }
+    
     return config
   },
   (error) => {
