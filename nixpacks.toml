@@ -4,5 +4,8 @@ nixPkgs = ["python312", "pip"]
 [phases.install]
 cmds = ["pip install -r requirements.txt"]
 
+[phases.build]
+cmds = ["cd backend && python3 migrate_to_postgresql.py"]
+
 [start]
 cmd = "cd backend && python3 -m uvicorn app.main:app --host 0.0.0.0 --port $PORT"
