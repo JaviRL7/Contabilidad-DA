@@ -690,10 +690,6 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
           setShowYearlyBreakdown(false)
           setShowMonthlyBreakdown(true)
         }}
-        onResetBreakdowns={() => {
-          setShowYearlyBreakdown(false)
-          setShowMonthlyBreakdown(false)
-        }}
         showYearlyBreakdown={showYearlyBreakdown}
         showMonthlyBreakdown={showMonthlyBreakdown}
       />
