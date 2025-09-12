@@ -1,0 +1,11 @@
+[variables]
+PYTHON_VERSION = "3.12"
+NODE_VERSION = "20"
+
+[phases.build]
+cmds = [
+  "cd frontend && npm install && npm run build-production"
+]
+
+[start]
+cmd = "python3 -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT"

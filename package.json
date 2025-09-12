@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "build": "cd frontend && npm install && npm run build-production",
-    "start": "python -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT"
+    "start": "python3 -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT"
   },
   "engines": {
-    "node": "20"
+    "node": "20",
+    "python": "3.12"
   }
 }
