@@ -18,7 +18,7 @@ const SimpleLineChart: React.FC<SimpleLineChartProps> = ({
   data,
   isDark,
   maxHeight = 200,
-  showValues = false,
+  showValues: _showValues = false,
   showGrid = true
 }) => {
   if (!data || data.length === 0) {

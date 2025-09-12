@@ -19,12 +19,12 @@ const Pagination: React.FC<PaginationProps> = ({
   hasPrev,
   onNext,
   onPrev,
-  onGoToPage,
+  onGoToPage: _onGoToPage,
   isDark
 }) => {
   if (totalPages <= 1) return null
 
-  const getVisiblePages = () => {
+  const _getVisiblePages = () => {
     const pages = []
     const maxVisible = 5
     

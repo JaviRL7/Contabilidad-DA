@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, X, Edit, Trash2, Calendar, DollarSign, ChevronDown, Check, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, X, Edit, Trash2, Calendar, ChevronDown, Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import Card from '../ui/Card'
 import ConfirmacionBorradoModal from '../modals/ConfirmacionBorradoModal'
 import ConfirmacionFechaPasadaModal from '../modals/ConfirmacionFechaPasadaModal'

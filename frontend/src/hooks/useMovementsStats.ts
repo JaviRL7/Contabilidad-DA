@@ -19,26 +19,8 @@ interface MovimientoDiario {
   balance: number
 }
 
-interface MonthData {
-  year: number
-  month: number
-  monthName: string
-  totalIngresos: number
-  totalGastos: number
-  balance: number
-  movimientosCount: number
-  balanceBruto: number
-}
 
-interface YearData {
-  year: number
-  totalIngresos: number
-  totalGastos: number
-  balance: number
-  movimientosCount: number
-  balanceBruto: number
-  monthsWithMovements: number
-}
+// Interfaces removidas - no utilizadas
 
 type SortType = 'date' | 'balanceBruto'
 type SortOrder = 'asc' | 'desc'

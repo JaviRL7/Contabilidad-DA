@@ -57,11 +57,24 @@ import { triggerConfetti } from './utils/confetti'
 // INTERFACES Y TIPOS
 // ========================================
 
+interface Ingreso {
+  id: number
+  monto: number
+  etiqueta: string
+}
+
+interface Gasto {
+  id: number
+  monto: number
+  etiqueta: string
+  es_recurrente?: boolean
+}
+
 interface MovimientoDiario {
   id: number
   fecha: string
-  ingresos: any[]
-  gastos: any[]
+  ingresos: Ingreso[]
+  gastos: Gasto[]
   ingreso_total: number
   total_gastos: number
   balance: number
@@ -80,7 +93,7 @@ interface AppRefactoredProps {
 const AppRefactored: React.FC<AppRefactoredProps> = ({ 
   externalIsDark = false, 
   onToggleDark,
-  onLogout 
+  onLogout: _onLogout 
 }) => {
   // ========================================
   // ESTADOS PRINCIPALES
@@ -89,7 +102,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   // Estados de datos
   const [movimientos, setMovimientos] = useState<MovimientoDiario[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [pendingNotifications, setPendingNotifications] = useState<NotificacionCalendario[]>([])
+  const [_pendingNotifications, setPendingNotifications] = useState<NotificacionCalendario[]>([])
   const [pendingNotificationsCount, setPendingNotificationsCount] = useState(0)
   
   // Estados de navegación
@@ -107,7 +120,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   
   const [etiquetas, setEtiquetas] = useState({ ingresos: [], gastos: [] })
   const [etiquetasCompletas, setEtiquetasCompletas] = useState<Etiqueta[]>([])
-  const [etiquetasEsenciales, setEtiquetasEsenciales] = useState<string[]>(() => {
+  const [etiquetasEsenciales, _setEtiquetasEsenciales] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem('etiquetasEsenciales')
       return stored ? JSON.parse(stored) : [
@@ -284,7 +297,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   // HANDLERS DE NOTIFICACIONES
   // ========================================
 
-  const handleCreateMovementFromNotification = (notificacion: NotificacionCalendario) => {
+  const _handleCreateMovementFromNotification = (notificacion: NotificacionCalendario) => {
     // Cambiar a vista historial para mostrar el formulario
     setActiveSection('historial')
     setShowAddForm(true)
@@ -341,7 +354,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   // HANDLERS DE FORMULARIO INLINE
   // ========================================
   
-  const handleAddNewIncome = () => {
+  const _handleAddNewIncome = () => {
     const monto = parseFloat(newIncome.monto)
     if (!newIncome.etiqueta || isNaN(monto) || monto <= 0) return
 
@@ -355,7 +368,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     setNewIncome({ etiqueta: '', monto: '' })
   }
 
-  const handleAddNewExpense = () => {
+  const _handleAddNewExpense = () => {
     const monto = parseFloat(newExpense.monto)
     if (!newExpense.etiqueta || isNaN(monto) || monto <= 0) return
 
@@ -369,7 +382,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     setNewExpense({ etiqueta: '', monto: '' })
   }
 
-  const handleCreateMovement = async () => {
+  const _handleCreateMovement = async () => {
     if (tempIncomes.length === 0 && tempExpenses.length === 0) {
       alert('Debes agregar al menos un ingreso o gasto')
       return
@@ -421,7 +434,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     }
   }
 
-  const handleRemoveTempItem = (tipo: 'ingreso' | 'gasto', id: number) => {
+  const _handleRemoveTempItem = (tipo: 'ingreso' | 'gasto', id: number) => {
     if (tipo === 'ingreso') {
       setTempIncomes(prev => prev.filter(item => item.id !== id))
     } else {
@@ -528,7 +541,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   // HANDLERS DE MOVIMIENTOS AVANZADOS
   // ========================================
   
-  const handleSaveMovementFromForm = (movementData: any) => {
+  const handleSaveMovementFromForm = (movementData: MovimientoDiario) => {
     setPendingMovement(movementData)
     setShowCreateConfirm(true)
   }
@@ -811,7 +824,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 onCreateEtiqueta={handleCreateEtiquetaFromView}
                 onEditEtiqueta={handleEditEtiquetaFromView}
                 onDeleteEtiqueta={handleDeleteEtiquetaFromView}
-                onViewEtiqueta={(etiqueta) => {
+                onViewEtiqueta={(_etiqueta) => {
                   // TODO: Implementar vista de estadísticas de etiqueta
                 }}
               />
@@ -848,7 +861,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                   setShowYearlyBreakdown(false)
                   setShowMonthlyBreakdown(true)
                 }}
-                onShowYearlyBreakdown={(year) => {
+                onShowYearlyBreakdown={(_year) => {
                   // Podríamos usar el año si fuera necesario para filtrar
                   setShowMonthlyBreakdown(false)
                   setShowYearlyBreakdown(true)

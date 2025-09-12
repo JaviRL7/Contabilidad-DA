@@ -24,7 +24,7 @@ const BreakdownHeader: React.FC<BreakdownHeaderProps> = ({
   isDark,
   onBack,
   onNavigateToYearly,
-  onNavigateToMonthly,
+  onNavigateToMonthly: _onNavigateToMonthly,
   currentView,
   breadcrumbItems,
   hideBackButton = false

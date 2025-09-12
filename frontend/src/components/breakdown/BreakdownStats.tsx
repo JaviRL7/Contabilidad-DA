@@ -1,5 +1,4 @@
 import React from 'react'
-import { formatEuro } from '../../utils/formatters'
 
 interface BreakdownStatsProps {
   totalIngresos: number
@@ -12,7 +11,7 @@ interface BreakdownStatsProps {
 
 const BreakdownStats: React.FC<BreakdownStatsProps> = ({
   totalIngresos,
-  totalGastos,
+  totalGastos: _totalGastos,
   balance,
   isDark,
   period,
