@@ -1,3 +1,7 @@
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.12"
+PORT = "8000"
+
 [phases.setup]
 nixPkgs = ["python312", "pip"]
 
