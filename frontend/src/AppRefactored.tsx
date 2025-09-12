@@ -945,9 +945,11 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
           setShowCreateTagModal(false)
           setPendingTagField('')
         }}
-        onConfirm={handleCreateTagConfirm}
-        tipo={createTagType}
+        onCreate={(name, type, isEssential) => {
+          handleCreateTagConfirm(name)
+        }}
         isDark={isDark}
+        existingTags={[...etiquetas.ingresos, ...etiquetas.gastos]}
       />
 
       {/* Modal para gastos recurrentes pendientes */}

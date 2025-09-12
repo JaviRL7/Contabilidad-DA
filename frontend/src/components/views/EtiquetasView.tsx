@@ -345,7 +345,7 @@ const EtiquetasView: React.FC<EtiquetasViewProps> = ({
           {etiquetasIngresos.length === 0 ? (
             <Card isDark={isDark} className="text-center py-12">
               <div className={`text-6xl mb-4 ${isDark ? 'text-gray-600' : 'text-gray-300'}`}>
-                📈
+                
               </div>
               <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                 No tienes etiquetas de ingresos aún
@@ -386,7 +386,7 @@ const EtiquetasView: React.FC<EtiquetasViewProps> = ({
           {etiquetasGastos.length === 0 ? (
             <Card isDark={isDark} className="text-center py-12">
               <div className={`text-6xl mb-4 ${isDark ? 'text-gray-600' : 'text-gray-300'}`}>
-                📉
+                
               </div>
               <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                 No tienes etiquetas de gastos aún

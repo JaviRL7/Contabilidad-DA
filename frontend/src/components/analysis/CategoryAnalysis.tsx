@@ -203,7 +203,7 @@ const CategoryAnalysis: React.FC<CategoryAnalysisProps> = ({
         >
           <SimplePieChart
             data={categoryStats.topGastos.slice(0, 6).map(cat => ({
-              label: cat.isEssential ? `${cat.name} ⭐` : cat.name,
+              label: cat.name,
               value: cat.total
             }))}
             isDark={isDark}
@@ -280,7 +280,7 @@ const CategoryAnalysis: React.FC<CategoryAnalysisProps> = ({
           <div className="grid md:grid-cols-2 gap-8">
             <div>
               <h4 className={`text-sm font-medium mb-4 ${isDark ? 'text-green-400' : 'text-green-600'}`}>
-                Gastos Esenciales ⭐
+                Gastos Esenciales
               </h4>
               <SimpleBarChart
                 data={categoryStats.essentialGastos.slice(0, 5).map(cat => ({

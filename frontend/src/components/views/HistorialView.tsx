@@ -188,9 +188,9 @@ const HistorialView: React.FC<HistorialViewProps> = ({
           />
           
           {/* Resumen de Hoy */}
-          <div className="bg-gray-800 rounded-lg shadow p-4">
-            <h3 className="text-lg font-semibold mb-2 text-center text-white">Hoy</h3>
-            <p className="text-sm mb-4 text-center text-gray-400">{new Date().toLocaleDateString('es-ES')}</p>
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4`}>
+            <h3 className={`text-lg font-semibold mb-2 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Hoy</h3>
+            <p className={`text-sm mb-4 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{new Date().toLocaleDateString('es-ES')}</p>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-green-500 font-medium">Ingresos:</span>
@@ -200,7 +200,7 @@ const HistorialView: React.FC<HistorialViewProps> = ({
                 <span className="text-red-500 font-medium">Gastos:</span>
                 <span className="text-lg font-bold text-red-500">{todayGastos.toFixed(2)}€</span>
               </div>
-              <div className="my-6 h-px bg-gradient-to-r from-transparent via-gray-500/30 to-transparent"></div>
+              <div className={`my-6 h-px bg-gradient-to-r from-transparent ${isDark ? 'via-gray-500/30' : 'via-gray-300/30'} to-transparent`}></div>
               <div className="flex justify-between pt-2">
                 <span className="font-medium text-blue-500">Balance:</span>
                 <span className="font-bold text-blue-500">{todayBalance.toFixed(2)}€</span>
@@ -209,20 +209,20 @@ const HistorialView: React.FC<HistorialViewProps> = ({
           </div>
 
           {/* Resumen Mensual */}
-          <div className="bg-gray-800 rounded-lg shadow p-4">
-            <h3 className="text-lg font-semibold mb-3 text-center text-white">Total del Mes</h3>
-            <p className="text-xs mb-4 text-center text-gray-400">{new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</p>
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4`}>
+            <h3 className={`text-lg font-semibold mb-3 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Total del Mes</h3>
+            <p className={`text-xs mb-4 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</p>
             <div className="space-y-2">
               <div className="flex justify-between items-center py-2 px-3">
                 <span className="text-green-500 font-medium">Ingresos</span>
                 <span className="text-lg font-bold text-green-500">{monthlyIngresos.toFixed(2)}€</span>
               </div>
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-500/30 to-transparent"></div>
+              <div className={`h-px bg-gradient-to-r from-transparent ${isDark ? 'via-gray-500/30' : 'via-gray-300/30'} to-transparent`}></div>
               <div className="flex justify-between items-center py-2 px-3">
                 <span className="text-red-500 font-medium">Gastos</span>
                 <span className="text-lg font-bold text-red-500">{monthlyGastos.toFixed(2)}€</span>
               </div>
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-500/30 to-transparent"></div>
+              <div className={`h-px bg-gradient-to-r from-transparent ${isDark ? 'via-gray-500/30' : 'via-gray-300/30'} to-transparent`}></div>
               <div className="pt-4 mt-4">
                 <div className="flex justify-between items-center py-3 px-3">
                   <span className="text-blue-500 font-medium">Balance</span>
@@ -253,20 +253,20 @@ const HistorialView: React.FC<HistorialViewProps> = ({
           </div>
 
           {/* Resumen Anual */}
-          <div className="bg-gray-800 rounded-lg shadow p-4">
-            <h3 className="text-lg font-semibold mb-3 text-center text-white">Total del Año</h3>
-            <p className="text-xs mb-4 text-center text-gray-400">Año {new Date().getFullYear()}</p>
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4`}>
+            <h3 className={`text-lg font-semibold mb-3 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Total del Año</h3>
+            <p className={`text-xs mb-4 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Año {new Date().getFullYear()}</p>
             <div className="space-y-2 mb-4">
               <div className="flex items-center justify-between px-3 py-2">
                 <span className="text-green-500 font-medium">Ingresos</span>
                 <span className="text-lg font-bold text-green-500">{yearlyIngresos.toFixed(2)}€</span>
               </div>
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-500/30 to-transparent"></div>
+              <div className={`h-px bg-gradient-to-r from-transparent ${isDark ? 'via-gray-500/30' : 'via-gray-300/30'} to-transparent`}></div>
               <div className="flex items-center justify-between px-3 py-2">
                 <span className="text-red-500 font-medium">Gastos</span>
                 <span className="text-lg font-bold text-red-500">{yearlyGastos.toFixed(2)}€</span>
               </div>
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-500/30 to-transparent"></div>
+              <div className={`h-px bg-gradient-to-r from-transparent ${isDark ? 'via-gray-500/30' : 'via-gray-300/30'} to-transparent`}></div>
               <div className="pt-2 mt-3">
                 <div className="flex items-center justify-between px-3 py-2">
                   <span className="text-blue-500 font-medium">Balance</span>

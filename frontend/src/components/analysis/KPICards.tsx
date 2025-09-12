@@ -23,7 +23,7 @@ const KPICards: React.FC<KPICardsProps> = ({ data, isDark }) => {
       value: data.totalIngresos,
       color: isDark ? 'text-green-400' : 'text-green-600',
       bgColor: isDark ? 'bg-green-900/20' : 'bg-green-50',
-      icon: '📈',
+      icon: '',
       format: formatCurrency
     },
     {
@@ -31,7 +31,7 @@ const KPICards: React.FC<KPICardsProps> = ({ data, isDark }) => {
       value: data.totalGastos,
       color: isDark ? 'text-red-400' : 'text-red-600',
       bgColor: isDark ? 'bg-red-900/20' : 'bg-red-50',
-      icon: '📉',
+      icon: '',
       format: formatCurrency
     },
     {
@@ -43,7 +43,7 @@ const KPICards: React.FC<KPICardsProps> = ({ data, isDark }) => {
       bgColor: data.balance >= 0
         ? isDark ? 'bg-green-900/20' : 'bg-green-50'
         : isDark ? 'bg-red-900/20' : 'bg-red-50',
-      icon: data.balance >= 0 ? '💰' : '⚠️',
+      icon: '',
       format: formatCurrency
     },
     {
@@ -51,7 +51,7 @@ const KPICards: React.FC<KPICardsProps> = ({ data, isDark }) => {
       value: data.promedioIngresos,
       color: isDark ? 'text-blue-400' : 'text-blue-600',
       bgColor: isDark ? 'bg-blue-900/20' : 'bg-blue-50',
-      icon: '📊',
+      icon: '',
       format: formatCurrency
     },
     {
@@ -59,7 +59,7 @@ const KPICards: React.FC<KPICardsProps> = ({ data, isDark }) => {
       value: data.promedioGastos,
       color: isDark ? 'text-orange-400' : 'text-orange-600',
       bgColor: isDark ? 'bg-orange-900/20' : 'bg-orange-50',
-      icon: '📋',
+      icon: '',
       format: formatCurrency
     },
     {
@@ -67,7 +67,7 @@ const KPICards: React.FC<KPICardsProps> = ({ data, isDark }) => {
       value: data.diasConMovimientos,
       color: isDark ? 'text-purple-400' : 'text-purple-600',
       bgColor: isDark ? 'bg-purple-900/20' : 'bg-purple-50',
-      icon: '📅',
+      icon: '',
       format: (value: number) => value.toString()
     }
   ]

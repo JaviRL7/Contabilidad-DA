@@ -150,7 +150,7 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
                 className={`p-3 rounded-lg transition-all duration-200 ${
                   isDark 
                     ? 'bg-gradient-to-r from-yellow-500 to-orange-400 text-white shadow-lg hover:shadow-yellow-400/25 hover:from-yellow-400 hover:to-orange-300' 
-                    : 'bg-gradient-to-r from-slate-600 to-slate-500 text-white shadow-lg hover:shadow-slate-400/25 hover:from-slate-500 hover:to-slate-400'
+                    : 'bg-gradient-to-r from-gray-700 to-gray-600 text-white shadow-lg hover:shadow-gray-400/25 hover:from-gray-600 hover:to-gray-500'
                 }`}
                 title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
               >
@@ -194,7 +194,7 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
               className={`p-2 rounded-lg transition-all duration-200 ${
                 isDark 
                   ? 'bg-gradient-to-r from-yellow-500 to-orange-400 text-white shadow-md' 
-                  : 'bg-gradient-to-r from-slate-600 to-slate-500 text-white shadow-md'
+                  : 'bg-gradient-to-r from-gray-700 to-gray-600 text-white shadow-md'
               }`}
             >
               {isDark ? (
