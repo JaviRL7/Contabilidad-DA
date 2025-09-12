@@ -57,7 +57,7 @@ export interface MovimientoUpdateData extends MovimientoCreateData {
 // CONFIGURACIÓN BASE
 // ========================================
 
-const API_BASE = `${import.meta.env.VITE_API_URL || ''}/api/movimientos`
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/movimientos`
 
 // Helper para manejo de errores
 const handleApiError = (error: any, operation: string): never => {

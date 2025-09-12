@@ -15,7 +15,7 @@ export interface EtiquetaCreate {
   es_esencial?: boolean
 }
 
-const API_BASE = `${import.meta.env.VITE_API_URL || ''}/api/etiquetas`
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/etiquetas`
 
 // Obtener todas las etiquetas
 export const fetchEtiquetas = async (): Promise<Etiqueta[]> => {
