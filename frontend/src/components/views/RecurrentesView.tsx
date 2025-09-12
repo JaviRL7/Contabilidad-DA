@@ -519,30 +519,27 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
                   <Calendar className="w-4 h-4 inline mr-2" />
                   Frecuencia
                 </label>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   {[
-                    { value: 'mensual', label: 'Mensual', icon: '📅' },
-                    { value: 'semanal', label: 'Semanal', icon: '📆' },
-                    { value: 'anual', label: 'Anual', icon: '🗓️' }
+                    { value: 'mensual', label: 'Mensual' },
+                    { value: 'semanal', label: 'Semanal' },
+                    { value: 'anual', label: 'Anual' }
                   ].map((option) => (
                     <button
                       key={option.value}
                       type="button"
                       onClick={() => setFormData({...formData, frecuencia: option.value as any})}
-                      className={`flex-1 py-3 px-4 rounded-xl border-2 font-medium transition-all duration-200 ${
+                      className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
                         formData.frecuencia === option.value
                           ? isDark
-                            ? 'border-blue-500 bg-blue-600 text-white shadow-lg'
-                            : 'border-blue-500 bg-blue-500 text-white shadow-lg'
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-md'
+                            : 'bg-gradient-to-r from-blue-500 to-blue-400 hover:from-blue-400 hover:to-blue-300 text-white shadow-md'
                           : isDark
-                            ? 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500 hover:bg-gray-600'
-                            : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+                            ? 'bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 text-white'
+                            : 'bg-gradient-to-r from-gray-500 to-gray-400 hover:from-gray-400 hover:to-gray-300 text-white'
                       }`}
                     >
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="text-lg">{option.icon}</span>
-                        <span className="text-sm">{option.label}</span>
-                      </div>
+                      {option.label}
                     </button>
                   ))}
                 </div>
