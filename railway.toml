@@ -1,12 +1,12 @@
 [build]
 builder = "nixpacks"
-buildCommand = "cd frontend && npm install && npm run build-production"
 
 [deploy]
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
+startCommand = "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 
 [env]
 PORT = "8000"
