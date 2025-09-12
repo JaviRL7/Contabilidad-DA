@@ -3,15 +3,15 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime
 
-from app.core.database import get_db
-from app.models.schemas import (
+from core.database import get_db
+from models.schemas import (
     MovimientoDiario, 
     MovimientoDiarioCreate, 
     MovimientoResumen,
     Etiqueta
 )
-from app.models.models import MovimientoDiario as MovimientoDiarioModel
-from app.crud import crud_movimientos
+from models.models import MovimientoDiario as MovimientoDiarioModel
+from crud import crud_movimientos
 
 router = APIRouter(prefix="/api/movimientos", tags=["movimientos"])
 

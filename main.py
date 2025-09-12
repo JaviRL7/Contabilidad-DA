@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from decouple import config
 
-from app.core.database import engine, Base
-from app.routers import movimientos, etiquetas, notificaciones
+from core.database import engine, Base
+from routers import movimientos, etiquetas, notificaciones
 
 # Crear tablas
 Base.metadata.create_all(bind=engine)

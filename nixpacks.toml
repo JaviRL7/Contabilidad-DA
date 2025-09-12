@@ -5,7 +5,7 @@ nixPkgs = ["python312", "pip"]
 cmds = ["pip install -r requirements.txt"]
 
 [phases.build]
-cmds = ["cd backend && python3 migrate_to_postgresql.py"]
+cmds = ["python3 -c 'from core.database import engine, Base; from models import models; Base.metadata.create_all(bind=engine); print(\"✅ Database initialized\")'"]
 
 [start]
-cmd = "python3 start.py"
+cmd = "python3 -m uvicorn main:app --host 0.0.0.0 --port $PORT"

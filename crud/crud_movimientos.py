@@ -3,8 +3,8 @@ from sqlalchemy import func, and_, extract
 from typing import List, Optional
 from datetime import date, timedelta
 
-from app.models.models import MovimientoDiario, Ingreso, Gasto, Etiqueta
-from app.models.schemas import MovimientoDiarioCreate, IngresoCreate, GastoCreate, EtiquetaUpdate, EtiquetaCreate
+from models.models import MovimientoDiario, Ingreso, Gasto, Etiqueta
+from models.schemas import MovimientoDiarioCreate, IngresoCreate, GastoCreate, EtiquetaUpdate, EtiquetaCreate
 
 def get_movimiento_by_fecha(db: Session, fecha: date) -> Optional[MovimientoDiario]:
     """Obtener movimiento por fecha específica"""

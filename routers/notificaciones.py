@@ -3,13 +3,13 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, datetime
 
-from app.core.database import get_db
-from app.models.schemas import (
+from core.database import get_db
+from models.schemas import (
     NotificacionCalendario,
     NotificacionCalendarioCreate,
     NotificacionCalendarioUpdate
 )
-from app.models.models import NotificacionCalendario as NotificacionCalendarioModel
+from models.models import NotificacionCalendario as NotificacionCalendarioModel
 
 router = APIRouter(prefix="/api/notificaciones", tags=["notificaciones"])
 
