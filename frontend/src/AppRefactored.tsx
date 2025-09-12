@@ -3,9 +3,7 @@
 // ========================================
 
 // Librerías externas
-import React, { useState, useEffect, useMemo } from 'react'
-import axios from 'axios'
-import { parseISO } from 'date-fns'
+import React, { useState, useEffect } from 'react'
 import 'react-datepicker/dist/react-datepicker.css'
 import './datepicker.css'
 
@@ -15,7 +13,6 @@ import {
   createEtiqueta, 
   updateEtiqueta, 
   deleteEtiqueta, 
-  findEtiquetaByName,
   formatEtiquetasForLegacy, 
   type Etiqueta 
 } from './services/etiquetasApi'
@@ -27,10 +24,8 @@ import { useRecurrentes } from './hooks/useRecurrentes'
 import { useRecurrentesPendientes } from './hooks/useRecurrentesPendientes'
 import { useRechazosGastos } from './hooks/useRechazosGastos'
 import { useNotificacionesGastos } from './hooks/useNotificacionesGastos'
-import { useAnalysis } from './hooks/useAnalysis'
 
 // Componentes de layout y navegación
-import Navigation from './components/layout/Navigation'
 import ResponsiveHeader from './components/layout/ResponsiveHeader'
 
 // Componentes reutilizables (modales)
@@ -54,11 +49,9 @@ import AnalysisView from './components/views/AnalysisView'
 import CalendarView from './components/views/CalendarView'
 
 // Componentes de dashboard
-import SummaryPanel from './components/dashboard/SummaryPanel'
 
 // Utilidades
 import { triggerConfetti } from './utils/confetti'
-import { formatEuro } from './utils/formatters'
 
 // ========================================
 // INTERFACES Y TIPOS

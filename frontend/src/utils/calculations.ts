@@ -1,12 +1,3 @@
-interface GastoRecurrente {
-  etiqueta: string
-  monto: number
-  frecuencia: 'mensual' | 'semanal' | 'diario' | 'anual'
-  diaMes?: number
-  diaSemana?: string
-  mesAnual?: string
-  diaAnual?: string
-}
 
 export const getTiposGastosRecurrentesGlobal = (gastos: any[], gastosRecurrentes: any[]) => {
   const tiposSet = new Set<string>()
