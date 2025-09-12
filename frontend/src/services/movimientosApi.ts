@@ -3,7 +3,7 @@
  * Centraliza todas las operaciones CRUD y maneja la comunicación con el backend
  */
 
-import axios from 'axios'
+import api from './api'
 
 // ========================================
 // TIPOS E INTERFACES
@@ -57,7 +57,7 @@ export interface MovimientoUpdateData extends MovimientoCreateData {
 // CONFIGURACIÓN BASE
 // ========================================
 
-const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/movimientos`
+// Usar la configuración centralizada de api.ts
 
 // Helper para manejo de errores
 const handleApiError = (error: any, operation: string): never => {
@@ -86,7 +86,7 @@ const handleApiError = (error: any, operation: string): never => {
  */
 export const fetchMovimientos = async (): Promise<MovimientoDiario[]> => {
   try {
-    const response = await axios.get(`${API_BASE}/`, {
+    const response = await api.get('/movimientos/', {
       params: {
         todos: true,
         limit: 100
@@ -103,7 +103,7 @@ export const fetchMovimientos = async (): Promise<MovimientoDiario[]> => {
  */
 export const fetchMovimientoPorFecha = async (fecha: string): Promise<MovimientoDiario | null> => {
   try {
-    const response = await axios.get(`${API_BASE}/${fecha}`)
+    const response = await api.get(`/movimientos/${fecha}`)
     return response.data
   } catch (error) {
     if (error.response?.status === 404) {
@@ -118,7 +118,7 @@ export const fetchMovimientoPorFecha = async (fecha: string): Promise<Movimiento
  */
 export const createMovimiento = async (movimientoData: MovimientoCreateData): Promise<MovimientoDiario> => {
   try {
-    const response = await axios.post(API_BASE, movimientoData)
+    const response = await api.post('/movimientos', movimientoData)
     return response.data
   } catch (error) {
     handleApiError(error, 'crear movimiento')
@@ -131,7 +131,7 @@ export const createMovimiento = async (movimientoData: MovimientoCreateData): Pr
  */
 export const updateMovimiento = async (movimientoData: MovimientoUpdateData): Promise<MovimientoDiario> => {
   try {
-    const response = await axios.post(API_BASE, movimientoData)
+    const response = await api.post('/movimientos', movimientoData)
     return response.data
   } catch (error) {
     handleApiError(error, 'actualizar movimiento')
@@ -143,7 +143,7 @@ export const updateMovimiento = async (movimientoData: MovimientoUpdateData): Pr
  */
 export const deleteMovimiento = async (fecha: string): Promise<void> => {
   try {
-    await axios.delete(`${API_BASE}/${fecha}`)
+    await api.delete(`/movimientos/${fecha}`)
   } catch (error) {
     handleApiError(error, 'eliminar movimiento')
   }
@@ -158,7 +158,7 @@ export const deleteMovimiento = async (fecha: string): Promise<void> => {
  */
 export const deleteIngreso = async (fecha: string, ingresoId: number): Promise<void> => {
   try {
-    await axios.delete(`${API_BASE}/${fecha}/ingreso/${ingresoId}`)
+    await api.delete(`/movimientos/${fecha}/ingreso/${ingresoId}`)
   } catch (error) {
     if (error.response?.status === 404) {
       return // Ya fue eliminado
@@ -172,7 +172,7 @@ export const deleteIngreso = async (fecha: string, ingresoId: number): Promise<v
  */
 export const deleteGasto = async (fecha: string, gastoId: number): Promise<void> => {
   try {
-    await axios.delete(`${API_BASE}/${fecha}/gasto/${gastoId}`)
+    await api.delete(`/movimientos/${fecha}/gasto/${gastoId}`)
   } catch (error) {
     if (error.response?.status === 404) {
       return // Ya fue eliminado
@@ -201,7 +201,7 @@ export const buscarPorEtiqueta = async (
   limit: number = 50
 ): Promise<any[]> => {
   try {
-    const response = await axios.get(`${API_BASE}/buscar/etiqueta/${etiqueta}`, {
+    const response = await api.get(`/movimientos/buscar/etiqueta/${etiqueta}`, {
       params: { tipo, limit }
     })
     return response.data
@@ -215,7 +215,7 @@ export const buscarPorEtiqueta = async (
  */
 export const fetchMovimientosMes = async (año: number, mes: number): Promise<any[]> => {
   try {
-    const response = await axios.get(`${API_BASE}/mes/${año}/${mes}`)
+    const response = await api.get(`/movimientos/mes/${año}/${mes}`)
     return response.data
   } catch (error) {
     handleApiError(error, 'obtener movimientos del mes')

@@ -1,4 +1,4 @@
-import axios from 'axios'
+import api from './api'
 
 export interface Etiqueta {
   id: number
@@ -15,29 +15,29 @@ export interface EtiquetaCreate {
   es_esencial?: boolean
 }
 
-const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/etiquetas`
+// Usar la configuración centralizada de api.ts
 
 // Obtener todas las etiquetas
 export const fetchEtiquetas = async (): Promise<Etiqueta[]> => {
-  const response = await axios.get(`${API_BASE}/`)
+  const response = await api.get('/etiquetas/')
   return response.data
 }
 
 // Crear nueva etiqueta
 export const createEtiqueta = async (etiquetaData: EtiquetaCreate): Promise<Etiqueta> => {
-  const response = await axios.post(`${API_BASE}/`, etiquetaData)
+  const response = await api.post('/etiquetas/', etiquetaData)
   return response.data
 }
 
 // Actualizar etiqueta existente
 export const updateEtiqueta = async (id: number, etiquetaData: Partial<EtiquetaCreate>): Promise<Etiqueta> => {
-  const response = await axios.put(`${API_BASE}/${id}`, etiquetaData)
+  const response = await api.put(`/etiquetas/${id}`, etiquetaData)
   return response.data
 }
 
 // Eliminar etiqueta
 export const deleteEtiqueta = async (id: number): Promise<void> => {
-  await axios.delete(`${API_BASE}/${id}`)
+  await api.delete(`/etiquetas/${id}`)
 }
 
 // Buscar etiqueta por nombre

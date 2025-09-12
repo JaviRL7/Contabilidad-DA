@@ -1,4 +1,4 @@
-import axios from 'axios'
+import api from './api'
 
 interface NotificacionCalendario {
   id?: number
@@ -29,7 +29,7 @@ interface NotificacionCalendarioUpdate {
   fue_cancelada?: boolean
 }
 
-const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/notificaciones`
+// Usar la configuración centralizada de api.ts
 
 const handleApiError = (error: any, operation: string): never => {
   console.error(`❌ Error en ${operation}:`, error)
@@ -52,7 +52,7 @@ class NotificacionesCalendarioApi {
 
   async crearNotificacion(notificacion: NotificacionCalendarioCreate): Promise<NotificacionCalendario> {
     try {
-      const response = await axios.post(API_BASE, notificacion)
+      const response = await api.post('/notificaciones', notificacion)
       return response.data
     } catch (error) {
       handleApiError(error, 'crear notificación')
@@ -66,7 +66,7 @@ class NotificacionesCalendarioApi {
     limit?: number
   }): Promise<NotificacionCalendario[]> {
     try {
-      const response = await axios.get(API_BASE, { params })
+      const response = await api.get('/notificaciones', { params })
       return response.data
     } catch (error) {
       handleApiError(error, 'obtener notificaciones')
@@ -75,7 +75,7 @@ class NotificacionesCalendarioApi {
 
   async obtenerNotificacionesPendientes(): Promise<NotificacionCalendario[]> {
     try {
-      const response = await axios.get(`${API_BASE}/pendientes`)
+      const response = await api.get('/notificaciones/pendientes')
       return response.data
     } catch (error) {
       handleApiError(error, 'obtener notificaciones pendientes')
@@ -84,7 +84,7 @@ class NotificacionesCalendarioApi {
 
   async obtenerNotificacionesPorFecha(fecha: string): Promise<NotificacionCalendario[]> {
     try {
-      const response = await axios.get(`${API_BASE}/calendario/${fecha}`)
+      const response = await api.get(`/notificaciones/calendario/${fecha}`)
       return response.data
     } catch (error) {
       handleApiError(error, 'obtener notificaciones por fecha')
@@ -93,7 +93,7 @@ class NotificacionesCalendarioApi {
 
   async actualizarNotificacion(id: number, notificacion: NotificacionCalendarioUpdate): Promise<NotificacionCalendario> {
     try {
-      const response = await axios.put(`${API_BASE}/${id}`, notificacion)
+      const response = await api.put(`/notificaciones/${id}`, notificacion)
       return response.data
     } catch (error) {
       handleApiError(error, 'actualizar notificación')
@@ -102,7 +102,7 @@ class NotificacionesCalendarioApi {
 
   async cancelarNotificacion(id: number): Promise<NotificacionCalendario> {
     try {
-      const response = await axios.post(`${API_BASE}/${id}/cancelar`)
+      const response = await api.post(`/notificaciones/${id}/cancelar`)
       return response.data
     } catch (error) {
       handleApiError(error, 'cancelar notificación')
@@ -111,7 +111,7 @@ class NotificacionesCalendarioApi {
 
   async convertirNotificacion(id: number): Promise<NotificacionCalendario> {
     try {
-      const response = await axios.post(`${API_BASE}/${id}/convertir`)
+      const response = await api.post(`/notificaciones/${id}/convertir`)
       return response.data
     } catch (error) {
       handleApiError(error, 'convertir notificación')
@@ -120,7 +120,7 @@ class NotificacionesCalendarioApi {
 
   async eliminarNotificacion(id: number): Promise<{ message: string }> {
     try {
-      const response = await axios.delete(`${API_BASE}/${id}`)
+      const response = await api.delete(`/notificaciones/${id}`)
       return response.data
     } catch (error) {
       handleApiError(error, 'eliminar notificación')
@@ -129,7 +129,7 @@ class NotificacionesCalendarioApi {
 
   async actualizarNotificacionesVencidas(): Promise<{ message: string }> {
     try {
-      const response = await axios.put(`${API_BASE}/actualizar-vencidas`)
+      const response = await api.put('/notificaciones/actualizar-vencidas')
       return response.data
     } catch (error) {
       handleApiError(error, 'actualizar notificaciones vencidas')
