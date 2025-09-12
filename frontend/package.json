@@ -8,7 +8,7 @@
     "build": "tsc -b --noCheck && vite build",
     "build-production": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview --host 0.0.0.0 --port $PORT"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.85.6",
