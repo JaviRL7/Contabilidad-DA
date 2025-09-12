@@ -659,36 +659,15 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
               )}
             </div>
             
-            <div className="flex gap-4 pt-4">
-              <button
-                type="submit"
-                className={`group relative overflow-hidden rounded-xl px-8 py-4 text-base font-semibold transition-all duration-300 transform hover:scale-105 ${
-                  isDark
-                    ? 'bg-gradient-to-r from-green-600 via-green-500 to-emerald-600 hover:from-green-500 hover:via-green-400 hover:to-emerald-500 text-white shadow-xl hover:shadow-green-500/25'
-                    : 'bg-gradient-to-r from-green-500 via-green-400 to-emerald-500 hover:from-green-400 hover:via-green-300 hover:to-emerald-400 text-white shadow-xl hover:shadow-green-400/25'
-                }`}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative flex items-center gap-2">
-                  <Plus className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
-                  <span>Agregar Gasto</span>
-                </div>
-              </button>
-              
-              <button
-                type="button"
-                onClick={handleCancel}
-                className={`group relative overflow-hidden rounded-xl px-6 py-4 text-base font-medium transition-all duration-300 border-2 ${
-                  isDark 
-                    ? 'border-gray-600 text-gray-300 hover:border-gray-500 hover:bg-gray-700/50 hover:text-white'
-                    : 'border-gray-300 text-gray-600 hover:border-gray-400 hover:bg-gray-50 hover:text-gray-800'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <X className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
-                  <span>Cancelar</span>
-                </div>
-              </button>
+            <div className="flex gap-3">
+              <GradientButton type="submit" variant="primary" size="lg" isDark={isDark}>
+                <Plus className="w-5 h-5 mr-2" />
+                Agregar
+              </GradientButton>
+              <GradientButton type="button" variant="secondary" size="lg" onClick={handleCancel} isDark={isDark}>
+                <X className="w-5 h-5 mr-2" />
+                Cancelar
+              </GradientButton>
             </div>
           </form>
         </Card>
