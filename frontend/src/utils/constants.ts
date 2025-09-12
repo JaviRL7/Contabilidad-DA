@@ -1,6 +1,20 @@
 // src/utils/constants.ts
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+// Detectar si estamos en producción basado en la URL actual
+const isProduction = typeof window !== 'undefined' && 
+  (window.location.hostname === 'contabilidad-da-production.up.railway.app' || 
+   import.meta.env.PROD);
+
+// Configuración de API con detección automática de entorno
+export const API_BASE_URL = isProduction 
+  ? 'https://web-production-a862.up.railway.app/api'
+  : import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+// Log para debugging (solo en desarrollo)
+if (!isProduction) {
+  console.log('🔗 API_BASE_URL configurada:', API_BASE_URL);
+  console.log('🌍 Entorno:', isProduction ? 'Production' : 'Development');
+}
 
 export const ETIQUETAS_PREDEFINIDAS = {
   gastos: ['Comida', 'Transporte', 'Casa', 'Ropa', 'Salud', 'Entretenimiento', 'Facturas', 'Otros'],
