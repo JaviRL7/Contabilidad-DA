@@ -13,28 +13,43 @@ const api = axios.create({
 // Interceptor para requests - agregar auth headers y forzar HTTPS en producción
 api.interceptors.request.use(
   (config) => {
-    // CRITICAL FIX: Forzar HTTPS en producción
+    // Log ANTES del procesamiento
+    console.log('🔍 BEFORE - URL:', config.url, 'BaseURL:', config.baseURL);
+    console.log('🔍 BEFORE - Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'undefined');
+    
+    // CRITICAL FIX: Forzar HTTPS en producción de forma más agresiva
     if (typeof window !== 'undefined' && 
         window.location.hostname === 'contabilidad-da-production.up.railway.app') {
-      // Si estamos en producción, forzar HTTPS en todas las URLs
-      if (config.url && config.url.includes('web-production-a862.up.railway.app')) {
-        config.url = config.url.replace('http://', 'https://');
-      }
-      if (config.baseURL && config.baseURL.includes('web-production-a862.up.railway.app')) {
+      
+      console.log('🏭 EN PRODUCCIÓN - Aplicando forzado HTTPS');
+      
+      // Forzar HTTPS en baseURL
+      if (config.baseURL) {
+        const originalBaseURL = config.baseURL;
         config.baseURL = config.baseURL.replace('http://', 'https://');
+        if (originalBaseURL !== config.baseURL) {
+          console.log('🔄 BaseURL cambiada de', originalBaseURL, 'a', config.baseURL);
+        }
+      }
+      
+      // Forzar HTTPS en URL relativa si contiene dominio completo
+      if (config.url) {
+        const originalURL = config.url;
+        config.url = config.url.replace('http://', 'https://');
+        if (originalURL !== config.url) {
+          console.log('🔄 URL cambiada de', originalURL, 'a', config.url);
+        }
       }
     }
+    
+    // Log DESPUÉS del procesamiento
+    console.log('🔍 AFTER - URL:', config.url, 'BaseURL:', config.baseURL);
+    console.log('🚀 REQUEST FINAL:', config.method?.toUpperCase(), (config.baseURL || '') + (config.url || ''));
     
     // Agregar headers de autenticación si existen
     const token = localStorage.getItem('auth_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
-    }
-    
-    // Debug logging
-    if (import.meta.env.MODE === 'development') {
-      // eslint-disable-next-line no-console
-      console.log('🔄 Request:', config.method?.toUpperCase(), config.baseURL + config.url);
     }
     
     return config
