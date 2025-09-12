@@ -23,5 +23,6 @@ COPY backend/ backend/
 # El puerto que usará Railway
 EXPOSE $PORT
 
-# Comando de inicio
-CMD python3 -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+# Cambiar al directorio backend y ejecutar
+WORKDIR /app/backend
+CMD python3 -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
