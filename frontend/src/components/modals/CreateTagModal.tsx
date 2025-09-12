@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, Tag, AlertCircle, Plus } from 'lucide-react'
+import { X, AlertCircle, Plus } from 'lucide-react'
 
 interface CreateTagModalProps {
   isOpen: boolean

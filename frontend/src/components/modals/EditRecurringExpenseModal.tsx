@@ -138,7 +138,7 @@ const EditRecurringExpenseModal: React.FC<EditRecurringExpenseModalProps> = ({
           proximaFecha.setMonth(proximaFecha.getMonth() + 1)
         }
         break
-      case 'semanal':
+      case 'semanal': {
         const diasSemana = {
           'lunes': 1, 'martes': 2, 'miercoles': 3, 'jueves': 4, 
           'viernes': 5, 'sabado': 6, 'domingo': 0
@@ -151,6 +151,7 @@ const EditRecurringExpenseModal: React.FC<EditRecurringExpenseModalProps> = ({
         proximaFecha = new Date(now)
         proximaFecha.setDate(now.getDate() + daysUntil)
         break
+      }
       case 'anual':
         if (gasto.fechaAnual) {
           const [mes, dia] = gasto.fechaAnual.split('-').map(Number)

@@ -108,7 +108,7 @@ export const useNotificacionesGastos = () => {
   // Ejecutar limpieza al cargar
   useEffect(() => {
     limpiarNotificacionesAntiguas()
-  }, [])
+  }, [limpiarNotificacionesAntiguas])
 
   return {
     notificaciones,

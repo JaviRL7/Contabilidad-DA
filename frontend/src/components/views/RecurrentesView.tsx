@@ -145,10 +145,11 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
     switch (gasto.frecuencia) {
       case 'mensual':
         return `Mensual (día ${gasto.diaMes})`
-      case 'semanal':
+      case 'semanal': {
         const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
         const diaIndex = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'].indexOf(gasto.diaSemana || 'lunes')
         return `Semanal (${dias[diaIndex]})`
+      }
       case 'anual':
         if (gasto.fechaAnual) {
           const [mes, dia] = gasto.fechaAnual.split('-').map(Number)
@@ -216,7 +217,7 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
           }
           break
         
-        case 'semanal':
+        case 'semanal': {
           const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']
           const diaObjetivo = diasSemana.indexOf(gasto.diaSemana || 'lunes')
           const diaActual = hoy.getDay()
@@ -230,6 +231,7 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
           const diasTranscurridosSemana = (hoy.getTime() - inicioSemana.getTime()) / (24 * 60 * 60 * 1000)
           progreso = (diasTranscurridosSemana / 7) * 100
           break
+        }
         
         case 'anual':
           if (gasto.fechaAnual) {

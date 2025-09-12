@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import NumberInput from '../ui/NumberInput'
 import DatePicker from 'react-datepicker'
-import { parseISO } from 'date-fns'
 import { registerLocale } from 'react-datepicker'
 import { es } from 'date-fns/locale'
 import PerfectScrollbar from 'react-perfect-scrollbar'

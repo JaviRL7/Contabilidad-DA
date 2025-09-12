@@ -31,6 +31,7 @@ api.interceptors.response.use(
   (response) => {
     // Log successful requests in development
     if (import.meta.env.MODE === 'development') {
+      // eslint-disable-next-line no-console
       console.log('✅ API Success:', response.config.method?.toUpperCase(), response.config.url)
     }
     return response

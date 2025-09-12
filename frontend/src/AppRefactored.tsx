@@ -945,7 +945,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
           setShowCreateTagModal(false)
           setPendingTagField('')
         }}
-        onCreate={(name, type, isEssential) => {
+        onCreate={(name, _type, _isEssential) => {
           handleCreateTagConfirm(name)
         }}
         isDark={isDark}

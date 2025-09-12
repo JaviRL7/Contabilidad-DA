@@ -42,7 +42,7 @@ export const useRecurrentesPendientes = (
   }
 
   // Función para obtener el próximo día del mes
-  const getNextMonthlyDate = (dayOfMonth: number, fromDate: Date): Date => {
+  const _getNextMonthlyDate = (dayOfMonth: number, fromDate: Date): Date => {
     const nextDate = new Date(fromDate.getFullYear(), fromDate.getMonth(), dayOfMonth)
     
     // Si ya pasó este mes, ir al próximo mes
@@ -54,7 +54,7 @@ export const useRecurrentesPendientes = (
   }
 
   // Función para obtener la próxima fecha anual
-  const getNextAnnualDate = (fechaAnual: string, fromDate: Date): Date => {
+  const _getNextAnnualDate = (fechaAnual: string, fromDate: Date): Date => {
     const [mes, dia] = fechaAnual.split('-').map(Number)
     const nextDate = new Date(fromDate.getFullYear(), mes - 1, dia)
     
@@ -163,7 +163,7 @@ export const useRecurrentesPendientes = (
     })
 
     setGastosPendientes(pendientes)
-  }, [gastosRecurrentes, movimientos])
+  }, [gastosRecurrentes, movimientos, existeMovimientoConGasto])
 
   // Ejecutar detección cuando cambien los datos
   useEffect(() => {
