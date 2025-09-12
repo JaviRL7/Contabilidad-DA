@@ -29,7 +29,7 @@ interface NotificacionCalendarioUpdate {
   fue_cancelada?: boolean
 }
 
-const API_BASE = '/api/notificaciones'
+const API_BASE = `${import.meta.env.VITE_API_URL || ''}/api/notificaciones`
 
 const handleApiError = (error: any, operation: string): never => {
   console.error(`❌ Error en ${operation}:`, error)

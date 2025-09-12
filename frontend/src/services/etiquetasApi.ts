@@ -15,27 +15,29 @@ export interface EtiquetaCreate {
   es_esencial?: boolean
 }
 
+const API_BASE = `${import.meta.env.VITE_API_URL || ''}/api/etiquetas`
+
 // Obtener todas las etiquetas
 export const fetchEtiquetas = async (): Promise<Etiqueta[]> => {
-  const response = await axios.get('/api/etiquetas/')
+  const response = await axios.get(`${API_BASE}/`)
   return response.data
 }
 
 // Crear nueva etiqueta
 export const createEtiqueta = async (etiquetaData: EtiquetaCreate): Promise<Etiqueta> => {
-  const response = await axios.post('/api/etiquetas/', etiquetaData)
+  const response = await axios.post(`${API_BASE}/`, etiquetaData)
   return response.data
 }
 
 // Actualizar etiqueta existente
 export const updateEtiqueta = async (id: number, etiquetaData: Partial<EtiquetaCreate>): Promise<Etiqueta> => {
-  const response = await axios.put(`/api/etiquetas/${id}`, etiquetaData)
+  const response = await axios.put(`${API_BASE}/${id}`, etiquetaData)
   return response.data
 }
 
 // Eliminar etiqueta
 export const deleteEtiqueta = async (id: number): Promise<void> => {
-  await axios.delete(`/api/etiquetas/${id}`)
+  await axios.delete(`${API_BASE}/${id}`)
 }
 
 // Buscar etiqueta por nombre
