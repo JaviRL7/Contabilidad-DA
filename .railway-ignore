@@ -1,5 +1,0 @@
-backend/
-frontend/
-*.log
-__pycache__/
-.git/
