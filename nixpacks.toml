@@ -1,6 +1,13 @@
 [variables]
 PYTHON_VERSION = "3.12"
-NODE_VERSION = "20"
+
+[phases.setup]
+nixPkgs = ["python312", "nodejs_20", "npm-9_x"]
+
+[phases.install]
+cmds = [
+  "pip install --no-cache-dir -r requirements.txt"
+]
 
 [phases.build]
 cmds = [
