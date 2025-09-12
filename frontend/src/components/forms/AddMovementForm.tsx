@@ -43,12 +43,10 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
   const [ingresoDropdownOpen, setIngresoDropdownOpen] = useState(false)
   const [gastoDropdownOpen, setGastoDropdownOpen] = useState(false)
 
-  console.log('💰 AddMovementForm render - isDark:', isDark, 'etiquetas:', etiquetas)
 
   // Effect para auto-seleccionar nueva etiqueta creada
   useEffect(() => {
     if (newTagCreated) {
-      console.log('🎯 Auto-seleccionando nueva etiqueta:', newTagCreated)
       
       if (newTagCreated.field === 'newIngreso.etiqueta') {
         setNewIngreso(prev => ({ ...prev, etiqueta: newTagCreated.tagName }))
@@ -61,7 +59,6 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
   // Effect para preseleccionar etiqueta desde notificación
   useEffect(() => {
     if (preselectedTag) {
-      console.log('🏷️ Preseleccionando etiqueta desde notificación:', preselectedTag)
       
       if (preselectedTag.tipo === 'ingreso') {
         setNewIngreso(prev => ({ ...prev, etiqueta: preselectedTag.etiqueta }))

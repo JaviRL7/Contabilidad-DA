@@ -823,7 +823,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                 onEditEtiqueta={handleEditEtiquetaFromView}
                 onDeleteEtiqueta={handleDeleteEtiquetaFromView}
                 onViewEtiqueta={(etiqueta) => {
-                  console.log('👁️ Viendo estadísticas de etiqueta:', etiqueta)
+                  // TODO: Implementar vista de estadísticas de etiqueta
                 }}
               />
             )}

@@ -201,11 +201,9 @@ export const buscarPorEtiqueta = async (
   limit: number = 50
 ): Promise<any[]> => {
   try {
-    console.log('📡 Buscando por etiqueta:', { etiqueta, tipo, limit })
     const response = await axios.get(`${API_BASE}/buscar/etiqueta/${etiqueta}`, {
       params: { tipo, limit }
     })
-    console.log('✅ Resultados encontrados:', response.data.length)
     return response.data
   } catch (error) {
     handleApiError(error, 'buscar por etiqueta')
@@ -217,9 +215,7 @@ export const buscarPorEtiqueta = async (
  */
 export const fetchMovimientosMes = async (año: number, mes: number): Promise<any[]> => {
   try {
-    console.log('📡 Obteniendo movimientos del mes:', { año, mes })
     const response = await axios.get(`${API_BASE}/mes/${año}/${mes}`)
-    console.log('✅ Movimientos del mes obtenidos:', response.data.length)
     return response.data
   } catch (error) {
     handleApiError(error, 'obtener movimientos del mes')

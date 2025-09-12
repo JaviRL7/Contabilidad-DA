@@ -19,5 +19,23 @@ export default tseslint.config([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Prohibir console statements excepto error y warn
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      // Prohibir debugger
+      'no-debugger': 'error',
+      // Variables no utilizadas
+      '@typescript-eslint/no-unused-vars': ['warn', { 
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        ignoreRestSiblings: true
+      }],
+      // Imports no utilizados
+      'no-unused-expressions': 'warn',
+      // Alertar sobre any explícito
+      '@typescript-eslint/no-explicit-any': 'warn',
+      // Prohibir variables no inicializadas
+      'no-undef-init': 'warn'
+    },
   },
 ])

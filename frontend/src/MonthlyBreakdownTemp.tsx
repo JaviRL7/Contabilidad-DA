@@ -22,7 +22,6 @@ const MonthlyBreakdown: React.FC<MonthlyBreakdownProps> = ({
   onBack, 
   isDark 
 }) => {
-  console.log('MonthlyBreakdown rendering - Temporary version')
   
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()

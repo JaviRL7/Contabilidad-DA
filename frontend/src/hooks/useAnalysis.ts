@@ -10,7 +10,6 @@ interface MovimientoDiario {
 
 export const useAnalysis = (movimientos: MovimientoDiario[], currentYear?: number) => {
   const estadisticas = useMemo(() => {
-    console.log('useAnalysis - movimientos type:', typeof movimientos, 'length:', movimientos?.length, 'isArray:', Array.isArray(movimientos))
     
     if (!Array.isArray(movimientos) || movimientos.length === 0) {
       return {

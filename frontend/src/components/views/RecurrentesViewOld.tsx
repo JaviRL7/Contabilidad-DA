@@ -161,7 +161,7 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
           const targetDay = dias.indexOf(gasto.diaSemana.toLowerCase())
           
           // Buscar la primera ocurrencia del día de la semana en el mes actual
-          let fechaGasto = new Date(primerDiaMesActual)
+          const fechaGasto = new Date(primerDiaMesActual)
           while (fechaGasto.getDay() !== targetDay && fechaGasto <= ultimoDiaMesActual) {
             fechaGasto.setDate(fechaGasto.getDate() + 1)
           }
@@ -196,7 +196,6 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
       
       // Aquí se debería crear el movimiento para la fecha pasada
       // Por ahora solo agregamos el gasto recurrente
-      console.log('Creando movimiento para fecha pasada:', gastoFechaPasada.fecha)
       
       // Resetear formulario y cerrar modales
       resetearFormulario()

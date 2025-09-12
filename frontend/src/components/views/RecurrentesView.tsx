@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, X, Edit, Trash2, Calendar, DollarSign } from 'lucide-react'
+import { Plus, X, Edit, Trash2, Calendar, DollarSign, ChevronDown, Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import Card from '../ui/Card'
-import GradientButton from '../ui/GradientButton'
 import ConfirmacionBorradoModal from '../modals/ConfirmacionBorradoModal'
 import ConfirmacionFechaPasadaModal from '../modals/ConfirmacionFechaPasadaModal'
 import EditRecurringExpenseModal from '../modals/EditRecurringExpenseModal'
@@ -69,6 +68,24 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({})
   const [isMontoFocused, setIsMontoFocused] = useState(false)
   const [isDiaMesFocused, setIsDiaMesFocused] = useState(false)
+  const [etiquetaDropdownOpen, setEtiquetaDropdownOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(0)
+  const itemsPerPage = 6
+  
+  // Effect para cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (etiquetaDropdownOpen && !target.closest('.dropdown-etiqueta-recurrente')) {
+        setEtiquetaDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [etiquetaDropdownOpen])
   
   // Funciones de validación
   const validateForm = (): boolean => {
@@ -385,12 +402,13 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
 
         {/* Botón para crear nuevo gasto */}
         <div className="text-center">
-          <GradientButton 
-            variant="primary" 
-            size="lg"
+          <button 
             onClick={() => setShowAddForm(!showAddForm)}
-            isDark={isDark}
-            className="px-8 py-3"
+            className={`px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+              isDark
+                ? 'bg-blue-600 text-white hover:bg-blue-500'
+                : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
           >
             {showAddForm ? (
               <>
@@ -403,7 +421,7 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
                 Nuevo Gasto Continuo
               </>
             )}
-          </GradientButton>
+          </button>
         </div>
       </div>
 
@@ -420,18 +438,11 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
                 <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                   Etiqueta
                 </label>
-                <div className="relative">
-                  <select
-                    value={formData.etiqueta}
-                    onChange={(e) => {
-                      if (e.target.value === '__nueva__') {
-                        onCreateNewTag('etiqueta', 'gasto')
-                      } else {
-                        setFormData({...formData, etiqueta: e.target.value})
-                        clearError('etiqueta')
-                      }
-                    }}
-                    className={`appearance-none w-full px-4 py-3 pr-12 rounded-xl border-2 text-lg font-medium transition-all duration-200 ${
+                <div className="relative dropdown-etiqueta-recurrente">
+                  <button
+                    type="button"
+                    onClick={() => setEtiquetaDropdownOpen(!etiquetaDropdownOpen)}
+                    className={`w-full px-4 py-3 pr-12 rounded-xl border-2 text-lg font-medium transition-all duration-200 text-left ${
                       formErrors.etiqueta 
                         ? isDark 
                           ? 'border-yellow-500 bg-gray-700 text-white focus:ring-2 focus:ring-yellow-500' 
@@ -441,19 +452,90 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
                           : 'border-gray-300 bg-white text-gray-900 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500'
                     } focus:outline-none`}
                   >
-                    <option value="">Seleccionar etiqueta...</option>
-                    {etiquetas.gastos.map(etiq => (
-                      <option key={etiq} value={etiq}>{etiq}</option>
-                    ))}
-                    <option value="__nueva__">+ Crear nueva etiqueta</option>
-                  </select>
-                  <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 ${
-                    isDark ? 'text-blue-400' : 'text-blue-500'
-                  }`}>
-                    <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                    </svg>
-                  </div>
+                    {formData.etiqueta || 'Seleccionar etiqueta...'}
+                  </button>
+                  <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none transition-transform duration-200 ${
+                    etiquetaDropdownOpen ? 'rotate-180' : ''
+                  } ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                  
+                  {etiquetaDropdownOpen && (
+                    <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-lg z-50 ${
+                      isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                    }`}>
+                      <PerfectScrollbar
+                        options={{
+                          suppressScrollX: true,
+                          wheelPropagation: false
+                        }}
+                        style={{ maxHeight: '200px' }}
+                      >
+                        <div className="py-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({...formData, etiqueta: ''})
+                              setEtiquetaDropdownOpen(false)
+                              clearError('etiqueta')
+                            }}
+                            className={`w-full px-4 py-2 text-left text-lg transition-colors ${
+                              formData.etiqueta === '' 
+                                ? isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                                : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              {formData.etiqueta === '' && <Check className="w-4 h-4" />}
+                              <span className={formData.etiqueta === '' ? '' : 'ml-7'}>
+                                Seleccionar etiqueta...
+                              </span>
+                            </div>
+                          </button>
+                          
+                          {etiquetas.gastos.map((etiqueta, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              onClick={() => {
+                                setFormData({...formData, etiqueta})
+                                setEtiquetaDropdownOpen(false)
+                                clearError('etiqueta')
+                              }}
+                              className={`w-full px-4 py-2 text-left text-lg transition-colors ${
+                                formData.etiqueta === etiqueta
+                                  ? isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                                  : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                {formData.etiqueta === etiqueta && <Check className="w-4 h-4" />}
+                                <span className={formData.etiqueta === etiqueta ? '' : 'ml-7'}>
+                                  {etiqueta}
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                          
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onCreateNewTag('etiqueta', 'gasto')
+                              setEtiquetaDropdownOpen(false)
+                            }}
+                            className={`w-full px-4 py-2 text-left text-lg transition-colors border-t ${
+                              isDark ? 'text-blue-300 hover:bg-gray-600 border-gray-600' : 'text-blue-600 hover:bg-gray-100 border-gray-200'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Plus className="w-4 h-4" />
+                              <span className="ml-3">
+                                + Crear nueva etiqueta
+                              </span>
+                            </div>
+                          </button>
+                        </div>
+                      </PerfectScrollbar>
+                    </div>
+                  )}
                 </div>
                 {formErrors.etiqueta && (
                   <div className={`mt-2 text-sm font-medium ${isDark ? 'text-yellow-400' : 'text-yellow-600'} flex items-center gap-2`}>
@@ -660,14 +742,29 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
             </div>
             
             <div className="flex gap-3">
-              <GradientButton type="submit" variant="primary" size="lg" isDark={isDark}>
+              <button 
+                type="submit"
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                  isDark
+                    ? 'bg-blue-600 text-white hover:bg-blue-500'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}
+              >
                 <Plus className="w-5 h-5 mr-2" />
                 Agregar
-              </GradientButton>
-              <GradientButton type="button" variant="secondary" size="lg" onClick={handleCancel} isDark={isDark}>
+              </button>
+              <button 
+                type="button"
+                onClick={handleCancel}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                  isDark
+                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
                 <X className="w-5 h-5 mr-2" />
                 Cancelar
-              </GradientButton>
+              </button>
             </div>
           </form>
         </Card>
@@ -709,118 +806,188 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
                 Automatiza tus gastos regulares para una gestión financiera más eficiente
               </p>
               <div className="mt-6">
-                <GradientButton 
-                  variant="primary" 
+                <button 
                   onClick={() => setShowAddForm(true)}
-                  isDark={isDark}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    isDark
+                      ? 'bg-blue-600 text-white hover:bg-blue-500'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`}
                 >
                   + Agregar Primer Gasto
-                </GradientButton>
+                </button>
               </div>
             </Card>
           ) : (
-            <PerfectScrollbar className="max-h-96">
-              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3 pr-2">
-                {gastosRecurrentes.map((gasto, index) => {
-                const rechazado = tieneRechazos(gasto.etiqueta)
-                const ultimoRechazo = obtenerUltimoRechazo(gasto.etiqueta)
-                const proximoGasto = proximosGastos.find(p => p.gasto.etiqueta === gasto.etiqueta)
-                
-                return (
-                  <Card 
-                    key={index}
-                    isDark={isDark}
-                    className={`p-4 transition-all duration-200 hover:shadow-lg ${rechazado ? isDark ? 'border-amber-400/50' : 'border-amber-300' : isDark ? 'hover:border-blue-400/50' : 'hover:border-blue-300'}`}
-                  >
-                    <div className="flex flex-col h-full">
-                      {/* Header */}
-                      <div className="mb-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                            {gasto.etiqueta}
-                          </h3>
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            gasto.frecuencia === 'mensual'
-                              ? isDark ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-800'
-                              : gasto.frecuencia === 'semanal'
-                              ? isDark ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-100 text-purple-800'
-                              : isDark ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-100 text-indigo-800'
-                          }`}>
-                            {gasto.frecuencia}
-                          </span>
-                          {rechazado && (
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${isDark ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-800'}`}>
-                              Pausado
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {getFrecuenciaText(gasto)}
-                        </div>
-                        
-                        {/* Monto destacado */}
-                        <div className="mt-3">
-                          <div className={`text-2xl font-bold ${
-                            isDark ? 'text-slate-300' : 'text-slate-700'
-                          }`}>
-                            {formatEuro(gasto.monto)}
-                          </div>
-                          <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {gasto.frecuencia === 'mensual' ? 'por mes' : gasto.frecuencia === 'semanal' ? 'por semana' : 'por año'}
-                          </div>
-                        </div>
-                        
-                        {rechazado && ultimoRechazo && (
-                          <div className={`p-3 rounded-lg mt-3 ${isDark ? 'bg-amber-900/20 border border-amber-700' : 'bg-amber-50 border border-amber-200'}`}>
-                            <div className={`text-sm font-medium ${isDark ? 'text-amber-200' : 'text-amber-800'}`}>
-                              Pausado el {new Date(ultimoRechazo.fechaRechazo + 'T00:00:00').toLocaleDateString('es-ES')}
+            (() => {
+              const totalPages = Math.ceil(gastosRecurrentes.length / itemsPerPage)
+              const startIndex = currentPage * itemsPerPage
+              const endIndex = startIndex + itemsPerPage
+              const currentItems = gastosRecurrentes.slice(startIndex, endIndex)
+              
+              return (
+                <div className="space-y-4">
+                  <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                    {currentItems.map((gasto, index) => {
+                      const actualIndex = startIndex + index
+                      const rechazado = tieneRechazos(gasto.etiqueta)
+                      const ultimoRechazo = obtenerUltimoRechazo(gasto.etiqueta)
+                      const proximoGasto = proximosGastos.find(p => p.gasto.etiqueta === gasto.etiqueta)
+                      
+                      return (
+                        <Card 
+                          key={actualIndex}
+                          isDark={isDark}
+                          className={`p-4 transition-all duration-200 hover:shadow-lg ${rechazado ? isDark ? 'border-amber-400/50' : 'border-amber-300' : isDark ? 'hover:border-blue-400/50' : 'hover:border-blue-300'}`}
+                        >
+                          <div className="flex flex-col h-full">
+                            {/* Header */}
+                            <div className="mb-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                  {gasto.etiqueta}
+                                </h3>
+                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                  gasto.frecuencia === 'mensual'
+                                    ? isDark ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-800'
+                                    : gasto.frecuencia === 'semanal'
+                                    ? isDark ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-100 text-purple-800'
+                                    : isDark ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-100 text-indigo-800'
+                                }`}>
+                                  {gasto.frecuencia}
+                                </span>
+                                {rechazado && (
+                                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${isDark ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-100 text-amber-800'}`}>
+                                    Pausado
+                                  </span>
+                                )}
+                              </div>
+                              
+                              <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {getFrecuenciaText(gasto)}
+                              </div>
+                              
+                              {/* Monto destacado */}
+                              <div className="mt-3">
+                                <div className={`text-2xl font-bold ${
+                                  isDark ? 'text-slate-300' : 'text-slate-700'
+                                }`}>
+                                  {formatEuro(gasto.monto)}
+                                </div>
+                                <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                                  {gasto.frecuencia === 'mensual' ? 'por mes' : gasto.frecuencia === 'semanal' ? 'por semana' : 'por año'}
+                                </div>
+                              </div>
+                              
+                              {rechazado && ultimoRechazo && (
+                                <div className={`p-3 rounded-lg mt-3 ${isDark ? 'bg-amber-900/20 border border-amber-700' : 'bg-amber-50 border border-amber-200'}`}>
+                                  <div className={`text-sm font-medium ${isDark ? 'text-amber-200' : 'text-amber-800'}`}>
+                                    Pausado el {new Date(ultimoRechazo.fechaRechazo + 'T00:00:00').toLocaleDateString('es-ES')}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Spacer */}
+                            <div className="flex-1"></div>
+                            
+                            {/* Próximo */}
+                            {proximoGasto && !rechazado && (
+                              <div className={`mb-4 p-2 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Próximo:</span>
+                                  <span className={`text-xs font-medium ${
+                                    proximoGasto.diasRestantes <= 3 
+                                      ? isDark ? 'text-orange-400' : 'text-orange-600'
+                                      : proximoGasto.diasRestantes <= 7 
+                                      ? isDark ? 'text-yellow-400' : 'text-yellow-600'
+                                      : isDark ? 'text-green-400' : 'text-green-600'
+                                  }`}>
+                                    {proximoGasto.proximaFecha.toLocaleDateString('es-ES', {
+                                      day: 'numeric',
+                                      month: 'short'
+                                    })} ({proximoGasto.diasRestantes === 0 ? 'Hoy' : proximoGasto.diasRestantes === 1 ? 'Mañana' : `${proximoGasto.diasRestantes}d`})
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Botones de acción */}
+                            <div className="flex gap-2">
+                              <button 
+                                onClick={() => handleEdit(actualIndex)} 
+                                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
+                                  isDark
+                                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                }`}
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                Editar
+                              </button>
+                              <button 
+                                onClick={() => handleConfirmarEliminar(actualIndex)} 
+                                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
+                                  isDark
+                                    ? 'bg-red-700 text-red-200 hover:bg-red-600'
+                                    : 'bg-red-500 text-white hover:bg-red-600'
+                                }`}
+                              >
+                                <Trash2 className="w-4 h-4 mr-1" />
+                                Eliminar
+                              </button>
                             </div>
                           </div>
-                        )}
-                      </div>
-
-                      {/* Spacer */}
-                      <div className="flex-1"></div>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                  
+                  {/* Controles de paginación del carousel */}
+                  {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-4">
+                      <button
+                        onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                        disabled={currentPage === 0}
+                        className={`p-2 rounded-lg transition-all duration-200 ${
+                          currentPage === 0
+                            ? isDark ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : isDark ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
                       
-                      {/* Próximo */}
-                      {proximoGasto && !rechazado && (
-                        <div className={`mb-4 p-2 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Próximo:</span>
-                            <span className={`text-xs font-medium ${
-                              proximoGasto.diasRestantes <= 3 
-                                ? isDark ? 'text-orange-400' : 'text-orange-600'
-                                : proximoGasto.diasRestantes <= 7 
-                                ? isDark ? 'text-yellow-400' : 'text-yellow-600'
-                                : isDark ? 'text-green-400' : 'text-green-600'
-                            }`}>
-                              {proximoGasto.proximaFecha.toLocaleDateString('es-ES', {
-                                day: 'numeric',
-                                month: 'short'
-                              })} ({proximoGasto.diasRestantes === 0 ? 'Hoy' : proximoGasto.diasRestantes === 1 ? 'Mañana' : `${proximoGasto.diasRestantes}d`})
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Botones de acción */}
-                      <div className="flex gap-2">
-                        <GradientButton variant="secondary" size="sm" onClick={() => handleEdit(index)} isDark={isDark} className="flex-1">
-                          <Edit className="w-4 h-4 mr-1" />
-                          Editar
-                        </GradientButton>
-                        <GradientButton variant="danger" size="sm" onClick={() => handleConfirmarEliminar(index)} isDark={isDark} className="flex-1">
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          Eliminar
-                        </GradientButton>
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: totalPages }, (_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setCurrentPage(i)}
+                            className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                              i === currentPage
+                                ? isDark ? 'bg-blue-500' : 'bg-blue-500'
+                                : isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-300 hover:bg-gray-400'
+                            }`}
+                          />
+                        ))}
                       </div>
+                      
+                      <button
+                        onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                        disabled={currentPage === totalPages - 1}
+                        className={`p-2 rounded-lg transition-all duration-200 ${
+                          currentPage === totalPages - 1
+                            ? isDark ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : isDark ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
                     </div>
-                  </Card>
-                  )
-                })}
-              </div>
-            </PerfectScrollbar>
+                  )}
+                </div>
+              )
+            })()
           )}
         </div>
 

@@ -38,11 +38,6 @@ const EtiquetasView: React.FC<EtiquetasViewProps> = ({
   onDeleteEtiqueta,
   onViewEtiqueta
 }) => {
-  // Debug: Verificar qué datos llegan al componente
-  console.log('🏷️ EtiquetasView - Datos recibidos:')
-  console.log('- movimientos:', movimientos?.length || 0, 'items')
-  console.log('- etiquetas:', etiquetas)
-  console.log('- Primer movimiento:', movimientos?.[0])
 
   // Estados para modales
   const [showStatsModal, setShowStatsModal] = useState(false)
@@ -163,8 +158,6 @@ const EtiquetasView: React.FC<EtiquetasViewProps> = ({
   const handleDeleteTag = () => {
     if (selectedTag && onDeleteEtiqueta) {
       onDeleteEtiqueta(selectedTag.name)
-    } else {
-      console.warn('No se pudo eliminar la etiqueta:', { selectedTag, onDeleteEtiqueta })
     }
     setShowDeleteModal(false)
     setSelectedTag(null)

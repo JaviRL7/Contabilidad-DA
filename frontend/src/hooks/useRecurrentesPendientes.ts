@@ -95,7 +95,7 @@ export const useRecurrentesPendientes = (
         return // No procesar gastos creados en el futuro
       }
 
-      let fechasARevisar: Date[] = []
+      const fechasARevisar: Date[] = []
 
       // Generar fechas según la frecuencia (solo mes actual)
       switch (gasto.frecuencia) {
@@ -117,7 +117,7 @@ export const useRecurrentesPendientes = (
             const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
             const ultimoDiaMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
             
-            let fechaRevision = new Date(primerDiaMes)
+            const fechaRevision = new Date(primerDiaMes)
             while (fechaRevision <= ultimoDiaMes) {
               const fechaEsperada = getNextDayOfWeek(gasto.diaSemana, fechaRevision)
               if (fechaEsperada <= hoy && fechaEsperada >= primerDiaMes && fechaEsperada <= ultimoDiaMes && fechaCreacion <= fechaEsperada) {

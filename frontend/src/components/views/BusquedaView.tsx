@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import Card from '../ui/Card'
-import GradientButton from '../ui/GradientButton'
 import MovementCard from '../dashboard/MovementCard'
 import { useSearch } from '../../hooks/useSearch'
 import { usePagination } from '../../hooks/usePagination'
@@ -195,30 +194,34 @@ const BusquedaView: React.FC<BusquedaViewProps> = ({
               </div>
 
               <div className="flex gap-2">
-                <GradientButton
-                  variant="primary"
-                  size="lg"
+                <button
                   onClick={handleSearch}
-                  isDark={isDark}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                    isDark
+                      ? 'bg-blue-600 text-white hover:bg-blue-500'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search">
                     <circle cx="11" cy="11" r="8"/>
                     <path d="m21 21-4.35-4.35"/>
                   </svg>
                   Buscar
-                </GradientButton>
-                <GradientButton
-                  variant="secondary"
-                  size="lg"
+                </button>
+                <button
                   onClick={clearSearch}
-                  isDark={isDark}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                    isDark
+                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x">
                     <path d="M18 6 6 18"/>
                     <path d="m6 6 12 12"/>
                   </svg>
                   Limpiar
-                </GradientButton>
+                </button>
               </div>
           </div>
 
