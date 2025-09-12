@@ -7,4 +7,3 @@ restartPolicyMaxRetries = 10
 [env]
 PORT = "8000"
 ENVIRONMENT = "production"
-PYTHONPATH = "backend"
