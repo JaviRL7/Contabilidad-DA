@@ -19,8 +19,8 @@ app = FastAPI(
 # Middleware de compresión
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-# Configuración CORS
-cors_origins = config("CORS_ORIGINS", default="http://localhost:5173").split(",")
+# Configuración CORS - Incluir HTTPS para producción
+cors_origins = config("CORS_ORIGINS", default="http://localhost:5173,https://contabilidad-da-production.up.railway.app").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,

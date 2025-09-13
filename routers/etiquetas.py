@@ -8,12 +8,12 @@ from crud import crud_movimientos
 
 router = APIRouter(prefix="/api/etiquetas", tags=["etiquetas"])
 
-@router.get("/", response_model=List[Etiqueta])
+@router.get("", response_model=List[Etiqueta])
 async def get_all_etiquetas(db: Session = Depends(get_db)):
     """Obtener todas las etiquetas disponibles"""
     return crud_movimientos.get_all_etiquetas(db)
 
-@router.post("/", response_model=Etiqueta)
+@router.post("", response_model=Etiqueta)
 async def create_etiqueta(
     etiqueta: EtiquetaCreate,
     db: Session = Depends(get_db)

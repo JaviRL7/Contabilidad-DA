@@ -13,7 +13,7 @@ from models.models import NotificacionCalendario as NotificacionCalendarioModel
 
 router = APIRouter(prefix="/api/notificaciones", tags=["notificaciones"])
 
-@router.post("/", response_model=NotificacionCalendario)
+@router.post("", response_model=NotificacionCalendario)
 async def crear_notificacion(
     notificacion: NotificacionCalendarioCreate,
     db: Session = Depends(get_db)
@@ -36,7 +36,7 @@ async def crear_notificacion(
     
     return db_notificacion
 
-@router.get("/", response_model=List[NotificacionCalendario])
+@router.get("", response_model=List[NotificacionCalendario])
 async def obtener_notificaciones(
     pendientes_solo: bool = Query(default=False, description="Solo notificaciones pendientes (no canceladas ni convertidas)"),
     vencidas_solo: bool = Query(default=False, description="Solo notificaciones vencidas"),

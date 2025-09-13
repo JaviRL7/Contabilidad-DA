@@ -15,7 +15,7 @@ from crud import crud_movimientos
 
 router = APIRouter(prefix="/api/movimientos", tags=["movimientos"])
 
-@router.get("/", response_model=List[MovimientoDiario])
+@router.get("", response_model=List[MovimientoDiario])
 async def get_movimientos_recientes(
     todos: bool = Query(default=False, description="Si es True, devuelve todos los movimientos sin restricción de fecha"),
     fecha_base: date = Query(default_factory=date.today),
@@ -55,7 +55,7 @@ async def get_movimiento_by_fecha(
     
     return movimiento
 
-@router.post("/", response_model=MovimientoDiario)
+@router.post("", response_model=MovimientoDiario)
 async def create_or_update_movimiento(
     movimiento: MovimientoDiarioCreate,
     db: Session = Depends(get_db)
