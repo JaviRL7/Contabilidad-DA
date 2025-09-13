@@ -7,6 +7,7 @@ interface CreateTagModalProps {
   onCreate: (name: string, type: 'gasto' | 'ingreso', isEssential?: boolean) => void
   isDark: boolean
   existingTags?: string[]
+  preselectedType?: 'gasto' | 'ingreso'
 }
 
 const CreateTagModal: React.FC<CreateTagModalProps> = ({
@@ -14,7 +15,8 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({
   onClose,
   onCreate,
   isDark,
-  existingTags
+  existingTags,
+  preselectedType
 }) => {
   const [tagName, setTagName] = useState('')
   const [tagType, setTagType] = useState<'gasto' | 'ingreso'>('gasto')
@@ -25,12 +27,12 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setTagName('')
-      setTagType('gasto')
+      setTagType(preselectedType || 'gasto')
       setIsEssential(false)
       setError('')
       setSimilarWarning('')
     }
-  }, [isOpen])
+  }, [isOpen, preselectedType])
 
   // Función para detectar nombres similares
   const findSimilarTags = (inputName: string): string[] => {
@@ -233,13 +235,18 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({
             {/* Type selector */}
             <div>
               <label className={`block text-sm font-medium mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                Tipo de Etiqueta
+                Tipo de Etiqueta {preselectedType && <span className="text-xs opacity-75">(preseleccionado)</span>}
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => setTagType('gasto')}
+                  onClick={() => !preselectedType && setTagType('gasto')}
+                  disabled={preselectedType !== undefined}
                   className={`p-4 rounded-xl border-2 font-medium transition-all duration-200 text-left ${
+                    preselectedType
+                      ? 'cursor-not-allowed opacity-60'
+                      : ''
+                  } ${
                     tagType === 'gasto'
                       ? isDark
                         ? 'border-red-500 bg-red-900/20 text-red-300'
@@ -247,6 +254,10 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({
                       : isDark
                         ? 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-gray-500'
                         : 'border-gray-300 bg-gray-50 text-gray-700 hover:border-gray-400'
+                  } ${
+                    preselectedType && tagType !== 'gasto'
+                      ? 'opacity-50'
+                      : ''
                   }`}
                 >
                   <div className="font-semibold mb-1">Gasto</div>
@@ -256,8 +267,13 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setTagType('ingreso')}
+                  onClick={() => !preselectedType && setTagType('ingreso')}
+                  disabled={preselectedType !== undefined}
                   className={`p-4 rounded-xl border-2 font-medium transition-all duration-200 text-left ${
+                    preselectedType
+                      ? 'cursor-not-allowed opacity-60'
+                      : ''
+                  } ${
                     tagType === 'ingreso'
                       ? isDark
                         ? 'border-green-500 bg-green-900/20 text-green-300'
@@ -265,6 +281,10 @@ const CreateTagModal: React.FC<CreateTagModalProps> = ({
                       : isDark
                         ? 'border-gray-600 bg-gray-700/50 text-gray-300 hover:border-gray-500'
                         : 'border-gray-300 bg-gray-50 text-gray-700 hover:border-gray-400'
+                  } ${
+                    preselectedType && tagType !== 'ingreso'
+                      ? 'opacity-50'
+                      : ''
                   }`}
                 >
                   <div className="font-semibold mb-1">Ingreso</div>

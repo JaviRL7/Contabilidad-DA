@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DatePicker from 'react-datepicker'
 import { parseISO } from 'date-fns'
 import { X, Edit, Plus, Trash2, ChevronDown, Check } from 'lucide-react'
@@ -28,6 +28,7 @@ interface EditModalProps {
     gastos: string[]
   }
   onCreateNewTag?: (field: string, tipo: 'ingreso' | 'gasto') => void
+  newTagCreated?: {field: string, tagName: string} | null
 }
 
 // ========================================
@@ -41,11 +42,19 @@ interface ItemFormProps {
   onAdd: (data: { etiqueta: string; monto: number }) => void
   onCancel: () => void
   onCreateNewTag?: (field: string, tipo: 'ingreso' | 'gasto') => void
+  newTagCreated?: {field: string, tagName: string} | null
 }
 
-const ItemForm: React.FC<ItemFormProps> = ({ tipo, etiquetas, isDark, onAdd, onCancel, onCreateNewTag }) => {
+const ItemForm: React.FC<ItemFormProps> = ({ tipo, etiquetas, isDark, onAdd, onCancel, onCreateNewTag, newTagCreated }) => {
   const [formData, setFormData] = useState({ etiqueta: '', monto: '' })
   const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  // Auto-select newly created tag
+  useEffect(() => {
+    if (newTagCreated && newTagCreated.field === 'etiqueta') {
+      setFormData(prev => ({ ...prev, etiqueta: newTagCreated.tagName }))
+    }
+  }, [newTagCreated])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -459,7 +468,8 @@ const EditModalRefactored: React.FC<EditModalProps> = ({
   isDark,
   onSave,
   etiquetas,
-  onCreateNewTag
+  onCreateNewTag,
+  newTagCreated
 }) => {
   const [showAddForm, setShowAddForm] = useState<'ingreso' | 'gasto' | null>(null)
 
@@ -593,6 +603,7 @@ const EditModalRefactored: React.FC<EditModalProps> = ({
                   onAdd={(data) => handleAddItem('ingreso', data)}
                   onCancel={() => setShowAddForm(null)}
                   onCreateNewTag={onCreateNewTag}
+                  newTagCreated={newTagCreated}
                 />
               )}
 
@@ -641,6 +652,7 @@ const EditModalRefactored: React.FC<EditModalProps> = ({
                   onAdd={(data) => handleAddItem('gasto', data)}
                   onCancel={() => setShowAddForm(null)}
                   onCreateNewTag={onCreateNewTag}
+                  newTagCreated={newTagCreated}
                 />
               )}
 

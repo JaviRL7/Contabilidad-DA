@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import Card from '../ui/Card'
 import TotalDaysCounter from '../breakdown/TotalDaysCounter'
 import MonthList from '../breakdown/MonthList'
@@ -40,29 +40,6 @@ const DesglosesView: React.FC<DesglosesViewProps> = ({
     // Pasar el año específico al handler
     onShowYearlyBreakdown(year)
   }
-  const periodStats = useMemo(() => {
-    if (!movimientos.length) return { years: [], months: 0, totalPeriods: 0 }
-
-    const uniqueYears = new Set<number>()
-    const uniqueMonths = new Set<string>()
-
-    movimientos.forEach(mov => {
-      const fecha = new Date(mov.fecha)
-      const year = fecha.getFullYear()
-      const monthKey = `${year}-${fecha.getMonth()}`
-      
-      uniqueYears.add(year)
-      uniqueMonths.add(monthKey)
-    })
-
-    const years = Array.from(uniqueYears).sort((a, b) => b - a)
-    
-    return {
-      years,
-      months: uniqueMonths.size,
-      totalPeriods: years.length
-    }
-  }, [movimientos])
 
 
   return (
@@ -76,37 +53,6 @@ const DesglosesView: React.FC<DesglosesViewProps> = ({
           Elige el tipo de análisis que deseas realizar
         </p>
         
-        {/* Estadísticas generales */}
-        {periodStats.totalPeriods > 0 && (
-          <div className={`mt-6 p-4 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="text-center">
-                <p className={`font-semibold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
-                  {periodStats.totalPeriods}
-                </p>
-                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                  Años con datos
-                </p>
-              </div>
-              <div className="text-center">
-                <p className={`font-semibold ${isDark ? 'text-green-400' : 'text-green-600'}`}>
-                  {periodStats.months}
-                </p>
-                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                  Meses registrados
-                </p>
-              </div>
-              <div className="text-center">
-                <p className={`font-semibold ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>
-                  {periodStats.years.length > 0 ? `${Math.min(...periodStats.years)} - ${Math.max(...periodStats.years)}` : 'N/A'}
-                </p>
-                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                  Período disponible
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Contador de días totales */}

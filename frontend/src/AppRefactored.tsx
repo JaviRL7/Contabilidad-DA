@@ -964,6 +964,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         onSave={handleSaveChanges}
         etiquetas={etiquetas}
         onCreateNewTag={handleCreateNewTag}
+        newTagCreated={newTagCreated}
       />
 
       {/* Modal para crear nueva etiqueta */}
@@ -978,6 +979,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         }}
         isDark={isDark}
         existingTags={[...(etiquetas.ingresos || []), ...(etiquetas.gastos || [])]}
+        preselectedType={createTagType}
       />
 
       {/* Modal para gastos recurrentes pendientes */}
