@@ -530,7 +530,7 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
                             <div className="flex items-center gap-3">
                               <Plus className="w-4 h-4" />
                               <span className="ml-3">
-                                + Crear nueva etiqueta
+                                Crear nueva etiqueta
                               </span>
                             </div>
                           </button>
