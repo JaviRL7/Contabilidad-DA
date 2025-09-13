@@ -963,6 +963,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         isDark={isDark}
         onSave={handleSaveChanges}
         etiquetas={etiquetas}
+        onCreateNewTag={handleCreateNewTag}
       />
 
       {/* Modal para crear nueva etiqueta */}
