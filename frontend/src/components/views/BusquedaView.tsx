@@ -28,6 +28,7 @@ interface BusquedaViewProps {
   onDeleteMovimiento?: (movimiento: MovimientoDiario) => void
   onShowMonthlyBreakdown?: () => void
   onShowYearlyBreakdown?: () => void
+  etiquetas?: { ingresos: string[], gastos: string[] }
 }
 
 const BusquedaView: React.FC<BusquedaViewProps> = ({
@@ -36,7 +37,8 @@ const BusquedaView: React.FC<BusquedaViewProps> = ({
   onEditMovimiento,
   onDeleteMovimiento,
   onShowMonthlyBreakdown,
-  onShowYearlyBreakdown
+  onShowYearlyBreakdown,
+  etiquetas
 }) => {
   const search = useSearch(movimientos)
   const [fechaDesde, setFechaDesde] = useState<Date | null>(null)
@@ -264,6 +266,7 @@ const BusquedaView: React.FC<BusquedaViewProps> = ({
                       tieneGastosRecurrentes={tieneGastosRecurrentes}
                       onEditMovimiento={onEditMovimiento}
                       onDeleteMovimiento={onDeleteMovimiento}
+                      etiquetas={etiquetas}
                     />
                   )
                 })}

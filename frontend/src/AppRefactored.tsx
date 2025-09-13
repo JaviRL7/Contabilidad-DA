@@ -159,7 +159,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
   const [showCreateTagModal, setShowCreateTagModal] = useState(false)
   const [pendingTagField, setPendingTagField] = useState('')
   const [createTagType, setCreateTagType] = useState<'ingreso' | 'gasto'>('gasto')
-  const [newTagCreated, setNewTagCreated] = useState({ field: '', value: '' })
+  const [newTagCreated, setNewTagCreated] = useState({ field: '', tagName: '' })
   
   // Estados para RecurrentesPendientesModal
   const [showRecurrentesPendientes, setShowRecurrentesPendientes] = useState(false)
@@ -494,7 +494,11 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
         }
       }
 
-      handleNewTagCreatedCallback(pendingTagField, trimmedName)
+      // Pequeño delay para asegurar que las etiquetas se actualicen antes de establecer newTagCreated
+      setTimeout(() => {
+        handleNewTagCreatedCallback(pendingTagField, trimmedName)
+      }, 50)
+      
       setShowCreateTagModal(false)
       setPendingTagField('')
       
@@ -504,8 +508,8 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     }
   }
 
-  const handleNewTagCreatedCallback = (field: string, value: string) => {
-    setNewTagCreated({ field, value })
+  const handleNewTagCreatedCallback = (field: string, tagName: string) => {
+    setNewTagCreated({ field, tagName })
   }
 
   // Handlers para EtiquetasView
@@ -832,6 +836,7 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
                   setShowMonthlyBreakdown(false)
                   setShowYearlyBreakdown(true)
                 }}
+                etiquetas={etiquetas}
               />
           
         ) : (

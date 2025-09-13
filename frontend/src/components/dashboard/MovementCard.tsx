@@ -2,6 +2,14 @@ import React from 'react'
 import Card from '../ui/Card'
 import { formatEuro } from '../../utils/formatters'
 
+// Helper function to handle deleted tags
+const getEtiquetaDisplay = (etiqueta: string, availableTags: string[]): string => {
+  if (!etiqueta || !availableTags.includes(etiqueta)) {
+    return 'Sin etiquetas'
+  }
+  return etiqueta
+}
+
 interface MovimientoDiario {
   id: number
   fecha: string
@@ -19,6 +27,7 @@ interface MovementCardProps {
   tieneGastosRecurrentes?: boolean
   onEditMovimiento?: (movimiento: MovimientoDiario) => void
   onDeleteMovimiento?: (movimiento: MovimientoDiario) => void
+  etiquetas?: { ingresos: string[], gastos: string[] }
 }
 
 const MovementCard: React.FC<MovementCardProps> = ({
@@ -27,7 +36,8 @@ const MovementCard: React.FC<MovementCardProps> = ({
   isToday = false,
   tieneGastosRecurrentes = false,
   onEditMovimiento,
-  onDeleteMovimiento
+  onDeleteMovimiento,
+  etiquetas
 }) => {
 
   return (
@@ -116,7 +126,7 @@ const MovementCard: React.FC<MovementCardProps> = ({
                     <span className={`font-medium ${
                       isDark ? 'text-gray-200' : 'text-gray-800'
                     }`}>
-                      {ingreso.etiqueta}
+                      {getEtiquetaDisplay(ingreso.etiqueta, etiquetas?.ingresos || [])}
                     </span>
                     <span className="text-green-600 font-bold text-base">
                       +{formatEuro(ingreso.monto)}
@@ -157,7 +167,7 @@ const MovementCard: React.FC<MovementCardProps> = ({
                       <span className={`font-medium ${
                         isDark ? 'text-gray-200' : 'text-gray-800'
                       }`}>
-                        {gasto.etiqueta}
+                        {getEtiquetaDisplay(gasto.etiqueta, etiquetas?.gastos || [])}
                       </span>
                       {gasto.es_recurrente && (
                         <span className={`text-xs font-medium flex items-center gap-1 mt-1 ${

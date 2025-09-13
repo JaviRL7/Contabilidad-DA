@@ -287,6 +287,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                     <div
                       key={day.toString()}
                       className={`min-h-[120px] p-2 border-r border-b border-gray-100 dark:border-gray-700 transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
+                        index % 7 === 0 ? 'border-l' : ''
+                      } ${
                         !isInCurrentMonth ? 'text-gray-300 dark:text-gray-600 bg-gray-50/50 dark:bg-gray-800/50' : ''
                       } ${
                         isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''
@@ -538,7 +540,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                         {notificacionesConvertidas.map((notificacion) => (
                           <div
                             key={notificacion.id}
-                            className={`p-4 rounded-xl border-l-4 transition-all duration-200 hover:scale-[1.02] ${
+                            className={`p-6 rounded-xl border-l-4 transition-all duration-200 ${
                               notificacion.tipo === 'ingreso'
                                 ? `border-green-500 ${isDark ? 'bg-gradient-to-r from-green-900/20 to-green-800/10 hover:bg-green-900/30' : 'bg-gradient-to-r from-green-50 to-green-25 hover:bg-green-100'}`
                                 : notificacion.tipo === 'gasto'

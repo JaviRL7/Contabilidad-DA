@@ -159,6 +159,7 @@ const HistorialView: React.FC<HistorialViewProps> = ({
                   tieneGastosRecurrentes={tieneGastosRecurrentes}
                   onEditMovimiento={onEditMovimiento}
                   onDeleteMovimiento={onDeleteMovimiento}
+                  etiquetas={etiquetas}
                 />
               )
             })}
