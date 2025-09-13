@@ -368,6 +368,7 @@ interface ItemListProps {
   onSave: (itemId: number, data: { etiqueta: string; monto: number }) => void
   onCancelEdit: () => void
   onDelete: (itemId: number) => void
+  onCreateNewTag?: (field: string, tipo: 'ingreso' | 'gasto') => void
 }
 
 const ItemList: React.FC<ItemListProps> = ({
@@ -380,7 +381,8 @@ const ItemList: React.FC<ItemListProps> = ({
   onEdit,
   onSave,
   onCancelEdit,
-  onDelete
+  onDelete,
+  onCreateNewTag
 }) => {
   const colorClass = tipo === 'ingreso' ? 'green' : 'red'
 
@@ -605,6 +607,7 @@ const EditModalRefactored: React.FC<EditModalProps> = ({
                 onSave={handleItemSave}
                 onCancelEdit={() => setEditingItem(null)}
                 onDelete={(itemId) => handleItemDelete('ingreso', itemId)}
+                onCreateNewTag={onCreateNewTag}
               />
             </div>
 
@@ -652,6 +655,7 @@ const EditModalRefactored: React.FC<EditModalProps> = ({
                 onSave={handleItemSave}
                 onCancelEdit={() => setEditingItem(null)}
                 onDelete={(itemId) => handleItemDelete('gasto', itemId)}
+                onCreateNewTag={onCreateNewTag}
               />
             </div>
           </div>
