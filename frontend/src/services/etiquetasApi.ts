@@ -19,13 +19,13 @@ export interface EtiquetaCreate {
 
 // Obtener todas las etiquetas
 export const fetchEtiquetas = async (): Promise<Etiqueta[]> => {
-  const response = await api.get('/etiquetas/')
+  const response = await api.get('/etiquetas')
   return response.data
 }
 
 // Crear nueva etiqueta
 export const createEtiqueta = async (etiquetaData: EtiquetaCreate): Promise<Etiqueta> => {
-  const response = await api.post('/etiquetas/', etiquetaData)
+  const response = await api.post('/etiquetas', etiquetaData)
   return response.data
 }
 
