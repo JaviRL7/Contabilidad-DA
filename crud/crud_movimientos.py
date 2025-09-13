@@ -377,3 +377,13 @@ def create_etiqueta(db: Session, etiqueta: EtiquetaCreate) -> Etiqueta:
     db.commit()
     db.refresh(db_etiqueta)
     return db_etiqueta
+
+def delete_etiqueta(db: Session, etiqueta_id: int) -> bool:
+    """Eliminar una etiqueta"""
+    etiqueta = db.query(Etiqueta).filter(Etiqueta.id == etiqueta_id).first()
+    if not etiqueta:
+        return False
+    
+    db.delete(etiqueta)
+    db.commit()
+    return True

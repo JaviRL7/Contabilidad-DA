@@ -520,23 +520,42 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
     }
   }
 
-  const handleEditEtiquetaFromView = async (id: number, datosActualizados: Partial<Etiqueta>) => {
+  const handleEditEtiquetaFromView = async (nombreAntiguo: string, nombreNuevo: string, nuevoTipo: 'gasto' | 'ingreso') => {
     try {
-      const etiquetaActualizada = await updateEtiqueta(id, datosActualizados)
+      // Encontrar la etiqueta por nombre anterior para obtener el ID
+      const etiqueta = etiquetasCompletas.find(et => et.nombre === nombreAntiguo)
+      if (!etiqueta) {
+        console.error('Error: Etiqueta no encontrada:', nombreAntiguo)
+        return
+      }
+      
+      const datosActualizados = {
+        nombre: nombreNuevo,
+        tipo: nuevoTipo
+      }
+      
+      const etiquetaActualizada = await updateEtiqueta(etiqueta.id, datosActualizados)
       setEtiquetasCompletas(prev => 
-        prev.map(et => et.id === id ? etiquetaActualizada : et)
+        prev.map(et => et.id === etiqueta.id ? etiquetaActualizada : et)
       )
-      setEtiquetas(formatEtiquetasForLegacy(etiquetasCompletas.map(et => et.id === id ? etiquetaActualizada : et)))
+      setEtiquetas(formatEtiquetasForLegacy(etiquetasCompletas.map(et => et.id === etiqueta.id ? etiquetaActualizada : et)))
     } catch (error) {
       console.error('Error al editar etiqueta:', error)
       throw error
     }
   }
 
-  const handleDeleteEtiquetaFromView = async (id: number) => {
+  const handleDeleteEtiquetaFromView = async (nombre: string) => {
     try {
-      await deleteEtiqueta(id)
-      const nuevasEtiquetas = etiquetasCompletas.filter(et => et.id !== id)
+      // Encontrar la etiqueta por nombre para obtener el ID
+      const etiqueta = etiquetasCompletas.find(et => et.nombre === nombre)
+      if (!etiqueta) {
+        console.error('Error: Etiqueta no encontrada:', nombre)
+        return
+      }
+      
+      await deleteEtiqueta(etiqueta.id)
+      const nuevasEtiquetas = etiquetasCompletas.filter(et => et.id !== etiqueta.id)
       setEtiquetasCompletas(nuevasEtiquetas)
       setEtiquetas(formatEtiquetasForLegacy(nuevasEtiquetas))
     } catch (error) {

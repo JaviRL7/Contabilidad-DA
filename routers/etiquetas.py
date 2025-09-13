@@ -47,3 +47,14 @@ async def update_etiqueta(
     if not etiqueta:
         raise HTTPException(status_code=404, detail="Etiqueta no encontrada")
     return etiqueta
+
+@router.delete("/{etiqueta_id}")
+async def delete_etiqueta(
+    etiqueta_id: int,
+    db: Session = Depends(get_db)
+):
+    """Eliminar una etiqueta"""
+    success = crud_movimientos.delete_etiqueta(db, etiqueta_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Etiqueta no encontrada")
+    return {"message": "Etiqueta eliminada correctamente"}
