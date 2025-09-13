@@ -215,13 +215,15 @@ interface ItemEditFormProps {
   isDark: boolean
   onSave: (data: { etiqueta: string; monto: number }) => void
   onCancel: () => void
+  onCreateNewTag?: (field: string, tipo: 'ingreso' | 'gasto') => void
 }
 
-const ItemEditForm: React.FC<ItemEditFormProps> = ({ item, tipo, etiquetas, isDark, onSave, onCancel }) => {
+const ItemEditForm: React.FC<ItemEditFormProps> = ({ item, tipo, etiquetas, isDark, onSave, onCancel, onCreateNewTag }) => {
   const [formData, setFormData] = useState({ 
     etiqueta: item.etiqueta, 
     monto: item.monto.toString() 
   })
+  const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -232,46 +234,123 @@ const ItemEditForm: React.FC<ItemEditFormProps> = ({ item, tipo, etiquetas, isDa
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
-      <select
-        value={formData.etiqueta}
-        onChange={(e) => setFormData(prev => ({ ...prev, etiqueta: e.target.value }))}
-        className={`w-full px-2 py-1 rounded border text-sm ${
-          isDark 
-            ? 'bg-gray-600 border-gray-500 text-white' 
-            : 'bg-white border-gray-300 text-gray-900'
-        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-      >
-        {etiquetas.map(etiq => (
-          <option key={etiq} value={etiq}>{etiq}</option>
-        ))}
-      </select>
+    <form onSubmit={handleSubmit} className="space-y-3">
+      {/* Dropdown personalizado con PerfectScrollbar */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          className={`w-full px-3 py-2 pr-8 rounded-lg border text-left text-sm transition-all duration-200 ${
+            isDark 
+              ? 'bg-gray-600 border-gray-500 text-white hover:border-gray-400 focus:border-blue-500' 
+              : 'bg-white border-gray-300 text-gray-900 hover:border-gray-400 focus:border-blue-500'
+          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+        >
+          {formData.etiqueta || 'Seleccionar etiqueta...'}
+        </button>
+        <ChevronDown className={`absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 pointer-events-none transition-transform duration-200 ${
+          dropdownOpen ? 'rotate-180' : ''
+        } ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+        
+        {dropdownOpen && (
+          <div className={`absolute top-full left-0 right-0 mt-1 rounded-lg border shadow-lg z-50 ${
+            isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+          }`}>
+            <PerfectScrollbar
+              options={{
+                suppressScrollX: true,
+                wheelPropagation: false
+              }}
+              style={{ maxHeight: '120px' }}
+            >
+              <div className="py-1">
+                {/* Etiquetas disponibles */}
+                {etiquetas.map((etiqueta, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, etiqueta }))
+                      setDropdownOpen(false)
+                    }}
+                    className={`w-full px-3 py-1.5 text-left text-sm transition-colors ${
+                      formData.etiqueta === etiqueta 
+                        ? isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                        : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {formData.etiqueta === etiqueta && <Check className="w-3 h-3" />}
+                      <span className={formData.etiqueta === etiqueta ? '' : 'ml-5'}>
+                        {etiqueta}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+                
+                {/* Opción crear nueva etiqueta */}
+                {onCreateNewTag && (
+                  <div className={`border-t mt-1 pt-1 ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onCreateNewTag('etiqueta', tipo)
+                        setDropdownOpen(false)
+                      }}
+                      className={`w-full px-3 py-1.5 text-left text-sm transition-colors ${
+                        isDark ? 'text-blue-400 hover:bg-gray-600' : 'text-blue-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Plus className="w-3 h-3" />
+                        <span>Crear nueva etiqueta</span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </PerfectScrollbar>
+          </div>
+        )}
+      </div>
       
+      {/* Input de monto sin spinners */}
       <input
         type="number"
         step="0.01"
         value={formData.monto}
         onChange={(e) => setFormData(prev => ({ ...prev, monto: e.target.value }))}
-        className={`w-full px-2 py-1 rounded border text-sm ${
+        className={`w-full px-3 py-2 rounded-lg border text-sm ${
           isDark 
             ? 'bg-gray-600 border-gray-500 text-white' 
             : 'bg-white border-gray-300 text-gray-900'
-        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+        } focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
       />
       
-      <div className="flex gap-1">
+      {/* Botones mejorados con iconos y mejor styling */}
+      <div className="flex gap-2">
         <button
           type="submit"
-          className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
+          className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-white font-medium text-sm transition-all duration-200 ${
+            tipo === 'ingreso' 
+              ? 'bg-green-600 hover:bg-green-700 hover:shadow-md' 
+              : 'bg-green-600 hover:bg-green-700 hover:shadow-md'
+          }`}
         >
-          ✓
+          <Check className="w-4 h-4" />
+          Guardar
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600 transition-colors"
+          className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+            isDark 
+              ? 'bg-gray-600 text-white hover:bg-gray-500 hover:shadow-md' 
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:shadow-md'
+          }`}
         >
-          ✕
+          <X className="w-4 h-4" />
+          Cancelar
         </button>
       </div>
     </form>
@@ -329,6 +408,7 @@ const ItemList: React.FC<ItemListProps> = ({
               isDark={isDark}
               onSave={(data) => onSave(item.id, data)}
               onCancel={onCancelEdit}
+              onCreateNewTag={onCreateNewTag}
             />
           ) : (
             <div className="flex justify-between items-center">
