@@ -189,21 +189,24 @@ const HistorialView: React.FC<HistorialViewProps> = ({
           
           {/* Resumen de Hoy */}
           <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4`}>
-            <h3 className={`text-lg font-semibold mb-2 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Hoy</h3>
-            <p className={`text-sm mb-4 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{new Date().toLocaleDateString('es-ES')}</p>
+            <h3 className={`text-lg font-semibold mb-3 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Hoy</h3>
+            <p className={`text-xs mb-4 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{new Date().toLocaleDateString('es-ES')}</p>
             <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-green-500 font-medium">Ingresos:</span>
+              <div className="flex justify-between items-center py-2 px-3">
+                <span className="text-green-500 font-medium">Ingresos</span>
                 <span className="text-lg font-bold text-green-500">{todayIngresos.toFixed(2)}€</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-red-500 font-medium">Gastos:</span>
+              <div className={`h-px bg-gradient-to-r from-transparent ${isDark ? 'via-gray-500/30' : 'via-gray-300/30'} to-transparent`}></div>
+              <div className="flex justify-between items-center py-2 px-3">
+                <span className="text-red-500 font-medium">Gastos</span>
                 <span className="text-lg font-bold text-red-500">{todayGastos.toFixed(2)}€</span>
               </div>
-              <div className={`my-6 h-px bg-gradient-to-r from-transparent ${isDark ? 'via-gray-500/30' : 'via-gray-300/30'} to-transparent`}></div>
-              <div className="flex justify-between pt-2">
-                <span className="font-medium text-blue-500">Balance:</span>
-                <span className="font-bold text-blue-500">{todayBalance.toFixed(2)}€</span>
+              <div className={`h-px bg-gradient-to-r from-transparent ${isDark ? 'via-gray-500/30' : 'via-gray-300/30'} to-transparent`}></div>
+              <div className="pt-4 mt-4">
+                <div className="flex justify-between items-center py-3 px-3">
+                  <span className="text-blue-500 font-medium">Balance</span>
+                  <span className="text-lg font-bold text-blue-500">{todayBalance.toFixed(2)}€</span>
+                </div>
               </div>
             </div>
           </div>
