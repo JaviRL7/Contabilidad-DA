@@ -465,8 +465,16 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
 
   const handleCreateTagConfirm = async (tagName: string) => {
     try {
+      const trimmedName = tagName.trim()
+      
+      // Validación client-side para evitar llamadas API innecesarias
+      if (!trimmedName) {
+        console.error('Error al crear etiqueta: El nombre no puede estar vacío')
+        return
+      }
+      
       const nuevaEtiqueta = await createEtiqueta({
-        nombre: tagName.trim(),
+        nombre: trimmedName,
         tipo: createTagType,
         es_predefinida: false,
         es_esencial: false
@@ -475,18 +483,18 @@ const AppRefactored: React.FC<AppRefactoredProps> = ({
       setEtiquetasCompletas(prev => [...prev, nuevaEtiqueta])
       
       if (createTagType === 'ingreso') {
-        setEtiquetas(prev => ({ ...prev, ingresos: [...prev.ingresos, tagName] }))
+        setEtiquetas(prev => ({ ...prev, ingresos: [...prev.ingresos, trimmedName] }))
         if (pendingTagField === 'newIncome.etiqueta') {
-          setNewIncome(prev => ({ ...prev, etiqueta: tagName }))
+          setNewIncome(prev => ({ ...prev, etiqueta: trimmedName }))
         }
       } else {
-        setEtiquetas(prev => ({ ...prev, gastos: [...prev.gastos, tagName] }))
+        setEtiquetas(prev => ({ ...prev, gastos: [...prev.gastos, trimmedName] }))
         if (pendingTagField === 'newExpense.etiqueta') {
-          setNewExpense(prev => ({ ...prev, etiqueta: tagName }))
+          setNewExpense(prev => ({ ...prev, etiqueta: trimmedName }))
         }
       }
 
-      handleNewTagCreatedCallback(pendingTagField, tagName)
+      handleNewTagCreatedCallback(pendingTagField, trimmedName)
       setShowCreateTagModal(false)
       setPendingTagField('')
       

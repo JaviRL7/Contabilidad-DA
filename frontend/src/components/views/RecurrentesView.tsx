@@ -288,7 +288,7 @@ const RecurrentesView: React.FC<RecurrentesViewProps> = ({
       const hoy = new Date()
       const fechaEsperada = new Date(hoy.getFullYear(), hoy.getMonth(), formData.diaMes)
       
-      if (fechaEsperada < hoy && editingIndex === null) {
+      if (fechaEsperada < hoy && editingGasto === null) {
         // Es una fecha pasada en el mes actual y es un gasto nuevo
         setGastoFechaPasada({
           gasto: nuevoGasto,
