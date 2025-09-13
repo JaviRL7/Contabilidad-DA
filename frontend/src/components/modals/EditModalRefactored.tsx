@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import DatePicker from 'react-datepicker'
 import { parseISO } from 'date-fns'
-import { X, Edit, Plus, Trash2 } from 'lucide-react'
+import { X, Edit, Plus, Trash2, ChevronDown, Check } from 'lucide-react'
 import { formatEuro } from '../../utils/formatters'
 import { useEditMovimiento } from '../../hooks/useEditMovimiento'
+import PerfectScrollbar from 'react-perfect-scrollbar'
+import 'react-perfect-scrollbar/dist/css/styles.css'
 
 interface MovimientoDiario {
   id: number
@@ -25,6 +27,7 @@ interface EditModalProps {
     ingresos: string[]
     gastos: string[]
   }
+  onCreateNewTag?: (field: string, tipo: 'ingreso' | 'gasto') => void
 }
 
 // ========================================
@@ -37,10 +40,12 @@ interface ItemFormProps {
   isDark: boolean
   onAdd: (data: { etiqueta: string; monto: number }) => void
   onCancel: () => void
+  onCreateNewTag?: (field: string, tipo: 'ingreso' | 'gasto') => void
 }
 
-const ItemForm: React.FC<ItemFormProps> = ({ tipo, etiquetas, isDark, onAdd, onCancel }) => {
+const ItemForm: React.FC<ItemFormProps> = ({ tipo, etiquetas, isDark, onAdd, onCancel, onCreateNewTag }) => {
   const [formData, setFormData] = useState({ etiqueta: '', monto: '' })
+  const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,22 +63,107 @@ const ItemForm: React.FC<ItemFormProps> = ({ tipo, etiquetas, isDark, onAdd, onC
       isDark ? 'bg-gray-700 border-gray-600' : `bg-${colorClass}-50 border-${colorClass}-200`
     }`}>
       <div className="space-y-3">
-        <select
-          value={formData.etiqueta}
-          onChange={(e) => setFormData(prev => ({ ...prev, etiqueta: e.target.value }))}
-          className={`w-full px-3 py-2 rounded border ${
-            isDark 
-              ? 'bg-gray-600 border-gray-500 text-white' 
-              : 'bg-white border-gray-300 text-gray-900'
-          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-          required
-        >
-          <option value="">Seleccionar etiqueta...</option>
-          {etiquetas.map(etiq => (
-            <option key={etiq} value={etiq}>{etiq}</option>
-          ))}
-        </select>
+        {/* Dropdown personalizado con PerfectScrollbar */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className={`w-full px-3 py-2 pr-10 rounded border text-left transition-all duration-200 ${
+              isDark 
+                ? 'bg-gray-600 border-gray-500 text-white hover:border-gray-400 focus:border-blue-500' 
+                : 'bg-white border-gray-300 text-gray-900 hover:border-gray-400 focus:border-blue-500'
+            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          >
+            {formData.etiqueta || 'Seleccionar etiqueta...'}
+          </button>
+          <ChevronDown className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none transition-transform duration-200 ${
+            dropdownOpen ? 'rotate-180' : ''
+          } ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+          
+          {dropdownOpen && (
+            <div className={`absolute top-full left-0 right-0 mt-1 rounded-lg border shadow-lg z-50 ${
+              isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+            }`}>
+              <PerfectScrollbar
+                options={{
+                  suppressScrollX: true,
+                  wheelPropagation: false
+                }}
+                style={{ maxHeight: '150px' }}
+              >
+                <div className="py-1">
+                  {/* Opción placeholder */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, etiqueta: '' }))
+                      setDropdownOpen(false)
+                    }}
+                    className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                      formData.etiqueta === '' 
+                        ? isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                        : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {formData.etiqueta === '' && <Check className="w-3 h-3" />}
+                      <span className={formData.etiqueta === '' ? '' : 'ml-5'}>
+                        Seleccionar etiqueta...
+                      </span>
+                    </div>
+                  </button>
+                  
+                  {/* Etiquetas disponibles */}
+                  {etiquetas.map((etiqueta, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, etiqueta }))
+                        setDropdownOpen(false)
+                      }}
+                      className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                        formData.etiqueta === etiqueta 
+                          ? isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                          : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {formData.etiqueta === etiqueta && <Check className="w-3 h-3" />}
+                        <span className={formData.etiqueta === etiqueta ? '' : 'ml-5'}>
+                          {etiqueta}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                  
+                  {/* Opción crear nueva etiqueta */}
+                  {onCreateNewTag && (
+                    <div className={`border-t mt-1 pt-1 ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onCreateNewTag('etiqueta', tipo)
+                          setDropdownOpen(false)
+                        }}
+                        className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                          isDark ? 'text-blue-400 hover:bg-gray-600' : 'text-blue-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Plus className="w-3 h-3" />
+                          <span>Crear nueva etiqueta</span>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </PerfectScrollbar>
+            </div>
+          )}
+        </div>
         
+        {/* Input de monto sin spinners */}
         <input
           type="number"
           step="0.01"
@@ -84,29 +174,30 @@ const ItemForm: React.FC<ItemFormProps> = ({ tipo, etiquetas, isDark, onAdd, onC
             isDark 
               ? 'bg-gray-600 border-gray-500 text-white' 
               : 'bg-white border-gray-300 text-gray-900'
-          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          } focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
           required
         />
         
+        {/* Botones con estilos mejorados */}
         <div className="flex gap-2">
           <button
             type="submit"
-            className={`px-4 py-2 rounded text-white font-medium transition-colors ${
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all duration-200 ${
               tipo === 'ingreso' 
-                ? 'bg-green-600 hover:bg-green-700' 
-                : 'bg-red-600 hover:bg-red-700'
+                ? 'bg-green-600 hover:bg-green-700 hover:shadow-md' 
+                : 'bg-red-600 hover:bg-red-700 hover:shadow-md'
             }`}
           >
-            <Plus className="w-4 h-4 mr-1 inline" />
+            <Plus className="w-4 h-4" />
             Agregar
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className={`px-4 py-2 rounded font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
               isDark 
-                ? 'bg-gray-600 text-white hover:bg-gray-500' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? 'bg-gray-600 text-white hover:bg-gray-500 hover:shadow-md' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:shadow-md'
             }`}
           >
             Cancelar
@@ -285,7 +376,8 @@ const EditModalRefactored: React.FC<EditModalProps> = ({
   movimiento,
   isDark,
   onSave,
-  etiquetas
+  etiquetas,
+  onCreateNewTag
 }) => {
   const [showAddForm, setShowAddForm] = useState<'ingreso' | 'gasto' | null>(null)
 
@@ -418,6 +510,7 @@ const EditModalRefactored: React.FC<EditModalProps> = ({
                   isDark={isDark}
                   onAdd={(data) => handleAddItem('ingreso', data)}
                   onCancel={() => setShowAddForm(null)}
+                  onCreateNewTag={onCreateNewTag}
                 />
               )}
 
@@ -464,6 +557,7 @@ const EditModalRefactored: React.FC<EditModalProps> = ({
                   isDark={isDark}
                   onAdd={(data) => handleAddItem('gasto', data)}
                   onCancel={() => setShowAddForm(null)}
+                  onCreateNewTag={onCreateNewTag}
                 />
               )}
 
