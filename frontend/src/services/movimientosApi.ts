@@ -86,7 +86,7 @@ const handleApiError = (error: any, operation: string): never => {
  */
 export const fetchMovimientos = async (): Promise<MovimientoDiario[]> => {
   try {
-    const response = await api.get('/movimientos/', {
+    const response = await api.get('/movimientos', {
       params: {
         todos: true,
         limit: 100
