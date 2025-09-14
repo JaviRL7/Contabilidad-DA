@@ -103,7 +103,7 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
   )
 
   return (
-    <header className={`sticky top-0 z-50 shadow-lg ${isDark ? '' : 'border-b border-gray-200'}`} style={{backgroundColor: isDark ? '#1f2937' : 'white'}}>
+    <header className={`sticky top-0 z-50 shadow-lg ${isDark ? '' : 'border-b border-gray-200'}`} style={{backgroundColor: isDark ? '#0f172a' : 'white'}}>
       <div className="container mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-32">
           
