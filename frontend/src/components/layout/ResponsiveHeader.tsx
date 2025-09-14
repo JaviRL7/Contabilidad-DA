@@ -231,7 +231,7 @@ const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className={`lg:hidden absolute left-0 right-0 mt-2 mx-4 p-4 rounded-xl shadow-lg border transition-all duration-200 ${
-            isDark ? 'bg-blue-800 border-blue-700' : 'bg-white border-gray-200'
+            isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
           }`}>
             {/* Mobile Navigation */}
             <nav className="space-y-2">
