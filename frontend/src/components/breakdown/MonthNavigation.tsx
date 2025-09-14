@@ -69,7 +69,7 @@ const MonthNavigation: React.FC<MonthNavigationProps> = ({
         <div className="flex items-center gap-3">
           <Calendar className={`w-8 h-8 ${isDark ? 'text-blue-400' : 'text-blue-500'}`} />
           <div className={`text-3xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {currentMonthLabel}
+            Resumen
           </div>
         </div>
         
