@@ -17,31 +17,31 @@ Este proyecto está destinado no solo a mi madre, sino a todas las valientes muj
 ## 🖥️ Vista General del Sistema
 
 ### Pantalla Principal - Historial de Movimientos
-![Historial](public/c2.png)
+![Historial](frontend/public/c2.PNG)
 *Vista principal donde se muestran todos los movimientos financieros organizados por día con balances automáticos.*
 
 ### Búsqueda Inteligente
-![Búsqueda](public/c3.png)
+![Búsqueda](frontend/public/c3.PNG)
 *Sistema de búsqueda avanzado con filtros por fecha, tipo, etiqueta y monto para encontrar rápidamente cualquier transacción.*
 
 ### Gestión de Etiquetas
-![Etiquetas](public/c4.png)
+![Etiquetas](frontend/public/c4.PNG)
 *Administración completa de categorías con diferenciación entre gastos esenciales y opcionales, colores personalizados y estadísticas.*
 
 ### Gastos Recurrentes
-![Recurrentes](public/c5.png)
+![Recurrentes](frontend/public/c5.PNG)
 *Seguimiento de gastos que se repiten mensualmente para mejor planificación financiera.*
 
 ### Análisis de Desgloses
-![Desgloses](public/c6.png)
+![Desgloses](frontend/public/c6.PNG)
 *Análisis detallado con gráficos interactivos para entender patrones de gasto e ingreso por categorías.*
 
 ### Vista de Análisis Avanzado
-![Análisis](public/c7.png)
+![Análisis](frontend/public/c7.PNG)
 *Dashboard completo con métricas, tendencias y análisis predictivo para toma de decisiones informadas.*
 
 ### Calendario Financiero
-![Calendario](public/c8.png)
+![Calendario](frontend/public/c8.PNG)
 *Vista calendario que muestra el flujo financiero día a día con indicadores visuales de ingresos y gastos.*
 
 ---
@@ -100,14 +100,13 @@ contabilidad-web/
 │   │   │   └── 📂 analysis/            # Análisis avanzado
 │   │   ├── 📂 utils/                   # Utilidades y helpers
 │   │   └── 📂 types/                   # Definiciones de TypeScript
+│   ├── 📂 public/             # Archivos estáticos del frontend
+│   │   ├── 📄 Logo1.png      # Logo de la aplicación
+│   │   └── 📄 c2.PNG - c8.PNG # Screenshots de la aplicación
 │   ├── 📄 package.json        # Dependencias de Node.js
 │   ├── 📄 tailwind.config.js  # Configuración de Tailwind
 │   ├── 📄 tsconfig.json       # Configuración de TypeScript
 │   └── 📄 vite.config.ts      # Configuración de Vite
-│
-├── 📂 public/                 # Archivos estáticos
-│   ├── 📄 Logo1.png          # Logo de la aplicación
-│   └── 📄 c2.png - c8.png    # Screenshots de la aplicación
 │
 ├── 📄 docker-compose.yml     # Configuración de Docker (opcional)
 ├── 📄 install.sh            # Script de instalación automática
