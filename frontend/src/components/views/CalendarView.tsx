@@ -404,7 +404,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                               {format(new Date(notificacion.fecha), 'dd/MM/yyyy', { locale: es })}
                             </p>
                             {notificacion.etiqueta && (
-                              <span className="inline-block mt-1 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-xs">
+                              <span className="inline-block mt-1 px-2 py-1 bg-blue-100 dark:bg-gray-700 rounded-full text-xs text-blue-800 dark:text-gray-300">
                                 {notificacion.etiqueta}
                               </span>
                             )}
@@ -484,7 +484,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                               {format(new Date(notificacion.fecha), 'dd/MM/yyyy', { locale: es })}
                             </p>
                             {notificacion.etiqueta && (
-                              <span className="inline-block mt-1 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-xs">
+                              <span className="inline-block mt-1 px-2 py-1 bg-blue-100 dark:bg-gray-700 rounded-full text-xs text-blue-800 dark:text-gray-300">
                                 {notificacion.etiqueta}
                               </span>
                             )}
