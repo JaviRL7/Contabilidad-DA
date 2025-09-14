@@ -22,9 +22,5 @@ export const ETIQUETAS_PREDEFINIDAS = {
   ingresos: ['Trabajo', 'Freelance', 'Inversiones', 'Otros']
 };
 
-// ⚠️ Ojo: mejor no dejar credenciales hardcodeadas en el frontend.
-// Cualquiera que abra el inspector las puede ver.
-export const AUTH_CREDENTIALS = {
-  username: 'DoñaAraña76sanjuan',
-  password: 'ja6ju4ma28monstruito'
-};
+// Las credenciales han sido movidas a un archivo de configuración más seguro
+// Ver: src/config/auth.config.ts

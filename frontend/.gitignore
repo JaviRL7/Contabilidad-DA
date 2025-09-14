@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Security - Auth configuration
+src/config/auth.config.ts

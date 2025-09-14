@@ -42,10 +42,21 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
         isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white'
       }`}>
         <div className="text-center mb-6">
+          {/* Logo */}
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-pink-300/70">
+              <img 
+                src="/Logo1.png" 
+                alt="Contabilidad Doña Araña" 
+                className="w-12 h-12 object-contain"
+              />
+            </div>
+          </div>
+          
           <h2 className={`text-2xl font-bold ${
             isDark ? 'text-white' : 'text-gray-900'
           }`}>
-            Iniciar Sesión
+            Contabilidad Doña Araña
           </h2>
           <p className={`mt-2 text-sm ${
             isDark ? 'text-gray-400' : 'text-gray-600'

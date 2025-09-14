@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { AUTH_CREDENTIALS } from '../utils/constants'
+import { getAuthCredentials } from '../config/auth.config'
 import { securityUtils } from '../utils/security'
 
 export const useAuth = () => {
@@ -40,7 +40,8 @@ export const useAuth = () => {
     const cleanUsername = securityUtils.sanitizeInput(username)
     const cleanPassword = securityUtils.sanitizeInput(password)
 
-    if (cleanUsername === AUTH_CREDENTIALS.username && cleanPassword === AUTH_CREDENTIALS.password) {
+    const credentials = getAuthCredentials()
+    if (cleanUsername === credentials.username && cleanPassword === credentials.password) {
       localStorage.setItem('isAuthenticated', 'true')
       localStorage.setItem('loginTime', new Date().getTime().toString())
       securityUtils.updateActivity()
