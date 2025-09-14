@@ -13,6 +13,7 @@ interface SimpleBarChartProps {
   maxHeight?: number
   showValues?: boolean
   horizontal?: boolean
+  formatAsEuro?: boolean
 }
 
 const SimpleBarChart: React.FC<SimpleBarChartProps> = ({
@@ -20,9 +21,17 @@ const SimpleBarChart: React.FC<SimpleBarChartProps> = ({
   isDark,
   maxHeight = 200,
   showValues = true,
-  horizontal = false
+  horizontal = false,
+  formatAsEuro = true
 }) => {
   const maxValue = Math.max(...data.map(item => Math.abs(item.value)))
+  
+  const formatValue = (value: number | string) => {
+    if (typeof value === 'number') {
+      return formatAsEuro ? formatEuro(value) : value.toString()
+    }
+    return value
+  }
   
   const getBarColor = (item: BarData, index: number) => {
     if (item.color) return item.color
@@ -54,7 +63,7 @@ const SimpleBarChart: React.FC<SimpleBarChartProps> = ({
                   <span className={`text-sm font-semibold ${
                     item.value >= 0 ? 'text-green-500' : 'text-red-500'
                   }`}>
-                    {typeof item.value === 'number' ? formatEuro(item.value) : item.value}
+                    {formatValue(item.value)}
                   </span>
                 )}
               </div>
@@ -91,7 +100,7 @@ const SimpleBarChart: React.FC<SimpleBarChartProps> = ({
                 }`}
                 style={{ minHeight: textTopHeight }}
               >
-                {typeof item.value === 'number' ? formatEuro(item.value) : item.value}
+                {formatValue(item.value)}
               </div>
             )}
             <div

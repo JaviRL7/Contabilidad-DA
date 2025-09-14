@@ -266,6 +266,7 @@ const CategoryAnalysis: React.FC<CategoryAnalysisProps> = ({
             maxHeight={180}
             showValues={true}
             horizontal={true}
+            formatAsEuro={false}
           />
         </ChartContainer>
       </div>
