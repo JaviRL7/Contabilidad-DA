@@ -1,6 +1,6 @@
 # Contabilidad Doña Araña
 
-*Dedicado a mi madre y a todos los pequeños comerciantes*
+*Dedicado a mi madre <3 y a todos los pequeños comerciantes*
 
 ---
 
