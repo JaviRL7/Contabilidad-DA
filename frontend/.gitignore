@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # Security - Auth configuration
-src/config/auth.config.ts
+# src/config/auth.config.ts
