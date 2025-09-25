@@ -1,6 +1,6 @@
 # Contabilidad Doña Araña
 
-*Dedicado a mi madre y a todos los pequeños comerciantes*
+*Dedicado a mi madre <3 y a todos los pequeños comerciantes*
 
 ---
 
@@ -53,7 +53,7 @@ Este sistema está pensado para comerciantes, dueños de pequeños locales y emp
 - **SQLAlchemy**: ORM avanzado para manejo de base de datos
 - **SQLite**: Base de datos ligera pero potente
 - **Uvicorn**: Servidor ASGI de alta velocidad
-- **Documentación automática**: Swagger UI integrado
+- **Documentación automática**: Swagger UI 
 
 ### Frontend - Interfaz Moderna
 - **React 18**: Librería de interfaz de usuario con hooks modernos
