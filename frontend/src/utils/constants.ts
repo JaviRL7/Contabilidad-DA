@@ -6,9 +6,9 @@ const isProduction = typeof window !== 'undefined' &&
    import.meta.env.PROD);
 
 // Configuración de API con detección automática de entorno
-export const API_BASE_URL = isProduction 
-  ? 'https://web-production-a862.up.railway.app/api'
-  : import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+export const API_BASE_URL = isProduction
+  ? 'https://web-production-a862.up.railway.app'
+  : import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Log para debugging en TODOS los casos para ver qué está pasando
 console.log('🔗 API_BASE_URL configurada:', API_BASE_URL);
