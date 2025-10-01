@@ -19,16 +19,19 @@ const LoginModalLarge: React.FC<LoginModalLargeProps> = ({ isDark = false, onLog
     setLoading(true)
     setError('')
 
-    setTimeout(() => {
-      const result = login(username, password)
-      
+    try {
+      const result = await login(username, password)
+
       if (result.success) {
         onLoginSuccess()
       } else {
         setError(result.message)
       }
+    } catch (error) {
+      setError('Error de conexión con el servidor')
+    } finally {
       setLoading(false)
-    }, 500)
+    }
   }
 
   return (
