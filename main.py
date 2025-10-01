@@ -4,7 +4,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from decouple import config
 
 from core.database import engine, Base
-from routers import movimientos, etiquetas, notificaciones
+from routers import movimientos, etiquetas, notificaciones, auth
 
 # Crear tablas
 Base.metadata.create_all(bind=engine)
@@ -30,6 +30,7 @@ app.add_middleware(
 )
 
 # Incluir routers
+app.include_router(auth.router)
 app.include_router(movimientos.router)
 app.include_router(etiquetas.router)
 app.include_router(notificaciones.router)

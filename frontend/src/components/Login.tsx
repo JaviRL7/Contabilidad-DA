@@ -19,17 +19,19 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, isDark = false }) => {
     setLoading(true)
     setError('')
 
-    // Simular un pequeño delay para mejorar la experiencia de usuario
-    setTimeout(() => {
-      const result = login(username, password)
-      
+    try {
+      const result = await login(username, password)
+
       if (result.success) {
         onLoginSuccess()
       } else {
         setError(result.message)
       }
+    } catch (error) {
+      setError('Error de conexión con el servidor')
+    } finally {
       setLoading(false)
-    }, 500)
+    }
   }
 
   return (

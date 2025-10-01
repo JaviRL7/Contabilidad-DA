@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getAuthCredentials } from '../config/auth.config'
+import api from '../services/api'
 import { securityUtils } from '../utils/security'
 
 export const useAuth = () => {
@@ -7,56 +7,67 @@ export const useAuth = () => {
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isAuthenticated') === 'true'
-    
+    const token = localStorage.getItem('auth_token')
+
     // Verificar inactividad
-    if (isLoggedIn && securityUtils.checkInactivity()) {
+    if (token && securityUtils.checkInactivity()) {
       logout() // Auto-logout por inactividad
       setLoading(false)
       return
     }
-    
-    setIsAuthenticated(isLoggedIn)
+
+    setIsAuthenticated(!!token)
     setLoading(false)
 
     // Actualizar actividad si está logueado
-    if (isLoggedIn) {
+    if (token) {
       securityUtils.updateActivity()
     }
   }, [])
 
-  const login = (username: string, password: string) => {
-    // Verificar bloqueo por intentos fallidos
-    const lockStatus = securityUtils.isLockedOut()
-    if (lockStatus.locked) {
-      const minutes = Math.ceil((lockStatus.remainingTime || 0) / (1000 * 60))
-      return { 
-        success: false, 
-        message: `Cuenta bloqueada por múltiples intentos. Intenta de nuevo en ${minutes} minutos.` 
+  const login = async (username: string, password: string) => {
+    try {
+      // Verificar bloqueo por intentos fallidos
+      const lockStatus = securityUtils.isLockedOut()
+      if (lockStatus.locked) {
+        const minutes = Math.ceil((lockStatus.remainingTime || 0) / (1000 * 60))
+        return {
+          success: false,
+          message: `Cuenta bloqueada por múltiples intentos. Intenta de nuevo en ${minutes} minutos.`
+        }
       }
-    }
 
-    // Sanitizar inputs
-    const cleanUsername = securityUtils.sanitizeInput(username)
-    const cleanPassword = securityUtils.sanitizeInput(password)
+      // Sanitizar inputs
+      const cleanUsername = securityUtils.sanitizeInput(username)
+      const cleanPassword = securityUtils.sanitizeInput(password)
 
-    const credentials = getAuthCredentials()
-    if (cleanUsername === credentials.username && cleanPassword === credentials.password) {
-      localStorage.setItem('isAuthenticated', 'true')
-      localStorage.setItem('loginTime', new Date().getTime().toString())
-      securityUtils.updateActivity()
-      securityUtils.recordLoginAttempt(true)
-      securityUtils.clearLoginAttempts() // Limpiar intentos fallidos
-      setIsAuthenticated(true)
-      return { success: true, message: 'Login exitoso' }
-    } else {
+      // Llamar a la API de login
+      const response = await api.post('/auth/login', {
+        username: cleanUsername,
+        password: cleanPassword
+      })
+
+      if (response.data.access_token) {
+        localStorage.setItem('auth_token', response.data.access_token)
+        localStorage.setItem('loginTime', new Date().getTime().toString())
+        securityUtils.updateActivity()
+        securityUtils.recordLoginAttempt(true)
+        securityUtils.clearLoginAttempts()
+        setIsAuthenticated(true)
+        return { success: true, message: 'Login exitoso' }
+      } else {
+        securityUtils.recordLoginAttempt(false)
+        return { success: false, message: 'Error en la autenticación' }
+      }
+    } catch (error: any) {
       securityUtils.recordLoginAttempt(false)
-      return { success: false, message: 'Usuario o contraseña incorrectos' }
+      const errorMessage = error.response?.data?.detail || 'Usuario o contraseña incorrectos'
+      return { success: false, message: errorMessage }
     }
   }
 
   const logout = () => {
-    localStorage.removeItem('isAuthenticated')
+    localStorage.removeItem('auth_token')
     localStorage.removeItem('loginTime')
     setIsAuthenticated(false)
   }
