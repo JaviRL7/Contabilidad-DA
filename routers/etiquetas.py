@@ -6,7 +6,7 @@ from core.database import get_db
 from models.schemas import Etiqueta, EtiquetaCreate, EtiquetaUpdate
 from crud import crud_movimientos
 
-router = APIRouter(prefix="/api/etiquetas", tags=["etiquetas"])
+router = APIRouter(prefix="/etiquetas", tags=["etiquetas"])
 
 @router.get("", response_model=List[Etiqueta])
 async def get_all_etiquetas(db: Session = Depends(get_db)):

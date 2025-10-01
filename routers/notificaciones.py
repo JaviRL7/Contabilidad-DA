@@ -11,7 +11,7 @@ from models.schemas import (
 )
 from models.models import NotificacionCalendario as NotificacionCalendarioModel
 
-router = APIRouter(prefix="/api/notificaciones", tags=["notificaciones"])
+router = APIRouter(prefix="/notificaciones", tags=["notificaciones"])
 
 @router.post("", response_model=NotificacionCalendario)
 async def crear_notificacion(

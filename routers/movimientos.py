@@ -13,7 +13,7 @@ from models.schemas import (
 from models.models import MovimientoDiario as MovimientoDiarioModel
 from crud import crud_movimientos
 
-router = APIRouter(prefix="/api/movimientos", tags=["movimientos"])
+router = APIRouter(prefix="/movimientos", tags=["movimientos"])
 
 @router.get("", response_model=List[MovimientoDiario])
 async def get_movimientos_recientes(
