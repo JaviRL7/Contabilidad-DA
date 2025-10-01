@@ -37,15 +37,17 @@ export const useAuth = () => {
         }
       }
 
-      // Sanitizar inputs
-      const cleanUsername = securityUtils.sanitizeInput(username)
-      const cleanPassword = securityUtils.sanitizeInput(password)
+      // NO sanitizar credenciales - pueden contener caracteres especiales válidos
+      const cleanUsername = username.trim()
+      const cleanPassword = password.trim()
 
       // Llamar a la API de login
+      console.log('🔐 Intentando login con:', { username: cleanUsername })
       const response = await api.post('/auth/login', {
         username: cleanUsername,
         password: cleanPassword
       })
+      console.log('✅ Respuesta del servidor:', response)
 
       if (response.data.access_token) {
         localStorage.setItem('auth_token', response.data.access_token)
@@ -60,6 +62,8 @@ export const useAuth = () => {
         return { success: false, message: 'Error en la autenticación' }
       }
     } catch (error: any) {
+      console.error('❌ Error en login:', error)
+      console.error('❌ Error response:', error.response)
       securityUtils.recordLoginAttempt(false)
       const errorMessage = error.response?.data?.detail || 'Usuario o contraseña incorrectos'
       return { success: false, message: errorMessage }
