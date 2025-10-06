@@ -5,13 +5,14 @@ from datetime import date, datetime
 
 from core.database import get_db
 from models.schemas import (
-    MovimientoDiario, 
-    MovimientoDiarioCreate, 
+    MovimientoDiario,
+    MovimientoDiarioCreate,
     MovimientoResumen,
     Etiqueta
 )
-from models.models import MovimientoDiario as MovimientoDiarioModel
+from models.models import MovimientoDiario as MovimientoDiarioModel, Usuario
 from crud import crud_movimientos
+from routers.auth import get_current_user
 
 router = APIRouter(prefix="/movimientos", tags=["movimientos"])
 
@@ -20,54 +21,58 @@ async def get_movimientos_recientes(
     todos: bool = Query(default=False, description="Si es True, devuelve todos los movimientos sin restricción de fecha"),
     fecha_base: date = Query(default_factory=date.today),
     limit: int = Query(default=20, ge=1, le=100),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     """Obtener movimientos recientes desde una fecha base o todos los movimientos"""
     if todos:
         # Obtener todos los movimientos ordenados por fecha descendente
         movimientos = (
             db.query(MovimientoDiarioModel)
+            .filter(MovimientoDiarioModel.user_id == current_user.id)
             .order_by(MovimientoDiarioModel.fecha.desc())
             .limit(limit)
             .all()
         )
     else:
-        movimientos = crud_movimientos.get_movimientos_recientes(db, fecha_base, limit)
-    
+        movimientos = crud_movimientos.get_movimientos_recientes(db, fecha_base, current_user.id, limit)
+
     # Calcular campos calculados
     for mov in movimientos:
         mov.total_gastos = sum(gasto.monto for gasto in mov.gastos)
         mov.balance = mov.ingreso_total - mov.total_gastos
-    
+
     return movimientos
 
 @router.get("/{fecha}", response_model=Optional[MovimientoDiario])
 async def get_movimiento_by_fecha(
     fecha: date,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     """Obtener movimiento por fecha específica"""
-    movimiento = crud_movimientos.get_movimiento_by_fecha(db, fecha)
-    
+    movimiento = crud_movimientos.get_movimiento_by_fecha(db, fecha, current_user.id)
+
     if movimiento:
         movimiento.total_gastos = sum(gasto.monto for gasto in movimiento.gastos)
         movimiento.balance = movimiento.ingreso_total - movimiento.total_gastos
-    
+
     return movimiento
 
 @router.post("", response_model=MovimientoDiario)
 async def create_or_update_movimiento(
     movimiento: MovimientoDiarioCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     """Crear o actualizar un movimiento completo"""
     try:
-        db_movimiento = crud_movimientos.create_or_update_movimiento(db, movimiento)
-        
+        db_movimiento = crud_movimientos.create_or_update_movimiento(db, movimiento, current_user.id)
+
         # Calcular campos calculados
         db_movimiento.total_gastos = sum(gasto.monto for gasto in db_movimiento.gastos)
         db_movimiento.balance = db_movimiento.ingreso_total - db_movimiento.total_gastos
-        
+
         return db_movimiento
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error al crear movimiento: {str(e)}")
@@ -75,10 +80,11 @@ async def create_or_update_movimiento(
 @router.delete("/{fecha}")
 async def delete_movimiento(
     fecha: date,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     """Eliminar movimiento por fecha"""
-    success = crud_movimientos.delete_movimiento(db, fecha)
+    success = crud_movimientos.delete_movimiento(db, fecha, current_user.id)
     if not success:
         raise HTTPException(status_code=404, detail="Movimiento no encontrado")
     return {"message": "Movimiento eliminado correctamente"}
@@ -87,10 +93,11 @@ async def delete_movimiento(
 async def delete_ingreso(
     fecha: date,
     ingreso_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     """Eliminar un ingreso específico"""
-    success = crud_movimientos.delete_ingreso(db, ingreso_id)
+    success = crud_movimientos.delete_ingreso(db, ingreso_id, current_user.id)
     if not success:
         raise HTTPException(status_code=404, detail="Ingreso no encontrado")
     return {"message": "Ingreso eliminado correctamente"}
@@ -99,10 +106,11 @@ async def delete_ingreso(
 async def delete_gasto(
     fecha: date,
     gasto_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     """Eliminar un gasto específico"""
-    success = crud_movimientos.delete_gasto(db, gasto_id)
+    success = crud_movimientos.delete_gasto(db, gasto_id, current_user.id)
     if not success:
         raise HTTPException(status_code=404, detail="Gasto no encontrado")
     return {"message": "Gasto eliminado correctamente"}
@@ -111,14 +119,15 @@ async def delete_gasto(
 async def get_movimientos_mes(
     año: int,
     mes: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     """Obtener resumen de movimientos del mes"""
     if not (1 <= mes <= 12):
         raise HTTPException(status_code=400, detail="Mes debe estar entre 1 y 12")
-    
-    movimientos = crud_movimientos.get_movimientos_mes(db, año, mes)
-    
+
+    movimientos = crud_movimientos.get_movimientos_mes(db, año, mes, current_user.id)
+
     resumen = []
     for mov in movimientos:
         total_gastos = sum(gasto.monto for gasto in mov.gastos)
@@ -130,7 +139,7 @@ async def get_movimientos_mes(
             cantidad_ingresos=len(mov.ingresos),
             cantidad_gastos=len(mov.gastos)
         ))
-    
+
     return resumen
 
 @router.get("/buscar/etiqueta/{etiqueta}")
@@ -138,10 +147,11 @@ async def buscar_por_etiqueta(
     etiqueta: str,
     tipo: str = Query(default="gastos", regex="^(gastos|ingresos)$"),
     limit: int = Query(default=50, ge=1, le=200),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     """Buscar movimientos por etiqueta"""
-    resultados = crud_movimientos.buscar_por_etiqueta(db, etiqueta, tipo, limit)
+    resultados = crud_movimientos.buscar_por_etiqueta(db, etiqueta, current_user.id, tipo, limit)
     return resultados
 
 @router.get("/estadisticas/etiquetas/{año}/{mes}")
@@ -150,11 +160,12 @@ async def get_etiquetas_frecuentes(
     mes: int,
     tipo: str = Query(default="gastos", regex="^(gastos|ingresos)$"),
     limit: int = Query(default=10, ge=1, le=50),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
 ):
     """Obtener estadísticas de etiquetas del mes"""
     if not (1 <= mes <= 12):
         raise HTTPException(status_code=400, detail="Mes debe estar entre 1 y 12")
-    
-    estadisticas = crud_movimientos.get_etiquetas_frecuentes(db, año, mes, tipo, limit)
+
+    estadisticas = crud_movimientos.get_etiquetas_frecuentes(db, año, mes, current_user.id, tipo, limit)
     return estadisticas
