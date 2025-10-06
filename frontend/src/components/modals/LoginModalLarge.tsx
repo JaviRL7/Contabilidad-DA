@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
+import Register from '../Register'
 
 interface LoginModalLargeProps {
   isDark?: boolean
@@ -7,12 +8,24 @@ interface LoginModalLargeProps {
 }
 
 const LoginModalLarge: React.FC<LoginModalLargeProps> = ({ isDark = false, onLoginSuccess }) => {
+  const [showRegister, setShowRegister] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const { login } = useAuth()
+
+  // Si está mostrando el registro, renderizar ese componente
+  if (showRegister) {
+    return (
+      <Register
+        onRegisterSuccess={onLoginSuccess}
+        onBackToLogin={() => setShowRegister(false)}
+        isDark={isDark}
+      />
+    )
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -154,7 +167,21 @@ const LoginModalLarge: React.FC<LoginModalLargeProps> = ({ isDark = false, onLog
           </button>
         </form>
 
-        <div className={`text-center text-sm mt-6 ${
+        <div className="text-center mt-6">
+          <button
+            type="button"
+            onClick={() => setShowRegister(true)}
+            className={`text-base font-medium ${
+              isDark
+                ? 'text-blue-400 hover:text-blue-300'
+                : 'text-blue-600 hover:text-blue-500'
+            } transition-colors`}
+          >
+            ¿No tienes cuenta? Regístrate aquí
+          </button>
+        </div>
+
+        <div className={`text-center text-sm mt-4 ${
           isDark ? 'text-gray-500' : 'text-gray-500'
         }`}>
           <p>Acceso seguro al sistema de gestión financiera</p>

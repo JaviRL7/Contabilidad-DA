@@ -70,6 +70,37 @@ export const useAuth = () => {
     }
   }
 
+  const register = async (username: string, email: string, password: string) => {
+    try {
+      const cleanUsername = username.trim()
+      const cleanEmail = email.trim()
+      const cleanPassword = password.trim()
+
+      console.log('📝 Intentando registro con:', { username: cleanUsername, email: cleanEmail })
+      const response = await api.post('/auth/register', {
+        username: cleanUsername,
+        email: cleanEmail,
+        password: cleanPassword
+      })
+      console.log('✅ Respuesta del servidor (registro):', response)
+
+      if (response.data.access_token) {
+        localStorage.setItem('auth_token', response.data.access_token)
+        localStorage.setItem('loginTime', new Date().getTime().toString())
+        securityUtils.updateActivity()
+        setIsAuthenticated(true)
+        return { success: true, message: 'Registro exitoso' }
+      } else {
+        return { success: false, message: 'Error en el registro' }
+      }
+    } catch (error: any) {
+      console.error('❌ Error en registro:', error)
+      console.error('❌ Error response:', error.response)
+      const errorMessage = error.response?.data?.detail || 'Error al crear la cuenta'
+      return { success: false, message: errorMessage }
+    }
+  }
+
   const logout = () => {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('loginTime')
@@ -84,7 +115,7 @@ export const useAuth = () => {
       const sessionDuration = now - parseInt(loginTime)
       // 24 horas en milisegundos
       const maxSessionDuration = 24 * 60 * 60 * 1000
-      
+
       if (sessionDuration > maxSessionDuration) {
         logout()
         return false
@@ -93,5 +124,5 @@ export const useAuth = () => {
     return true
   }
 
-  return { isAuthenticated, loading, login, logout, checkSession }
+  return { isAuthenticated, loading, login, register, logout, checkSession }
 }

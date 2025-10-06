@@ -1,30 +1,51 @@
 import React, { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 
-interface LoginProps {
-  onLoginSuccess: () => void
-  onShowRegister?: () => void
+interface RegisterProps {
+  onRegisterSuccess: () => void
+  onBackToLogin: () => void
   isDark?: boolean
 }
 
-const Login: React.FC<LoginProps> = ({ onLoginSuccess, onShowRegister, isDark = false }) => {
+const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onBackToLogin, isDark = false }) => {
   const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const { login } = useAuth()
+  const { register } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
+    // Validaciones
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden')
+      setLoading(false)
+      return
+    }
+
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres')
+      setLoading(false)
+      return
+    }
+
+    if (username.length < 3) {
+      setError('El nombre de usuario debe tener al menos 3 caracteres')
+      setLoading(false)
+      return
+    }
+
     try {
-      const result = await login(username, password)
+      const result = await register(username, email, password)
 
       if (result.success) {
-        onLoginSuccess()
+        onRegisterSuccess()
       } else {
         setError(result.message)
       }
@@ -37,32 +58,32 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onShowRegister, isDark = 
 
   return (
     <div className={`min-h-screen flex items-center justify-center px-4 ${
-      isDark 
-        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+      isDark
+        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
         : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'
     }`}>
       <div className={`max-w-md w-full space-y-8 p-8 rounded-2xl shadow-2xl backdrop-blur-sm ${
-        isDark 
-          ? 'bg-gray-800/90 border border-gray-700/50' 
+        isDark
+          ? 'bg-gray-800/90 border border-gray-700/50'
           : 'bg-white/90 border border-white/20'
       }`}>
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-white shadow-lg border-2 border-pink-300/70">
-            <img 
-              src="/Logo1.png" 
-              alt="Logo" 
+            <img
+              src="/Logo1.png"
+              alt="Logo"
               className="w-10 h-10 object-contain"
             />
           </div>
           <h2 className={`text-2xl font-bold ${
             isDark ? 'text-white' : 'text-gray-900'
           }`}>
-            Iniciar Sesión
+            Crear Cuenta
           </h2>
           <p className={`mt-2 text-sm ${
             isDark ? 'text-gray-400' : 'text-gray-600'
           }`}>
-            Accede a tu sistema de contabilidad personal
+            Registra tu cuenta de contabilidad personal
           </p>
         </div>
 
@@ -72,7 +93,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onShowRegister, isDark = 
               <label htmlFor="username" className={`block text-sm font-medium ${
                 isDark ? 'text-gray-300' : 'text-gray-700'
               }`}>
-                Usuario
+                Nombre de usuario
               </label>
               <input
                 id="username"
@@ -83,11 +104,34 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onShowRegister, isDark = 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className={`mt-1 block w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                  isDark 
-                    ? 'bg-gray-700 border-gray-600 text-white' 
+                  isDark
+                    ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
                 }`}
-                placeholder="Introduce tu usuario"
+                placeholder="Elige un nombre de usuario"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className={`block text-sm font-medium ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={`mt-1 block w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                  isDark
+                    ? 'bg-gray-700 border-gray-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                placeholder="tu@email.com"
               />
             </div>
 
@@ -102,16 +146,16 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onShowRegister, isDark = 
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className={`block w-full px-3 py-3 pr-10 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                    isDark 
-                      ? 'bg-gray-700 border-gray-600 text-white' 
+                    isDark
+                      ? 'bg-gray-700 border-gray-600 text-white'
                       : 'bg-white border-gray-300 text-gray-900'
                   }`}
-                  placeholder="Introduce tu contraseña"
+                  placeholder="Mínimo 6 caracteres"
                 />
                 <button
                   type="button"
@@ -133,6 +177,29 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onShowRegister, isDark = 
                 </button>
               </div>
             </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className={`block text-sm font-medium ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                Confirmar contraseña
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={`mt-1 block w-full px-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                  isDark
+                    ? 'bg-gray-700 border-gray-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+                placeholder="Repite tu contraseña"
+              />
+            </div>
           </div>
 
           {error && (
@@ -153,29 +220,27 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onShowRegister, isDark = 
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Iniciando sesión...
+                  Creando cuenta...
                 </div>
               ) : (
-                'Iniciar sesión'
+                'Crear cuenta'
               )}
             </button>
           </div>
 
-          {onShowRegister && (
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={onShowRegister}
-                className={`text-sm font-medium ${
-                  isDark
-                    ? 'text-blue-400 hover:text-blue-300'
-                    : 'text-blue-600 hover:text-blue-500'
-                } transition-colors`}
-              >
-                ¿No tienes cuenta? Regístrate aquí
-              </button>
-            </div>
-          )}
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={onBackToLogin}
+              className={`text-sm font-medium ${
+                isDark
+                  ? 'text-blue-400 hover:text-blue-300'
+                  : 'text-blue-600 hover:text-blue-500'
+              } transition-colors`}
+            >
+              ¿Ya tienes cuenta? Inicia sesión
+            </button>
+          </div>
         </form>
 
         <div className={`text-center text-xs ${
@@ -188,4 +253,4 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onShowRegister, isDark = 
   )
 }
 
-export default Login
+export default Register
