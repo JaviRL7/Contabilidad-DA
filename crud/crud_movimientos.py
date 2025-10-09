@@ -95,6 +95,7 @@ def create_or_update_movimiento(
             else:
                 # El ID no existe, crear nuevo
                 db_ingreso = Ingreso(
+                    movimiento_id=db_movimiento.id,
                     fecha=movimiento_data.fecha,
                     monto=ingreso_data.monto,
                     etiqueta=ingreso_data.etiqueta,
@@ -104,6 +105,7 @@ def create_or_update_movimiento(
         else:
             # No hay ID, crear nuevo ingreso
             db_ingreso = Ingreso(
+                movimiento_id=db_movimiento.id,
                 fecha=movimiento_data.fecha,
                 monto=ingreso_data.monto,
                 etiqueta=ingreso_data.etiqueta,
@@ -133,6 +135,7 @@ def create_or_update_movimiento(
             else:
                 # El ID no existe, crear nuevo
                 db_gasto = Gasto(
+                    movimiento_id=db_movimiento.id,
                     fecha=movimiento_data.fecha,
                     monto=gasto_data.monto,
                     etiqueta=gasto_data.etiqueta,
@@ -144,6 +147,7 @@ def create_or_update_movimiento(
         else:
             # No hay ID, crear nuevo gasto
             db_gasto = Gasto(
+                movimiento_id=db_movimiento.id,
                 fecha=movimiento_data.fecha,
                 monto=gasto_data.monto,
                 etiqueta=gasto_data.etiqueta,
@@ -162,8 +166,7 @@ def create_or_update_movimiento(
         ingresos_ids_to_keep = [ing.id for ing in movimiento_data.ingresos if hasattr(ing, 'id') and ing.id]
         if ingresos_ids_to_keep:
             db.query(Ingreso).filter(
-                Ingreso.fecha == movimiento_data.fecha,
-                Ingreso.user_id == user_id,
+                Ingreso.movimiento_id == db_movimiento.id,
                 Ingreso.id.notin_(ingresos_ids_to_keep)
             ).delete(synchronize_session=False)
 
@@ -171,8 +174,7 @@ def create_or_update_movimiento(
         gastos_ids_to_keep = [gas.id for gas in movimiento_data.gastos if hasattr(gas, 'id') and gas.id]
         if gastos_ids_to_keep:
             db.query(Gasto).filter(
-                Gasto.fecha == movimiento_data.fecha,
-                Gasto.user_id == user_id,
+                Gasto.movimiento_id == db_movimiento.id,
                 Gasto.id.notin_(gastos_ids_to_keep)
             ).delete(synchronize_session=False)
 

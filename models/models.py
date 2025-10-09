@@ -40,7 +40,8 @@ class Ingreso(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False, index=True)
-    fecha = Column(Date, ForeignKey("movimientos_diarios.fecha"), nullable=False, index=True)
+    movimiento_id = Column(Integer, ForeignKey("movimientos_diarios.id", ondelete="CASCADE"), nullable=False, index=True)
+    fecha = Column(Date, nullable=False, index=True)
     monto = Column(Float, nullable=False)
     etiqueta = Column(String, nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -53,7 +54,8 @@ class Gasto(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False, index=True)
-    fecha = Column(Date, ForeignKey("movimientos_diarios.fecha"), nullable=False, index=True)
+    movimiento_id = Column(Integer, ForeignKey("movimientos_diarios.id", ondelete="CASCADE"), nullable=False, index=True)
+    fecha = Column(Date, nullable=False, index=True)
     monto = Column(Float, nullable=False)
     etiqueta = Column(String, nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
