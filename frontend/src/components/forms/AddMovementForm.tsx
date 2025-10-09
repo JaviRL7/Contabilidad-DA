@@ -137,8 +137,21 @@ const AddMovementForm: React.FC<AddMovementFormProps> = ({
       return
     }
 
+    // 🔍 DEBUG: Fechas
+    console.log('📅 Fecha seleccionada (Date object):', fecha)
+    console.log('📅 toISOString():', fecha.toISOString())
+    console.log('📅 toISOString().split("T")[0]:', fecha.toISOString().split('T')[0])
+
+    // Formatear fecha correctamente sin conversión UTC
+    const year = fecha.getFullYear()
+    const month = String(fecha.getMonth() + 1).padStart(2, '0')
+    const day = String(fecha.getDate()).padStart(2, '0')
+    const fechaFormateada = `${year}-${month}-${day}`
+
+    console.log('✅ Fecha formateada localmente:', fechaFormateada)
+
     onSave({
-      fecha: fecha.toISOString().split('T')[0],
+      fecha: fechaFormateada,
       ingresos: ingresos.map(i => ({ etiqueta: i.etiqueta, monto: i.monto })),
       gastos: gastos.map(g => ({ etiqueta: g.etiqueta, monto: g.monto }))
     })
