@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, extract
+from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 from datetime import date, timedelta
 
@@ -59,7 +60,19 @@ def create_or_update_movimiento(
         # Crear nuevo movimiento
         db_movimiento = MovimientoDiario(fecha=movimiento_data.fecha, user_id=user_id)
         db.add(db_movimiento)
-        print(f"✨ Creando nuevo movimiento para fecha: {movimiento_data.fecha}")
+        try:
+            # Flush para detectar violaciones de constraint antes de continuar
+            db.flush()
+            print(f"✨ Creando nuevo movimiento para fecha: {movimiento_data.fecha}")
+        except IntegrityError:
+            # Si hay un error de constraint (ej. otro proceso creó el movimiento)
+            # hacemos rollback y buscamos el movimiento existente
+            db.rollback()
+            db_movimiento = get_movimiento_by_fecha(db, movimiento_data.fecha, user_id)
+            if not db_movimiento:
+                # Si aún no existe, re-lanzar el error original
+                raise
+            print(f"⚠️  Movimiento ya existía, usando el existente para fecha: {movimiento_data.fecha}")
     
     # Calcular total de ingresos
     total_ingresos = sum(ingreso.monto for ingreso in movimiento_data.ingresos)
